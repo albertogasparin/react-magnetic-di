@@ -1,0 +1,21 @@
+// @flow
+/* eslint-disable no-redeclare */
+
+import type { Node, ComponentType } from 'react';
+
+type Dependencies = { [key: string]: any };
+
+declare export class DependencyProvider extends React$Component<
+  {
+    target?: ComponentType<any>,
+    use: Dependencies,
+    children: Node,
+  },
+  {
+    getDependencies: (instance: any) => Dependencies,
+  }
+> {}
+
+declare export function provideDependencies<T: Dependencies>(
+  dependencies: T
+): () => T;
