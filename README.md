@@ -8,11 +8,13 @@
 
 A new take for dependency injection in React for your tests, storybooks and even experiments in production.
 
-- Nearly-zero performane overhead
-- Enforces separation of concerns
-- Targets components at any level of the tree
+- Nearly-zero performance overhead
+- Works with any kind of dependency (not only components) 
+- Targets dependencies at any level of the tree
 - Allows selective injection
-- Can be enabled also in prod (off by default)
+- Enforces separation of concerns
+- Does not mess up with React internals (just uses Context)
+- Can also be enabled in prod, at small cost (off by default)
 
 ## Philosophy
 
@@ -36,7 +38,7 @@ npm i react-magnetic-di
 yarn add react-magnetic-di
 ```
 
-Given a component with complex UI interation or data dependencies, like a Modal or a Apollo Query, we want to be able integration test it without necessarily test those other dependencies.
+Given a component with complex UI interaction or data dependencies, like a Modal or an Apollo Query, we want to be able integration test it without necessarily test those other dependencies.
 To achieve that, we define the dependencies on the class component:
 
 ```js
