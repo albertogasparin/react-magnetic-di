@@ -10,9 +10,9 @@ export function InputExample() {
 }
 
 export function useThemeExample() {
-  return useState({ color: '#E77' });
+  return useState<any>({ color: '#E77' });
 }
 
 export function useThemeExample2() {
-  return useState({ color: '#FA0' });
+  return useState<any>({ color: '#FA0' });
 }
