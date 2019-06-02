@@ -1,6 +1,6 @@
 {
   "name": "react-magnetic-di",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Context driven dependency injection",
   "keywords": [
     "React",
