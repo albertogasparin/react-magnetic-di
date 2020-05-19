@@ -1,0 +1,54 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Integration should allow override composition 1`] = `
+"<DiProvider use={{...}}>
+  <DiProvider use={{...}}>
+    <Label>
+      <diMock(Wrapper)>
+        <diMock(Text)>
+          mock
+        </diMock(Text)>
+      </diMock(Wrapper)>
+    </Label>
+    <Input>
+      <diMock(Text)>
+        mock
+      </diMock(Text)>
+    </Input>
+  </DiProvider>
+</DiProvider>"
+`;
+
+exports[`Integration should override all dependencies of same type 1`] = `
+"<DiProvider use={{...}}>
+  <Label>
+    <Wrapper>
+      <diMock(Text)>
+        mock
+      </diMock(Text)>
+    </Wrapper>
+  </Label>
+  <Input>
+    <diMock(Text)>
+      mock
+    </diMock(Text)>
+  </Input>
+</DiProvider>"
+`;
+
+exports[`Integration should return real dependencies if provider less 1`] = `
+"<Label>
+  <Wrapper>
+    <Text>
+      original
+    </Text>
+  </Wrapper>
+</Label>
+
+
+<Input>
+  <Text>
+    original
+  </Text>
+</Input>"
+`;

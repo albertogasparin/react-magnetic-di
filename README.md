@@ -8,29 +8,22 @@
 
 A new take for dependency injection in React for your tests, storybooks and even experiments in production.
 
-- Nearly-zero performance overhead
-- Works with any kind of dependency (not only components)
-- Targets dependencies at any level of the tree
+- Close-to-zero performance overhead
+- Works with any kind of functions/classes (not only components) and in both class and functional components
+- Replaces dependencies across the entire tree
 - Allows selective injection
 - Enforces separation of concerns
-- Does not mess up with React internals (just uses Context)
-- Can also be enabled in prod, at small cost (off by default)
+- Uses Context in light way (not messing up with React internals)
 
 ## Philosophy
 
 Dependency injection and component injection for testing purposes is not a new topic. Indeed, the ability to provide a custom implementation of a component/hook while testing or writing storybooks and examples it is extremely valuable.
 
-A common pattern to solve this problem is injecting those "dependencies" in the component via props. However, that approach has a some of downsides:
+A common pattern to solve this problem is injecting those "dependencies" in the component via props. However, that approach has a some of downsides, like leaking internal implementation details, mixing together injected dependencies with other props and introducing additional complexity when typing props.
 
-1. We are leaking internal implementation details. Props are the public API of a component and we are polluting them with keys that are not relevant for actual consumers, and we are doing that just for our testing needs
+`react-magnetic-di` takes inspiration from decorators, and with a light touch of Babel magic and React Context allows you to optionally override such dependencies, with nearly-zero performane overhead (when not using it).
 
-2. Our dependencies are mixed together with other props, which makes them hard to recognise, analyse and might introduce naming conflicts
-
-3. It introduces additional complexity, for instance when we have spread props down, as we probably don't want pass the dependencies down too
-
-`react-magnetic-di` takes inspiration from React PropTypes, forcing you to declare the dependencies statically and then using React Context to optionally override those dependencies, with nearly-zero performane overhead when the injection system is off.
-
-## Basic usage
+## Usage
 
 ```sh
 npm i react-magnetic-di
@@ -38,23 +31,34 @@ npm i react-magnetic-di
 yarn add react-magnetic-di
 ```
 
+### Adding babel plugin
+
+Edit your Babel config file (`.babel.rc` / `babel.config.js` / ...) and add:
+
+```js
+  // ... other stuff like presets
+  plugins: [
+    // ... other plugins
+    'react-magnetic-di/babel',
+  ],
+```
+
+### Using dependency injection in your components
+
 Given a component with complex UI interaction or data dependencies, like a Modal or an Apollo Query, we want to be able integration test it without necessarily test those other dependencies.
-To achieve that, we define the dependencies on the class component:
+To achieve that, we mark such dependencies in the `render` function of the class component:
 
 ```js
 import React, { Component } from 'react';
-import { provideDependencies } from 'react-magnetic-di';
-import { Modal as ModalDI } from 'material-ui';
-import { Query as QueryDI } from 'react-apollo';
+import { di } from 'react-magnetic-di';
+import { Modal } from 'material-ui';
+import { Query } from 'react-apollo';
 
 class MyComponent extends Component {
-  static dependencies = provideDependencies({
-    Modal: ModalDI,
-    Query: QueryDI,
-  });
-
   render() {
-    const { Modal, Query } = MyComponent.dependencies();
+    // that's all we need to "mark" these variables as injectable
+    di(Modal, Query);
+
     return (
       <Modal>
         <Query>{({ data }) => data && 'Done!'}</Query>
@@ -68,68 +72,64 @@ Or on our functional component with hooks:
 
 ```js
 import React, { Component } from 'react';
-import { provideDependencies } from 'react-magnetic-di';
-import { Modal as ModalDI } from 'material-ui';
-import { useQuery as useQueryDI } from 'react-apollo-hooks';
+import { di } from 'react-magnetic-di';
+import { Modal } from 'material-ui';
+import { useQuery } from 'react-apollo-hooks';
 
 function MyComponent() {
-  const { Modal, useQuery } = MyComponent.dependencies();
+  // can "mark" any type of function/class as injectable
+  di(Modal, useQuery);
+
   const { data } = useQuery();
   return <Modal>{data && 'Done!'}</Modal>;
 }
-
-MyComponent.dependencies = provideDependencies({
-  Modal: ModalDI,
-  useQuery: useQueryDI,
-});
 ```
 
-Finally, in the integration tests and storybooks we wrap the component with `DependencyProvider` to override any dependency:
+### Leveraging dependency injection in tests and storybooks
+
+In the unit/integration tests or storybooks we can create a mock implementation and wrap the component with `DiProvider` to override any dependency:
 
 ```js
 import React from 'react';
-import { DependencyProvider } from 'react-magnetic-di';
+import { DiProvider, di } from 'react-magnetic-di';
+import { Modal } from 'material-ui';
+import { useQuery } from 'react-apollo-hooks';
 
-import { ModalOpen, useQueryMock } from './examples';
+// mock() accepts the original implementation as first argument
+// and the replacement implementation as second
+const ModalOpen = di.mock(Modal, () => <div />);
+const useQueryMock = di.mock(useQuery, () => ({ data: null }));
 
+// test-enzyme.js
+it('should render with enzyme', () => {
+  const container = mount(<MyComponent />, {
+    wrappingComponent: DiProvider,
+    wrappingComponentProps: { use: [ModalOpen, useQuery] },
+  });
+  expect(container).toMatchSnapshot();
+});
+
+// test-testing-library.js
+it('should render with react-testing-library', () => {
+  const { container } = render(<MyComponent />, {
+    wrapper: (p) => <DiProvider use={[ModalOpen, useQuery]} {...p} />,
+  });
+  expect(container).toMatchSnapshot();
+});
+
+// story.js
 storiesOf('Modal content', module).add('with text', () => (
-  <DependencyProvider use={{ Modal: ModalOpen, useQuery: useQueryMock }}>
+  <DiProvider use={[ModalOpen, useQuery]}>
     <MyComponent />
-  </DependencyProvider>
+  </DiProvider>
 ));
 ```
 
-In the example above we replace all `Modal` dependencies across all components in the tree with the open version, but that might be wrong for `useQuery`, as we might want to provide different data to different components. `DependencyProvider` enables targeted dependency injection via `target` prop. Together with providers composition it allows multiple, explicit dependency injections:
+In the example above we replace all `Modal` and `useQuery` dependencies across all components in the tree with the custom versions.
 
-```js
-storiesOf('App', module).add('with text', () => (
-  /* replace Modal on all components */
-  <DependencyProvider use={{ Modal: ModalOpen }}>
-    {/* in MyComponent use one set of data */}
-    <DependencyProvider target={MyComponent} use={{ useQuery: useQueryMock }}>
-      {/* in MyOtherComponent use a different set of data */}
-      <DependencyProvider
-        target={MyOtherComponent}
-        use={{ useQuery: useQueryOtherMock }}
-      >
-        <MyApp />
-      </DependencyProvider>
-    </DependencyProvider>
-  </DependencyProvider>
-));
-```
+## FAQ
 
-## Settings
-
-#### enabled
-
-Defines whenever context replacement is allowed or not. By default is `NODE_ENV !== 'production'`. It can be enabled also in prod, but it is not recommended.
-
-```js
-import { settings } from 'react-magnetic-di';
-// only enable during testing
-setting.enabled = process.env.NODE_ENV === 'test';
-```
+- Can I replace only one instance for one component? Currently no, but it could be possible.
 
 ## Contributing
 

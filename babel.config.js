@@ -14,7 +14,7 @@ module.exports = {
     '@babel/plugin-proposal-export-namespace-from',
     '@babel/plugin-syntax-dynamic-import',
     '@babel/plugin-syntax-import-meta',
-    // './src/babel',
+    './src/babel',
   ],
   env: {
     test: {

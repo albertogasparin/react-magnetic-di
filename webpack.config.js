@@ -12,10 +12,10 @@ const generateExampleEntries = function() {
   // so we can just add a new folder there and
   // have automatically the entry points updated
 
-  const getDirectories = source =>
+  const getDirectories = (source) =>
     readdirSync(source)
-      .map(name => resolve(source, name))
-      .filter(s => lstatSync(s).isDirectory());
+      .map((name) => resolve(source, name))
+      .filter((s) => lstatSync(s).isDirectory());
 
   const exampleDirs = getDirectories(src);
 
@@ -46,7 +46,7 @@ module.exports = {
         test: /\.js$/,
         loader: 'babel-loader',
         options: {
-          presets: [['@babel/preset-env', { targets: { chrome: '60' } }]],
+          presets: [['@babel/preset-env', { targets: { ie: '11' } }]],
         },
       },
     ],

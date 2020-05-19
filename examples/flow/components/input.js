@@ -1,5 +1,5 @@
 // @flow
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { di } from 'react-magnetic-di';
 
 export function useTheme() {
@@ -7,11 +7,7 @@ export function useTheme() {
 }
 
 export function Input() {
-  di(useTheme);
-
-  useMemo(() => {
-    di(useTheme);
-  });
+  di(useTheme, Input);
 
   const [style] = useTheme();
   return (
