@@ -1,17 +1,13 @@
 // @flow
 import React, { useState } from 'react';
-import { provideDependencies } from 'react-magnetic-di';
+import { di } from 'react-magnetic-di';
 
-function useThemeDI() {
-  return useState({ color: '#333' });
+export function useTheme() {
+  return useState<any>({ color: '#333' });
 }
 
 export function Label() {
-  const { useTheme } = Label.dependencies();
+  di(useTheme);
   const [style] = useTheme();
   return <div style={style}>Label</div>;
 }
-
-Label.dependencies = provideDependencies({
-  useTheme: useThemeDI,
-});

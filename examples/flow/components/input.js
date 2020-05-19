@@ -1,13 +1,18 @@
 // @flow
-import React, { useState } from 'react';
-import { provideDependencies } from 'react-magnetic-di';
+import React, { useState, useMemo } from 'react';
+import { di } from 'react-magnetic-di';
 
-function useThemeDI() {
-  return useState({ color: '#777' });
+export function useTheme() {
+  return useState<any>({ color: '#777' });
 }
 
 export function Input() {
-  const { useTheme } = Input.dependencies();
+  di(useTheme);
+
+  useMemo(() => {
+    di(useTheme);
+  });
+
   const [style] = useTheme();
   return (
     <input
@@ -16,7 +21,3 @@ export function Input() {
     />
   );
 }
-
-Input.dependencies = provideDependencies({
-  useTheme: useThemeDI,
-});

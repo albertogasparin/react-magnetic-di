@@ -3,19 +3,23 @@
 
 import type { Node, ComponentType } from 'react';
 
-type Dependencies = { [key: string]: any };
+type Dependency = Function;
 
-declare export class DependencyProvider extends React$Component<
+declare export class DiProvider extends React$Component<
   {
-    target?: ComponentType<any>,
-    use: Dependencies,
+    use: Dependency[],
     children: Node,
   },
   {
-    getDependencies: (instance: any) => Dependencies,
+    getDependencies: (deps: Dependency[]) => Dependency[],
   }
 > {}
 
-declare export function provideDependencies<T: Dependencies>(
-  dependencies: T
-): () => T;
+declare export function withDi(
+  component: ComponentType<any>,
+  dependencies: Dependency[]
+): void;
+
+declare export function di(...dependencies: Dependency[]): void;
+
+declare export function diMock<T: Dependency>(original: T, mock: T): T;

@@ -1,8 +1,8 @@
 import React from 'react';
 
 const Context = React.createContext({
-  getDependencies() {
-    return {};
+  getDependencies(deps) {
+    return deps;
   },
 });
 
@@ -11,14 +11,10 @@ const Context = React.createContext({
 // plus a fix to make it work with enzyme shallow
 const readContext = () => {
   const {
-    // React < 16.8
-    ReactCurrentOwner: { currentDispatcher } = {},
-    // React >= 16.8+
     ReactCurrentDispatcher: { current } = {},
   } = React.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
-  const dispatcher = current || currentDispatcher;
-  return dispatcher
-    ? dispatcher.readContext(Context.Consumer)
+  return current
+    ? current.readContext(Context.Consumer)
     : Context.Consumer._currentValue;
 };
 
