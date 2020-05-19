@@ -4,16 +4,16 @@ exports[`Integration should allow override composition 1`] = `
 "<DiProvider use={{...}}>
   <DiProvider use={{...}}>
     <Label>
-      <diMock(Wrapper)>
-        <diMock(Text)>
+      <di(Wrapper)>
+        <di(Text)>
           mock
-        </diMock(Text)>
-      </diMock(Wrapper)>
+        </di(Text)>
+      </di(Wrapper)>
     </Label>
     <Input>
-      <diMock(Text)>
+      <di(Text)>
         mock
-      </diMock(Text)>
+      </di(Text)>
     </Input>
   </DiProvider>
 </DiProvider>"
@@ -23,15 +23,15 @@ exports[`Integration should override all dependencies of same type 1`] = `
 "<DiProvider use={{...}}>
   <Label>
     <Wrapper>
-      <diMock(Text)>
+      <di(Text)>
         mock
-      </diMock(Text)>
+      </di(Text)>
     </Wrapper>
   </Label>
   <Input>
-    <diMock(Text)>
+    <di(Text)>
       mock
-    </diMock(Text)>
+    </di(Text)>
   </Input>
 </DiProvider>"
 `;

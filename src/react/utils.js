@@ -11,7 +11,7 @@ export const warnOnce = (message) => {
 
 export function mock(original, mockImpl) {
   mockImpl.displayName =
-    mockImpl.displayName || `diMock(${original.displayName || original.name})`;
+    mockImpl.displayName || `di(${original.displayName || original.name})`;
   mockImpl[KEY] = original;
   return mockImpl;
 }
