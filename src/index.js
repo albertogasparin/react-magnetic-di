@@ -1,3 +1,3 @@
-export { provideDependencies } from './provide-deps';
-export { DependencyProvider } from './provider';
-export { settings } from './settings';
+export { di } from './react/consumer';
+export { DiProvider, withDi } from './react/provider';
+export { mock } from './react/utils';

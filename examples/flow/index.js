@@ -1,13 +1,15 @@
 // @flow
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { DependencyProvider } from 'react-magnetic-di';
+import { DiProvider } from 'react-magnetic-di';
 
 import { Section } from './components/section';
-import { Label } from './components/label';
-import { Input } from './components/input';
 
-import { InputExample, useThemeExample, useThemeExample2 } from './examples';
+import {
+  InputExample,
+  useThemeInputExample,
+  useThemeLabelExample,
+} from './examples';
 
 /**
  * Main App
@@ -18,15 +20,13 @@ const App = () => (
     <main>
       <Section title="No injection" />
       <hr />
-      <DependencyProvider use={{ Input: InputExample }}>
-        <Section title="Global dependency injection" />
-      </DependencyProvider>
+      <DiProvider use={[InputExample]}>
+        <Section title="Single dependency injection" />
+      </DiProvider>
       <hr />
-      <DependencyProvider target={Label} use={{ useTheme: useThemeExample }}>
-        <DependencyProvider target={Input} use={{ useTheme: useThemeExample2 }}>
-          <Section title="Targeted dependency injection" />
-        </DependencyProvider>
-      </DependencyProvider>
+      <DiProvider use={[useThemeLabelExample, useThemeInputExample]}>
+        <Section title="Multiple dependency injection" />
+      </DiProvider>
     </main>
   </div>
 );

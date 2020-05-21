@@ -1,20 +1,16 @@
 // @flow
 import React, { Component } from 'react';
-import { provideDependencies } from 'react-magnetic-di';
+import { di } from 'react-magnetic-di';
 
-import { Label as LabelDI } from './label';
-import { Input as InputDI } from './input';
+import { Label } from './label';
+import { Input } from './input';
 
 type Props = {| title: string |};
 
 export class Section extends Component<Props> {
-  static dependencies = provideDependencies({
-    Label: LabelDI,
-    Input: InputDI,
-  });
-
   render() {
-    const { Label, Input } = Section.dependencies();
+    di(Label, Input);
+
     const { title } = this.props;
     return (
       <div>
