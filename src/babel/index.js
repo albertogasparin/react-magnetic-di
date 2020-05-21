@@ -1,17 +1,35 @@
 const PACKAGE_NAME = 'react-magnetic-di';
 const PACKAGE_FUNCTION = 'di';
 
+const assert = {
+  isValidBlock(t, ref) {
+    const { block } = ref.scope;
+    if (
+      !t.isFunctionDeclaration(block) &&
+      !t.isArrowFunctionExpression(block) &&
+      !t.isClassMethod(block)
+    ) {
+      throw ref.buildCodeFrameError(
+        'Invalid di(...) call. Must be inside a render function of a component. '
+      );
+    }
+  },
+  isValidCall(t, ref) {
+    if (!ref.container.arguments.length) {
+      throw ref.buildCodeFrameError(
+        'Invalid di(...) arguments. Must be called with at least one argument. '
+      );
+    }
+    if (!ref.container.arguments.every((node) => t.isIdentifier(node))) {
+      throw ref.buildCodeFrameError(
+        'Invalid di(...) arguments. Must be called with plain identifiers. '
+      );
+    }
+  },
+};
+
 module.exports = function(babel) {
   const { types: t } = babel;
-
-  const isValidReference = (ref) => {
-    const isValidBlock = [
-      'FunctionDeclaration',
-      'ArrowFunctionExpression',
-      'ClassMethod',
-    ].includes(ref.scope.block.type);
-    return isValidBlock && t.isCallExpression(ref.container);
-  };
 
   return {
     visitor: {
@@ -28,10 +46,15 @@ module.exports = function(babel) {
         // ensuring we affect on lications where it is called
         const methodIdentifier = importSpecifier.local.name;
         const binding = path.scope.getBinding(methodIdentifier);
-        const references = binding.referencePaths.filter(isValidReference);
+        const references = binding.referencePaths.filter((ref) =>
+          t.isCallExpression(ref.container)
+        );
 
         // for each of that location we apply a tranformation
         references.forEach((ref) => {
+          assert.isValidBlock(t, ref);
+          assert.isValidCall(t, ref);
+
           // from the arguments of the method we generate the list of dependency identifiers
           const args = ref.container.arguments;
           const dependencyIdentifiers = args.map((v) => t.identifier(v.name));
