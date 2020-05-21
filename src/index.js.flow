@@ -22,5 +22,7 @@ declare export function withDi(
 
 declare export function mock<T: Dependency>(original: T, mock: T): T;
 
-declare export function di(...dependencies: Dependency[]): void;
-di.mock = mock;
+function di(...dependencies: Dependency[]) {
+  di.mock = mock;
+}
+declare export { di };

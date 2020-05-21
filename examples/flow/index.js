@@ -31,5 +31,4 @@ const App = () => (
   </div>
 );
 
-// $FlowFixMe
 ReactDOM.render(<App />, document.getElementById('root'));
