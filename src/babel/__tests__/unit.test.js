@@ -7,10 +7,7 @@ expect.addSnapshotSerializer({
     return typeof value == 'string' && value.includes('[0m');
   },
   print(value, serialize, indent) {
-    const cleanError = value
-      .replace(/(\/[\w.-]+){2,}:/, '')
-      .replace(/\[(\d+)m/gm, '')
-      .replace(/[^\w\d\s()[\]{}.-/|^>]/gm, '');
+    const [cleanError] = value.replace(/(\/[\w.-]+){2,}:/, '').split('\n');
     return indent(serialize(cleanError));
   },
 });
