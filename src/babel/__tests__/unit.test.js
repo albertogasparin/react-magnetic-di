@@ -10,7 +10,7 @@ expect.addSnapshotSerializer({
     const cleanError = value
       .replace(/(\/[\w.-]+){2,}:/, '')
       .replace(/\[(\d+)m/gm, '')
-      .replace('>', '>');
+      .replace(/[^\w\d\s()[\]{}.-/|^>]/gm, '');
     return indent(serialize(cleanError));
   },
 });

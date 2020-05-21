@@ -2,46 +2,46 @@
 
 exports[`babel plugin should error if all arguments are not identifiers 1`] = `
   " Invalid di(...) arguments. Must be called with plain identifiers. 
-     5 | 
-     6 |       export function MyComponent() {
-  >  7 |         di(Modal.Bla);
-       |         ^
-     8 |         return <Modal.Bla />;
-     9 |       }
-    10 |     "
+     5 | 
+     6 |       export function MyComponent() {
+  >  7 |         di(Modal.Bla)
+       |         ^
+     8 |         return Modal.Bla />
+     9 |       }
+    10 |     "
 `;
 
 exports[`babel plugin should error if all arguments are wrapped 1`] = `
   " Invalid di(...) arguments. Must be called with plain identifiers. 
-     5 | 
-     6 |       export function MyComponent() {
-  >  7 |         di([Modal]);
-       |         ^
-     8 |         return <Modal />;
-     9 |       }
-    10 |     "
+     5 | 
+     6 |       export function MyComponent() {
+  >  7 |         di([Modal])
+       |         ^
+     8 |         return Modal />
+     9 |       }
+    10 |     "
 `;
 
 exports[`babel plugin should error if used outside a function or a method 1`] = `
   " Invalid di(...) call. Must be inside a render function of a component. 
-    4 |       import Modal from 'modal';
-    5 | 
-  > 6 |       di(Modal);
-      |       ^
-    7 |       export function MyComponent() {
-    8 |         return <Modal />;
-    9 |       }"
+    4 |       import Modal from modal
+    5 | 
+  > 6 |       di(Modal)
+      |       ^
+    7 |       export function MyComponent() {
+    8 |         return Modal />
+    9 |       }"
 `;
 
 exports[`babel plugin should error if used without dependencies 1`] = `
   " Invalid di(...) arguments. Must be called with at least one argument. 
-     5 | 
-     6 |       export function MyComponent() {
-  >  7 |         di();
-       |         ^
-     8 |         return <Modal />;
-     9 |       }
-    10 |     "
+     5 | 
+     6 |       export function MyComponent() {
+  >  7 |         di()
+       |         ^
+     8 |         return Modal />
+     9 |       }
+    10 |     "
 `;
 
 exports[`babel plugin should not error if not a call expression 1`] = `
