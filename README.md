@@ -48,7 +48,7 @@ Edit your Babel config file (`.babel.rc` / `babel.config.js` / ...) and add:
 Given a component with complex UI interaction or data dependencies, like a Modal or an Apollo Query, we want to be able integration test it without necessarily test those other dependencies.
 To achieve that, we mark such dependencies in the `render` function of the class component:
 
-```js
+```jsx
 import React, { Component } from 'react';
 import { di } from 'react-magnetic-di';
 import { Modal } from 'material-ui';
@@ -56,7 +56,7 @@ import { Query } from 'react-apollo';
 
 class MyComponent extends Component {
   render() {
-    // that's all we need to "mark" these variables as injectable
+    // that's all is needed to "mark" these variables as injectable
     di(Modal, Query);
 
     return (
@@ -70,14 +70,14 @@ class MyComponent extends Component {
 
 Or on our functional component with hooks:
 
-```js
+```jsx
 import React, { Component } from 'react';
 import { di } from 'react-magnetic-di';
 import { Modal } from 'material-ui';
 import { useQuery } from 'react-apollo-hooks';
 
 function MyComponent() {
-  // can "mark" any type of function/class as injectable
+  // "mark" any type of function/class as injectable
   di(Modal, useQuery);
 
   const { data } = useQuery();
@@ -89,7 +89,7 @@ function MyComponent() {
 
 In the unit/integration tests or storybooks we can create a mock implementation and wrap the component with `DiProvider` to override any dependency:
 
-```js
+```jsx
 import React from 'react';
 import { DiProvider, di } from 'react-magnetic-di';
 import { Modal } from 'material-ui';
