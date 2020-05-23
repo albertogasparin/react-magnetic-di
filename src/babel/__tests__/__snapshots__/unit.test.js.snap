@@ -1,5 +1,15 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`babel plugin should do injection if force enabled 1`] = `
+"import React, { Component } from 'react';
+import { di } from 'react-magnetic-di';
+import Modal from 'modal';
+export function MyComponent() {
+  var [_Modal] = di([Modal]);
+  return __jsx(_Modal, null);
+}"
+`;
+
 exports[`babel plugin should error if all arguments are not identifiers 1`] = `  " Invalid di(...) arguments. Must be called with plain identifiers. "`;
 
 exports[`babel plugin should error if all arguments are wrapped 1`] = `  " Invalid di(...) arguments. Must be called with plain identifiers. "`;
@@ -15,6 +25,15 @@ import Modal from 'modal';
 const ModalMock = di.mock(Modal);
 export function MyComponent() {
   return __jsx(ModalMock, null);
+}"
+`;
+
+exports[`babel plugin should strip injection if not enabled environment 1`] = `
+"import React, { Component } from 'react';
+import { di } from 'react-magnetic-di';
+import Modal from 'modal';
+export function MyComponent() {
+  return __jsx(Modal, null);
 }"
 `;
 

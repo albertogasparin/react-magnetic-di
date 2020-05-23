@@ -1,5 +1,6 @@
 const PACKAGE_NAME = 'react-magnetic-di';
 const PACKAGE_FUNCTION = 'di';
+const ENABLED_ENVS = ['development', 'test'];
 
 const assert = {
   isValidBlock(t, ref) {
@@ -28,12 +29,13 @@ const assert = {
   },
 };
 
-module.exports = function(babel) {
+module.exports = function (babel) {
   const { types: t } = babel;
+  const isEnabledEnv = babel.env(ENABLED_ENVS);
 
   return {
     visitor: {
-      ImportDeclaration(path) {
+      ImportDeclaration(path, { opts = {} }) {
         // first we look at the imports:
         // if not our package and not the right function, ignore
         const importSource = path.node.source.value;
@@ -50,6 +52,8 @@ module.exports = function(babel) {
           t.isCallExpression(ref.container)
         );
 
+        const isEnabled = isEnabledEnv || Boolean(opts.forceEnable);
+
         // for each of that location we apply a tranformation
         references.forEach((ref) => {
           assert.isValidBlock(t, ref);
@@ -59,6 +63,12 @@ module.exports = function(babel) {
           const args = ref.container.arguments;
           const dependencyIdentifiers = args.map((v) => t.identifier(v.name));
           const statement = ref.getStatementParent();
+
+          // if should not be enabled, just remove the statement and exit
+          if (!isEnabled) {
+            statement.remove();
+            return;
+          }
 
           // generating variable declarations with array destructuring
           // assigning them the result of the method call, with arguments

@@ -8,20 +8,21 @@
 
 A new take for dependency injection in React for your tests, storybooks and even experiments in production.
 
-- Close-to-zero performance overhead
+- Close-to-zero performance overhead on dev/testing
+- Compiles to nothing on production (unless explicitly enabled)
 - Works with any kind of functions/classes (not only components) and in both class and functional components
-- Replaces dependencies across the entire tree
+- Replaces dependencies anywhere deep in the React tree
 - Allows selective injection
 - Enforces separation of concerns
-- Uses Context in light way (not messing up with React internals)
+- Just uses Context, it does not mess up with React internals
 
 ## Philosophy
 
 Dependency injection and component injection for testing purposes is not a new topic. Indeed, the ability to provide a custom implementation of a component/hook while testing or writing storybooks and examples it is extremely valuable.
 
-A common pattern to solve this problem is injecting those "dependencies" in the component via props. However, that approach has a some of downsides, like leaking internal implementation details, mixing together injected dependencies with other props and introducing additional complexity when typing props.
+A common pattern to solve this problem is injecting those "dependencies" in the component via props or using mocking libraries at import/require level. However those approaches have some of downsides, like leaking internal implementation details, being quite fragile or introducing additional complexity when typing.
 
-`react-magnetic-di` takes inspiration from decorators, and with a light touch of Babel magic and React Context allows you to optionally override such dependencies, with nearly-zero performane overhead (when not using it).
+`react-magnetic-di` takes inspiration from decorators, and with a touch of Babel magic and React Context allows you to optionally override such dependencies, with nearly-zero performane overhead while developing/testing (it's basically a function call and a map lookup) and it is fully removed by default on production builds.
 
 ## Usage
 
@@ -33,7 +34,7 @@ yarn add react-magnetic-di
 
 ### Adding babel plugin
 
-Edit your Babel config file (`.babel.rc` / `babel.config.js` / ...) and add:
+Edit your Babel config file (`.babelrc` / `babel.config.js` / ...) and add:
 
 ```js
   // ... other stuff like presets
@@ -126,6 +127,21 @@ storiesOf('Modal content', module).add('with text', () => (
 ```
 
 In the example above we replace all `Modal` and `useQuery` dependencies across all components in the tree with the custom versions.
+
+### Configuration Options
+
+#### Enable depepndency injection on production (or custom env)
+
+By default dependency injection is enabled on `development` and `test` environments only, which means `di(...)` is removed on production builds. If you want to allow depepency injection on production too (or on a custom env) you can use the `forceEnable` option:
+
+```
+// In your .babelrc / babel.config.js
+  // ... other stuff like presets
+  plugins: [
+    // ... other plugins
+    ['react-magnetic-di/babel', { forceEnable: true }],
+  ],
+```
 
 ## FAQ
 
