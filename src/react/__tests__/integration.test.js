@@ -9,7 +9,7 @@ const Text = () => 'original';
 
 class Label extends Component {
   render() {
-    const [_Wrapper, _Text] = di([Wrapper, Text]);
+    const [_Wrapper, _Text] = di([Wrapper, Text], Label);
     return (
       <_Wrapper>
         <_Text />
@@ -20,7 +20,7 @@ class Label extends Component {
 
 class Input extends Component {
   render() {
-    const [_Text] = di([Text]);
+    const [_Text] = di([Text], Input);
     return <_Text />;
   }
 }
@@ -55,6 +55,19 @@ describe('Integration', () => {
     const wrapper = mount(
       <DiProvider use={[WrapperMock]}>
         <DiProvider use={[TextMock]}>
+          <Label />
+          <Input />
+        </DiProvider>
+      </DiProvider>
+    );
+
+    expect(wrapper.debug()).toMatchSnapshot();
+  });
+
+  it('should only override dependencies of specified target', () => {
+    const wrapper = mount(
+      <DiProvider target={[Input]} use={[WrapperMock]}>
+        <DiProvider target={Label} use={[TextMock]}>
           <Label />
           <Input />
         </DiProvider>

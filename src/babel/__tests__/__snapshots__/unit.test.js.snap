@@ -4,26 +4,20 @@ exports[`babel plugin should do injection if force enabled 1`] = `
 "import React, { Component } from 'react';
 import { di } from 'react-magnetic-di';
 import Modal from 'modal';
-export function MyComponent() {
-  var [_Modal] = di([Modal]);
+
+function MyComponent() {
+  var [_Modal] = di([Modal], MyComponent);
   return __jsx(_Modal, null);
 }"
 `;
-
-exports[`babel plugin should error if all arguments are not identifiers 1`] = `  " Invalid di(...) arguments. Must be called with plain identifiers. "`;
-
-exports[`babel plugin should error if all arguments are wrapped 1`] = `  " Invalid di(...) arguments. Must be called with plain identifiers. "`;
-
-exports[`babel plugin should error if used outside a function or a method 1`] = `  " Invalid di(...) call. Must be inside a render function of a component. "`;
-
-exports[`babel plugin should error if used without dependencies 1`] = `  " Invalid di(...) arguments. Must be called with at least one argument. "`;
 
 exports[`babel plugin should not error if not a call expression 1`] = `
 "import React from 'react';
 import { di } from 'react-magnetic-di';
 import Modal from 'modal';
 const ModalMock = di.mock(Modal);
-export function MyComponent() {
+
+function MyComponent() {
   return __jsx(ModalMock, null);
 }"
 `;
@@ -32,7 +26,8 @@ exports[`babel plugin should strip injection if not enabled environment 1`] = `
 "import React, { Component } from 'react';
 import { di } from 'react-magnetic-di';
 import Modal from 'modal';
-export function MyComponent() {
+
+function MyComponent() {
   return __jsx(Modal, null);
 }"
 `;
@@ -41,9 +36,10 @@ exports[`babel plugin should work in class components 1`] = `
 "import React, { Component } from 'react';
 import { di } from 'react-magnetic-di';
 import Modal from 'modal';
-export class MyComponent extends Component {
+
+class MyComponent extends Component {
   render() {
-    var [_Modal] = di([Modal]);
+    var [_Modal] = di([Modal], MyComponent);
     return __jsx(_Modal, null);
   }
 
@@ -54,20 +50,43 @@ exports[`babel plugin should work in functional components 1`] = `
 "import React from 'react';
 import { di } from 'react-magnetic-di';
 import Modal from 'modal';
-export const MyComponent = () => {
-  var [_Modal] = di([Modal]);
+
+const MyComponent = () => {
+  var [_Modal] = di([Modal], MyComponent);
   return __jsx(_Modal, null);
 };"
 `;
 
-exports[`babel plugin should work in functional components hoisted 1`] = `
+exports[`babel plugin should work in functional components declaration 1`] = `
 "import React from 'react';
 import { di, mock } from 'react-magnetic-di';
 import Modal from 'modal';
-export function MyComponent() {
-  var [_Modal] = di([Modal]);
+
+function MyComponent() {
+  var [_Modal] = di([Modal], MyComponent);
   return __jsx(_Modal, null);
 }"
+`;
+
+exports[`babel plugin should work in functional components expression 1`] = `
+"import React from 'react';
+import { di, mock } from 'react-magnetic-di';
+import Modal from 'modal';
+
+const MyComponent = function () {
+  var [_Modal] = di([Modal], MyComponent);
+  return __jsx(_Modal, null);
+};"
+`;
+
+exports[`babel plugin should work in wrapped functional components 1`] = `
+"import React, { forwardRef } from 'react';
+import { di, mock } from 'react-magnetic-di';
+import Modal from 'modal';
+const MyComponent = forwardRef(() => {
+  var [_Modal] = di([Modal], null);
+  return __jsx(_Modal, null);
+});"
 `;
 
 exports[`babel plugin should work with locally defined dependencies 1`] = `
@@ -76,8 +95,8 @@ import { di } from 'react-magnetic-di';
 
 const useModalStatus = () => true;
 
-export const MyComponent2 = () => {
-  var [_useModalStatus] = di([useModalStatus]);
+const MyComponent2 = () => {
+  var [_useModalStatus] = di([useModalStatus], MyComponent2);
 
   const status = _useModalStatus();
 
@@ -92,8 +111,8 @@ import Modal from 'modal';
 
 const useModalStatus = () => true;
 
-export function MyComponent() {
-  var [_Modal, _useModalStatus] = di([Modal, useModalStatus]);
+function MyComponent() {
+  var [_Modal, _useModalStatus] = di([Modal, useModalStatus], MyComponent);
 
   const isOpen = _useModalStatus();
 
@@ -102,7 +121,7 @@ export function MyComponent() {
 
 class MyComponent2 extends Component {
   render() {
-    var [_Modal2] = di([Modal]);
+    var [_Modal2] = di([Modal], MyComponent2);
     return __jsx(_Modal2, null);
   }
 

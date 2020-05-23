@@ -7,6 +7,7 @@ const assert = {
     const { block } = ref.scope;
     if (
       !t.isFunctionDeclaration(block) &&
+      !t.isFunctionExpression(block) &&
       !t.isArrowFunctionExpression(block) &&
       !t.isClassMethod(block)
     ) {
@@ -27,6 +28,16 @@ const assert = {
       );
     }
   },
+};
+
+const getComponentDeclaration = (t, scope) => {
+  // function declarations
+  if (scope.parentBlock.declaration) return scope.parentBlock.declaration.id;
+  if (scope.getBlockParent().block.id) return scope.getBlockParent().block.id;
+  // variable declaration
+  if (scope.parentBlock.id) return scope.parentBlock.id;
+  // class declarations
+  if (scope.parentBlock.type.includes('Class')) return scope.parent.block.id;
 };
 
 module.exports = function (babel) {
@@ -75,7 +86,10 @@ module.exports = function (babel) {
           // now wrapped in an array
           ref.scope.push({
             id: t.arrayPattern(dependencyIdentifiers),
-            init: t.callExpression(ref.node, [t.arrayExpression(args)]),
+            init: t.callExpression(ref.node, [
+              t.arrayExpression(args),
+              getComponentDeclaration(t, ref.scope) || t.nullLiteral(),
+            ]),
           });
 
           args.forEach((argIdentifier) => {

@@ -126,7 +126,21 @@ storiesOf('Modal content', module).add('with text', () => (
 ));
 ```
 
-In the example above we replace all `Modal` and `useQuery` dependencies across all components in the tree with the custom versions.
+In the example above we replace all `Modal` and `useQuery` dependencies across all components in the tree with the custom versions. If you want to replace dependencies **only** for a specific component (or set of components) you can use the `target` prop:
+
+```jsx
+// story.js
+storiesOf('Modal content', module).add('with text', () => (
+  <DiProvider target={[MyComponent, MyOtherComponent]} use={[ModalOpen]}>
+    <DiProvider target={MyComponent} use={[useQuery]}>
+      <MyComponent />
+      <MyOtherComponent>
+    </DiProvider>
+  </DiProvider>
+));
+```
+
+In the example above `MyComponent` will have both `ModalOpen` and `useQuery` replaced while `MyOtherComponent` only `ModalOpen`. Be aware that `target` needs an actual component declaration to work, so will not work in cases where the component is fully anonymous (eg: `export default () => ...` or `forwardRef(() => ...)`).
 
 ### Configuration Options
 
@@ -142,10 +156,6 @@ By default dependency injection is enabled on `development` and `test` environme
     ['react-magnetic-di/babel', { forceEnable: true }],
   ],
 ```
-
-## FAQ
-
-- Can I replace only one instance for one component? Currently no, but it could be possible.
 
 ## Contributing
 
