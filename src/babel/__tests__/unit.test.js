@@ -2,16 +2,6 @@
 import { transform } from '@babel/core';
 import plugin from '../index';
 
-expect.addSnapshotSerializer({
-  test(value) {
-    return typeof value == 'string' && value.includes('[0m');
-  },
-  print(value, serialize, indent) {
-    const [cleanError] = value.replace(/(\/[\w.-]+){2,}:/, '').split('\n');
-    return indent(serialize(cleanError));
-  },
-});
-
 const babel = (code, { options, env } = {}) =>
   transform(code, {
     filename: 'noop.js',
@@ -31,7 +21,7 @@ describe('babel plugin', () => {
       import { di } from 'react-magnetic-di';
       import Modal from 'modal';
 
-      export class MyComponent extends Component {
+      class MyComponent extends Component {
         render() {
           di(Modal);
           return <Modal />;
@@ -47,7 +37,7 @@ describe('babel plugin', () => {
       import { di } from 'react-magnetic-di';
       import Modal from 'modal';
       
-      export const MyComponent = () => {
+      const MyComponent = () => {
         di(Modal);
         return <Modal />;
       };
@@ -55,16 +45,44 @@ describe('babel plugin', () => {
     expect(babel(input)).toMatchSnapshot();
   });
 
-  it('should work in functional components hoisted', () => {
+  it('should work in functional components declaration', () => {
     const input = `
       import React from 'react';
       import { di, mock } from 'react-magnetic-di';
       import Modal from 'modal';
       
-      export function MyComponent() {
+      function MyComponent() {
         di(Modal);
         return <Modal />;
       }
+    `;
+    expect(babel(input)).toMatchSnapshot();
+  });
+
+  it('should work in functional components expression', () => {
+    const input = `
+      import React from 'react';
+      import { di, mock } from 'react-magnetic-di';
+      import Modal from 'modal';
+      
+      const MyComponent = function () {
+        di(Modal);
+        return <Modal />;
+      }
+    `;
+    expect(babel(input)).toMatchSnapshot();
+  });
+
+  it('should work in wrapped functional components', () => {
+    const input = `
+      import React, { forwardRef } from 'react';
+      import { di, mock } from 'react-magnetic-di';
+      import Modal from 'modal';
+      
+      const MyComponent = forwardRef(() => {
+        di(Modal);
+        return <Modal />;
+      });
     `;
     expect(babel(input)).toMatchSnapshot();
   });
@@ -76,7 +94,7 @@ describe('babel plugin', () => {
       
       const useModalStatus = () => true;
       
-      export const MyComponent2 = () => {
+      const MyComponent2 = () => {
         di(useModalStatus);
         const status = useModalStatus();
         return status;
@@ -93,7 +111,7 @@ describe('babel plugin', () => {
 
       const useModalStatus = () => true;
 
-      export function MyComponent() {
+      function MyComponent() {
         di(Modal, useModalStatus);
         const isOpen = useModalStatus();
         return isOpen && <Modal />;
@@ -115,7 +133,7 @@ describe('babel plugin', () => {
       import { di } from 'react-magnetic-di';
       import Modal from 'modal';
 
-      export function MyComponent() {
+      function MyComponent() {
         di(Modal);
         return <Modal />;
       }
@@ -129,7 +147,7 @@ describe('babel plugin', () => {
       import { di } from 'react-magnetic-di';
       import Modal from 'modal';
 
-      export function MyComponent() {
+      function MyComponent() {
         di(Modal);
         return <Modal />;
       }
@@ -145,12 +163,14 @@ describe('babel plugin', () => {
       import { di } from 'react-magnetic-di';
       import Modal from 'modal';
 
-      export function MyComponent() {
+      function MyComponent() {
         di();
         return <Modal />;
       }
     `;
-    expect(() => babel(input)).toThrowErrorMatchingSnapshot();
+    expect(() => babel(input)).toThrow(
+      'Invalid di(...) arguments. Must be called with at least one argument.'
+    );
   });
 
   it('should error if all arguments are wrapped', () => {
@@ -159,12 +179,14 @@ describe('babel plugin', () => {
       import { di } from 'react-magnetic-di';
       import Modal from 'modal';
 
-      export function MyComponent() {
+      function MyComponent() {
         di([Modal]);
         return <Modal />;
       }
     `;
-    expect(() => babel(input)).toThrowErrorMatchingSnapshot();
+    expect(() => babel(input)).toThrow(
+      'Invalid di(...) arguments. Must be called with plain identifiers.'
+    );
   });
 
   it('should error if all arguments are not identifiers', () => {
@@ -173,12 +195,14 @@ describe('babel plugin', () => {
       import { di } from 'react-magnetic-di';
       import Modal from 'modal';
 
-      export function MyComponent() {
+      function MyComponent() {
         di(Modal.Bla);
         return <Modal.Bla />;
       }
     `;
-    expect(() => babel(input)).toThrowErrorMatchingSnapshot();
+    expect(() => babel(input)).toThrow(
+      'Invalid di(...) arguments. Must be called with plain identifiers.'
+    );
   });
 
   it('should error if used outside a function or a method', () => {
@@ -188,11 +212,13 @@ describe('babel plugin', () => {
       import Modal from 'modal';
 
       di(Modal);
-      export function MyComponent() {
+      function MyComponent() {
         return <Modal />;
       }
     `;
-    expect(() => babel(input)).toThrowErrorMatchingSnapshot();
+    expect(() => babel(input)).toThrow(
+      'Invalid di(...) call. Must be inside a render function of a component.'
+    );
   });
 
   it('should not error if not a call expression', () => {
@@ -203,7 +229,7 @@ describe('babel plugin', () => {
 
       const ModalMock = di.mock(Modal);
 
-      export function MyComponent() {
+      function MyComponent() {
         return <ModalMock />;
       } 
     `;

@@ -1,5 +1,5 @@
 // @flow
-/* eslint-disable no-redeclare */
+/* eslint-disable no-redeclare, no-unused-vars */
 
 import type { Node, ComponentType } from 'react';
 
@@ -7,11 +7,15 @@ type Dependency = Function;
 
 declare export class DiProvider extends React$Component<
   {
-    use: Dependency[],
     children: Node,
+    target?: ComponentType<any> | ComponentType<any>[],
+    use: Dependency[],
   },
   {
-    getDependencies: (deps: Dependency[]) => Dependency[],
+    getDependencies: (
+      deps: Dependency[],
+      target: ComponentType<any> | ComponentType<any>[]
+    ) => Dependency[],
   }
 > {}
 
