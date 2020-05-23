@@ -12,16 +12,16 @@ expect.addSnapshotSerializer({
   },
 });
 
-const babel = (code, esm = true, pluginOptions = {}) =>
+const babel = (code, { options, env } = {}) =>
   transform(code, {
     filename: 'noop.js',
     presets: [['@babel/preset-react', { development: false, pragma: '__jsx' }]],
-    plugins: [[plugin, pluginOptions]],
+    plugins: [[plugin, options]],
     babelrc: false,
     configFile: false,
     sourceType: 'module',
-    // compact: true,
-    caller: { name: 'tests', supportsStaticESM: esm },
+    caller: { name: 'tests', supportsStaticESM: true },
+    envName: env,
   }).code;
 
 describe('babel plugin', () => {
@@ -107,6 +107,36 @@ describe('babel plugin', () => {
       };
     `;
     expect(babel(input)).toMatchSnapshot();
+  });
+
+  it('should strip injection if not enabled environment', () => {
+    const input = `
+      import React, { Component } from 'react';
+      import { di } from 'react-magnetic-di';
+      import Modal from 'modal';
+
+      export function MyComponent() {
+        di(Modal);
+        return <Modal />;
+      }
+    `;
+    expect(babel(input, { env: 'production' })).toMatchSnapshot();
+  });
+
+  it('should do injection if force enabled', () => {
+    const input = `
+      import React, { Component } from 'react';
+      import { di } from 'react-magnetic-di';
+      import Modal from 'modal';
+
+      export function MyComponent() {
+        di(Modal);
+        return <Modal />;
+      }
+    `;
+    expect(
+      babel(input, { options: { forceEnable: true }, env: 'production' })
+    ).toMatchSnapshot();
   });
 
   it('should error if used without dependencies', () => {
