@@ -1,4 +1,7 @@
-# react-magnetic-di
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/84136/83958267-1c8f7f00-a8b3-11ea-9725-1d3530af5f8d.png" alt="react-magnetic-di logo" height="150" />
+</p>
+<h1 align="center">react-magnetic-di</h1>
 
 [![npm](https://img.shields.io/npm/v/react-magnetic-di.svg)](https://www.npmjs.com/package/react-magnetic-di)
 [![npm bundle size (minified + gzip)](https://img.shields.io/bundlephobia/minzip/react-magnetic-di.svg)](https://bundlephobia.com/result?p=react-magnetic-di)
@@ -8,20 +11,20 @@
 A new take for dependency injection in React for your tests, storybooks and even experiments in production.
 
 - Close-to-zero performance overhead on dev/testing
-- Compiles to nothing on production (unless explicitly enabled)
+- **Zero** performance overhead on production (code gets stripped unless told otherwise)
 - Works with any kind of functions/classes (not only components) and in both class and functional components
-- Replaces dependencies anywhere deep in the React tree
+- Replaces dependencies at any depth of the React tree
 - Allows selective injection
-- Enforces separation of concerns
-- Just uses Context, it does not mess up with React internals
+- Enforces separation of concerns, keeps your component API clean
+- Just uses Context, it does not mess up with React internals or require
 
 ## Philosophy
 
 Dependency injection and component injection for testing purposes is not a new topic. Indeed, the ability to provide a custom implementation of a component/hook while testing or writing storybooks and examples it is extremely valuable.
 
-A common pattern to solve this problem is injecting those "dependencies" in the component via props or using mocking libraries at import/require level. However those approaches have some of downsides, like leaking internal implementation details, being quite fragile or introducing additional complexity when typing.
+A common pattern to solve this problem is injecting those "dependencies" via props or using mocking libraries at import/require level. Those approaches however have some of downsides, like leaking internal implementation details into the component's public API, being quite fragile or introducing additional typing complexity.
 
-`react-magnetic-di` takes inspiration from decorators, and with a touch of Babel magic and React Context allows you to optionally override such dependencies, with nearly-zero performance overhead while developing/testing (it's basically a function call and a map lookup) and it is fully removed by default on production builds.
+`react-magnetic-di` takes inspiration from decorators, and with a touch of Babel magic and React Context allows you to optionally override such dependencies, with nearly-zero performance overhead while developing/testing (it's basically a function call and a map lookup) and it is fully removed (by default) on production builds.
 
 ## Usage
 
