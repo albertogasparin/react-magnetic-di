@@ -3,7 +3,6 @@
 [![npm](https://img.shields.io/npm/v/react-magnetic-di.svg)](https://www.npmjs.com/package/react-magnetic-di)
 [![npm bundle size (minified + gzip)](https://img.shields.io/bundlephobia/minzip/react-magnetic-di.svg)](https://bundlephobia.com/result?p=react-magnetic-di)
 [![License](https://img.shields.io/:license-MIT-blue.svg)](http://albertogasparin.mit-license.org)
-[![CircleCI](https://circleci.com/gh/albertogasparin/react-magnetic-di.svg?style=shield&circle-token=cc7bd7e07aae2bb3fcde0a2bfb148b5c2208af84)](https://circleci.com/gh/albertogasparin/react-magnetic-di)
 [![codecov](https://codecov.io/gh/albertogasparin/react-magnetic-di/branch/master/graph/badge.svg)](https://codecov.io/gh/albertogasparin/react-magnetic-di)
 
 A new take for dependency injection in React for your tests, storybooks and even experiments in production.
