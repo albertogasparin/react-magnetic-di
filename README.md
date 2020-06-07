@@ -2,11 +2,13 @@
   <img src="https://user-images.githubusercontent.com/84136/83958267-1c8f7f00-a8b3-11ea-9725-1d3530af5f8d.png" alt="react-magnetic-di logo" height="150" />
 </p>
 <h1 align="center">react-magnetic-di</h1>
-
-[![npm](https://img.shields.io/npm/v/react-magnetic-di.svg)](https://www.npmjs.com/package/react-magnetic-di)
-[![npm bundle size (minified + gzip)](https://img.shields.io/bundlephobia/minzip/react-magnetic-di.svg)](https://bundlephobia.com/result?p=react-magnetic-di)
-[![License](https://img.shields.io/:license-MIT-blue.svg)](http://albertogasparin.mit-license.org)
-[![codecov](https://codecov.io/gh/albertogasparin/react-magnetic-di/branch/master/graph/badge.svg)](https://codecov.io/gh/albertogasparin/react-magnetic-di)
+<p align="center">
+  <a href="https://www.npmjs.com/package/react-magnetic-di"><img src="https://img.shields.io/npm/v/react-magnetic-di.svg"></a>
+  <a href="https://bundlephobia.com/result?p=react-magnetic-di"><img src="https://img.shields.io/bundlephobia/minzip/react-magnetic-di.svg" /></a>
+  <a href="https://codecov.io/gh/albertogasparin/react-magnetic-di"><img src="https://codecov.io/gh/albertogasparin/react-magnetic-di/branch/master/graph/badge.svg" />
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg"></a>
+  <!--a href="CONTRIBUTING"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" /></a-->
+</p>
 
 A new take for dependency injection in React for your tests, storybooks and even experiments in production.
 
