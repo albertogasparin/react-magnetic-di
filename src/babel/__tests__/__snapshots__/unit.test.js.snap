@@ -83,7 +83,7 @@ exports[`babel plugin should work in wrapped functional components 1`] = `
 "import React, { forwardRef } from 'react';
 import { di, mock } from 'react-magnetic-di';
 import Modal from 'modal';
-const MyComponent = forwardRef(() => {
+const MyComponent = /*#__PURE__*/forwardRef(() => {
   var [_Modal] = di([Modal], null);
   return __jsx(_Modal, null);
 });"
