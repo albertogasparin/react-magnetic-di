@@ -22,7 +22,7 @@ Dependency injection and component injection for testing purposes is not a new t
 
 A common pattern to solve this problem is injecting those "dependencies" in the component via props or using mocking libraries at import/require level. However those approaches have some of downsides, like leaking internal implementation details, being quite fragile or introducing additional complexity when typing.
 
-`react-magnetic-di` takes inspiration from decorators, and with a touch of Babel magic and React Context allows you to optionally override such dependencies, with nearly-zero performane overhead while developing/testing (it's basically a function call and a map lookup) and it is fully removed by default on production builds.
+`react-magnetic-di` takes inspiration from decorators, and with a touch of Babel magic and React Context allows you to optionally override such dependencies, with nearly-zero performance overhead while developing/testing (it's basically a function call and a map lookup) and it is fully removed by default on production builds.
 
 ## Usage
 
