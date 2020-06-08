@@ -7,7 +7,7 @@ export function useTheme() {
 }
 
 export function Input() {
-  di(useTheme, Input);
+  di(useTheme);
 
   const [style] = useTheme();
   return (

@@ -169,7 +169,7 @@ describe('babel plugin', () => {
       }
     `;
     expect(() => babel(input)).toThrow(
-      'Invalid di(...) arguments. Must be called with at least one argument.'
+      'Invalid di(...) arguments: must be called with at least one argument.'
     );
   });
 
@@ -185,7 +185,7 @@ describe('babel plugin', () => {
       }
     `;
     expect(() => babel(input)).toThrow(
-      'Invalid di(...) arguments. Must be called with plain identifiers.'
+      'Invalid di(...) arguments: must be called with plain identifiers.'
     );
   });
 
@@ -201,7 +201,7 @@ describe('babel plugin', () => {
       }
     `;
     expect(() => babel(input)).toThrow(
-      'Invalid di(...) arguments. Must be called with plain identifiers.'
+      'Invalid di(...) arguments: must be called with plain identifiers.'
     );
   });
 
@@ -217,7 +217,7 @@ describe('babel plugin', () => {
       }
     `;
     expect(() => babel(input)).toThrow(
-      'Invalid di(...) call. Must be inside a render function of a component.'
+      'Invalid di(...) call: must be inside a render function of a component.'
     );
   });
 
@@ -234,5 +234,20 @@ describe('babel plugin', () => {
       } 
     `;
     expect(babel(input)).toMatchSnapshot();
+  });
+
+  it('should error if di component itself', () => {
+    const input = `
+      import React from 'react';
+      import { di } from 'react-magnetic-di';
+
+      function MyComponent() {
+        di(MyComponent);
+        return <div />;
+      }w
+    `;
+    expect(() => babel(input)).toThrow(
+      'Invalid di(...) call: cannot inject self.'
+    );
   });
 });

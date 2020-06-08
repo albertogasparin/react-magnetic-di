@@ -1,0 +1,4 @@
+{
+  "main": "../lib/cjs/babel/index.js",
+  "module": "../lib/esm/babel/index.js"
+}
