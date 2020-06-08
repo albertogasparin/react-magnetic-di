@@ -16,5 +16,7 @@ declare module 'react-magnetic-di' {
   function mock<T extends Dependency>(original: T, mock: T): T;
 
   function di(...dependencies: Dependency[]): void;
-  di.mock = mock;
+  class di {
+    static mock: typeof mock;
+  }
 }
