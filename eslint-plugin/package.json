@@ -1,0 +1,4 @@
+{
+  "main": "../lib/cjs/eslint/index.js",
+  "module": "../lib/esm/eslint/index.js"
+}

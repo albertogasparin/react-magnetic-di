@@ -71,7 +71,9 @@ module.exports = {
   // ],
 
   // A map from regular expressions to module names that allow to stub out resources with a single module
-  // moduleNameMapper: {},
+  moduleNameMapper: {
+    '^react-magnetic-di$': '<rootDir>/src',
+  },
 
   // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader
   // modulePathIgnorePatterns: [],
@@ -133,7 +135,7 @@ module.exports = {
   // testLocationInResults: false,
 
   // The glob patterns Jest uses to detect test files
-  testMatch: ['<rootDir>/src/**/__tests__/?(*.)+(spec|test).js?(x)'],
+  testMatch: ['<rootDir>/(src|examples)/**/__tests__/?(*.)+(spec|test).js?(x)'],
 
   // An array of regexp pattern strings that are matched against all test paths, matched tests are skipped
   // testPathIgnorePatterns: [

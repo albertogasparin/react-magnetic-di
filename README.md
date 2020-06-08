@@ -44,7 +44,7 @@ Edit your Babel config file (`.babelrc` / `babel.config.js` / ...) and add:
   // ... other stuff like presets
   plugins: [
     // ... other plugins
-    'react-magnetic-di/babel',
+    'react-magnetic-di/babel-plugin',
   ],
 ```
 
@@ -102,29 +102,30 @@ import { useQuery } from 'react-apollo-hooks';
 
 // mock() accepts the original implementation as first argument
 // and the replacement implementation as second
-const ModalOpen = di.mock(Modal, () => <div />);
+// (you can also import { mock } if don't like di prefix)
+const ModalOpenMock = di.mock(Modal, () => <div />);
 const useQueryMock = di.mock(useQuery, () => ({ data: null }));
 
 // test-enzyme.js
 it('should render with enzyme', () => {
   const container = mount(<MyComponent />, {
     wrappingComponent: DiProvider,
-    wrappingComponentProps: { use: [ModalOpen, useQuery] },
+    wrappingComponentProps: { use: [ModalOpenMock, useQueryMock] },
   });
-  expect(container).toMatchSnapshot();
+  expect(container.html()).toMatchSnapshot();
 });
 
 // test-testing-library.js
 it('should render with react-testing-library', () => {
   const { container } = render(<MyComponent />, {
-    wrapper: (p) => <DiProvider use={[ModalOpen, useQuery]} {...p} />,
+    wrapper: (p) => <DiProvider use={[ModalOpenMock, useQueryMock]} {...p} />,
   });
   expect(container).toMatchSnapshot();
 });
 
 // story.js
 storiesOf('Modal content', module).add('with text', () => (
-  <DiProvider use={[ModalOpen, useQuery]}>
+  <DiProvider use={[ModalOpenMock, useQueryMock]}>
     <MyComponent />
   </DiProvider>
 ));
@@ -157,9 +158,14 @@ By default dependency injection is enabled on `development` and `test` environme
   // ... other stuff like presets
   plugins: [
     // ... other plugins
-    ['react-magnetic-di/babel', { forceEnable: true }],
+    ['react-magnetic-di/babel-plugin', { forceEnable: true }],
   ],
 ```
+
+## Current limitations
+
+- Does not support Enzyme shallow ([due to shallow not fully supporting context](https://github.com/enzymejs/enzyme/issues/2176)). If you wish to shallow anyway, you could mock `di` and manually return the array of mocked dependencies, but it is not recommended.
+- Does not support dynamic `use` and `target` props
 
 ## Contributing
 
