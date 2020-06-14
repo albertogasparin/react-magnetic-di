@@ -1,5 +1,5 @@
 import { RuleTester } from 'eslint';
-import rule from '../order';
+import rule from '../no-duplicate';
 
 RuleTester.setDefaultConfig({
   parserOptions: {
@@ -9,7 +9,7 @@ RuleTester.setDefaultConfig({
 });
 
 var ruleTester = new RuleTester();
-ruleTester.run('order', rule, {
+ruleTester.run('no-duplicate', rule, {
   valid: [
     `
       import { useState } from 'react';
@@ -21,14 +21,14 @@ ruleTester.run('order', rule, {
       }
     `,
     `
-      import { useState, useContext } from 'react';
+      import { useContext } from 'react';
       import { di } from 'react-magnetic-di';
+      import { useContext as useMyContext } from './my-stuff';
 
       function MyComponent() {
-        di(useState);
-        // comment
-        di(useContext);
-        return useState(false);
+        di(useContext, useMyContext);
+        useMyContext();
+        return useContext();
       }
     `,
   ],
@@ -38,17 +38,34 @@ ruleTester.run('order', rule, {
       code: `
         import { useState } from 'react';
         import { di } from 'react-magnetic-di';
-  
+
         function MyComponent() {
-          let result;
+          di(useState, useState);
+          return useState(false);
+        }
+      `,
+      errors: [
+        {
+          messageId: 'duplicatedInjectable',
+          type: 'Identifier',
+        },
+      ],
+    },
+    {
+      code: `
+        import { useState, useContext } from 'react';
+        import { di } from 'react-magnetic-di';
+
+        function MyComponent() {
+          di(useContext, useState);
           di(useState);
           return useState(false);
         }
       `,
       errors: [
         {
-          messageId: 'wrongOrder',
-          type: 'ExpressionStatement',
+          messageId: 'duplicatedInjectable',
+          type: 'Identifier',
         },
       ],
     },
