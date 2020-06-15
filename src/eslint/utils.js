@@ -27,16 +27,24 @@ const getDiStatements = (node, diIdentifier) =>
     []
   );
 
-const getParentDiStatements = (node, diIdentifier) => {
+const getParentDiBlock = (node, diIdentifier) => {
   // eslint-disable-next-line no-cond-assign
   while ((node = node.parent)) {
     if (node.type === 'BlockStatement') {
-      const statements = getDiStatements(node, diIdentifier);
-      if (statements.length) return statements;
+      if (getDiStatements(node, diIdentifier).length) return node;
     }
   }
+  return null;
+};
+
+const getParentDiStatements = (node, diIdentifier) => {
+  const parentBlock = getParentDiBlock(node, diIdentifier);
+  if (parentBlock) return getDiStatements(parentBlock, diIdentifier);
   return [];
 };
+
+const getDiVars = (statements) =>
+  statements.reduce((acc, s) => acc.concat(s.expression.arguments), []);
 
 module.exports = {
   isDiStatement,
@@ -44,5 +52,7 @@ module.exports = {
   isComponentName,
   getDiIdentifier,
   getDiStatements,
+  getParentDiBlock,
   getParentDiStatements,
+  getDiVars,
 };

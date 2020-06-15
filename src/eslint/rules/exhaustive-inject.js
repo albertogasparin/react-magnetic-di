@@ -2,6 +2,7 @@ const {
   getDiIdentifier,
   getDiStatements,
   getParentDiStatements,
+  getDiVars,
   isHookName,
   isComponentName,
 } = require('../utils');
@@ -32,13 +33,17 @@ module.exports = {
     messages: {
       missingInject:
         "di(...) has a missing dependency: '{{name}}'. " +
-        'Either include it or remove the dependency injection',
+        'Either include it or remove the dependency injection call',
     },
   },
   create: function (context) {
     let diIdentifier;
     let reactVars;
     const userOptions = Object.assign({ ignore: [] }, context.options[0]);
+
+    const isInjected = (vars, n) => vars.some((v) => v.name === n.name);
+    const isReactIgnored = (n) => reactVars.some((v) => v.name === n.name);
+    const isOptionsIgnored = (n) => userOptions.ignore.includes(n.name);
 
     const report = (node, diStatement) =>
       context.report({
@@ -71,17 +76,16 @@ module.exports = {
         // ignore locations where di was not explicitly set
         if (!diStatements.length) return;
 
-        const diVars = diStatements.reduce(
-          (acc, s) => acc.concat(s.expression.arguments),
-          []
-        );
+        const diVars = getDiVars(diStatements);
 
         throughVars.forEach((varNode) => {
           const isInjectable = isHookName(varNode) || isComponentName(varNode);
-          const isInjected = diVars.some((v) => v.name === varNode.name);
-          const isReactIgnored = reactVars.some((v) => v.name === varNode.name);
-          const isOptionsIgnored = userOptions.ignore.includes(varNode.name);
-          if (!isInjectable || isInjected || isReactIgnored || isOptionsIgnored)
+          if (
+            !isInjectable ||
+            isInjected(diVars, varNode) ||
+            isReactIgnored(varNode) ||
+            isOptionsIgnored(varNode)
+          )
             return;
           report(varNode, diStatements[diStatements.length - 1]);
         });
@@ -95,11 +99,12 @@ module.exports = {
           case 'JSXIdentifier': {
             varNode = node.name;
             const isInjectable = isComponentName(varNode);
-            const isReactIgnored = reactVars.some(
-              (v) => v.name === varNode.name
-            );
-            const isOptionsIgnored = userOptions.ignore.includes(varNode.name);
-            if (!isInjectable || isReactIgnored || isOptionsIgnored) return;
+            if (
+              !isInjectable ||
+              isReactIgnored(varNode) ||
+              isOptionsIgnored(varNode)
+            )
+              return;
             break;
           }
           case 'JSXNamespacedName':
@@ -115,13 +120,8 @@ module.exports = {
         // ignore locations where di was not explicitly set
         if (!diStatements.length) return;
 
-        const diVars = diStatements.reduce(
-          (acc, s) => acc.concat(s.expression.arguments),
-          []
-        );
-
-        const isInjected = diVars.some((v) => v.name === varNode.name);
-        if (isInjected) return;
+        const diVars = getDiVars(diStatements);
+        if (isInjected(diVars, varNode)) return;
 
         report(varNode, diStatements[diStatements.length - 1]);
       },
