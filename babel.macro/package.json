@@ -1,4 +1,5 @@
 {
   "main": "../lib/cjs/babel/macro.js",
-  "module": "../lib/esm/babel/macro.js"
+  "module": "../lib/esm/babel/macro.js",
+  "types": "./types/index.d.ts"
 }
