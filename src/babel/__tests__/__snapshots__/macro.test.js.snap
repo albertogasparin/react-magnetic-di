@@ -1,0 +1,26 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`macro plugin should work in class components 1`] = `
+"import { di } from \\"react-magnetic-di\\";
+import React, { Component } from 'react';
+import Modal from 'modal';
+
+class MyComponent extends Component {
+  render() {
+    var [_Modal] = di([Modal], MyComponent);
+    return __jsx(_Modal, null);
+  }
+
+}"
+`;
+
+exports[`macro plugin should work with renamed default and functional components 1`] = `
+"import { di as injectable } from \\"react-magnetic-di\\";
+import React from 'react';
+import Modal from 'modal';
+
+const MyComponent = () => {
+  var [_Modal] = injectable([Modal], MyComponent);
+  return __jsx(_Modal, null);
+};"
+`;

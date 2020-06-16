@@ -1,50 +1,5 @@
-const PACKAGE_NAME = 'react-magnetic-di';
-const PACKAGE_FUNCTION = 'di';
-const ENABLED_ENVS = ['development', 'test'];
-
-const getComponentDeclaration = (t, scope) => {
-  // function declarations
-  if (scope.parentBlock.declaration) return scope.parentBlock.declaration.id;
-  if (scope.getBlockParent().block.id) return scope.getBlockParent().block.id;
-  // variable declaration
-  if (scope.parentBlock.id) return scope.parentBlock.id;
-  // class declarations
-  if (scope.parentBlock.type.includes('Class')) return scope.parent.block.id;
-};
-
-const assert = {
-  isValidBlock(t, ref) {
-    const { block } = ref.scope;
-    if (
-      !t.isFunctionDeclaration(block) &&
-      !t.isFunctionExpression(block) &&
-      !t.isArrowFunctionExpression(block) &&
-      !t.isClassMethod(block)
-    ) {
-      throw ref.buildCodeFrameError(
-        'Invalid di(...) call: must be inside a render function of a component. '
-      );
-    }
-  },
-  isValidCall(t, ref) {
-    if (!ref.container.arguments.length) {
-      throw ref.buildCodeFrameError(
-        'Invalid di(...) arguments: must be called with at least one argument. '
-      );
-    }
-    if (!ref.container.arguments.every((node) => t.isIdentifier(node))) {
-      throw ref.buildCodeFrameError(
-        'Invalid di(...) arguments: must be called with plain identifiers. '
-      );
-    }
-    const decl = getComponentDeclaration(t, ref.scope);
-    if (decl && ref.container.arguments.some((v) => v.name === decl.name)) {
-      throw ref.buildCodeFrameError(
-        'Invalid di(...) call: cannot inject self.'
-      );
-    }
-  },
-};
+const { ENABLED_ENVS, PACKAGE_NAME, PACKAGE_FUNCTION } = require('./constants');
+const processReference = require('./processor');
 
 module.exports = function (babel) {
   const { types: t } = babel;
@@ -72,45 +27,7 @@ module.exports = function (babel) {
         const isEnabled = isEnabledEnv || Boolean(opts.forceEnable);
 
         // for each of that location we apply a tranformation
-        references.forEach((ref) => {
-          assert.isValidBlock(t, ref);
-          assert.isValidCall(t, ref);
-
-          // from the arguments of the method we generate the list of dependency identifiers
-          const args = ref.container.arguments;
-          const dependencyIdentifiers = args.map((v) => t.identifier(v.name));
-          const statement = ref.getStatementParent();
-
-          // if should not be enabled, just remove the statement and exit
-          if (!isEnabled) {
-            statement.remove();
-            return;
-          }
-
-          // generating variable declarations with array destructuring
-          // assigning them the result of the method call, with arguments
-          // now wrapped in an array
-          ref.scope.push({
-            id: t.arrayPattern(dependencyIdentifiers),
-            init: t.callExpression(ref.node, [
-              t.arrayExpression(args),
-              getComponentDeclaration(t, ref.scope) || t.nullLiteral(),
-            ]),
-          });
-
-          args.forEach((argIdentifier) => {
-            // for each argument we get the dependency variable name
-            // then we rename it locally so we get a new unique identifier.
-            // Then we manually revert just the argument identifier name back,
-            // so it still points to the original dependency identifier name
-            const name = argIdentifier.name;
-            ref.scope.rename(name);
-            argIdentifier.name = name;
-          });
-
-          // remove the original statement
-          statement.remove();
-        });
+        references.forEach((ref) => processReference(t, ref, isEnabled));
       },
     },
   };
