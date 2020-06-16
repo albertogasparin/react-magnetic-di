@@ -1,5 +1,14 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`macro plugin should strip injection if not enabled environment 1`] = `
+"import React, { Component } from 'react';
+import Modal from 'modal';
+
+function MyComponent() {
+  return __jsx(Modal, null);
+}"
+`;
+
 exports[`macro plugin should work in class components 1`] = `
 "import { di } from \\"react-magnetic-di\\";
 import React, { Component } from 'react';

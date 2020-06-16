@@ -1,19 +1,22 @@
 const { createMacro } = require('babel-plugin-macros');
 
-const { ENABLED_ENVS, PACKAGE_NAME, PACKAGE_FUNCTION } = require('./constants');
+const { PACKAGE_NAME, PACKAGE_FUNCTION } = require('./constants');
 const processReference = require('./processor');
-const { createNamedImport } = require('./utils');
+const { createNamedImport, isEnabledEnv } = require('./utils');
 
 const diMacro = ({ references, babel, config = {} }) => {
   const { types: t } = babel;
-  const isEnabled =
-    ENABLED_ENVS.includes(process.env.NODE_ENV) || Boolean(config.forceEnable);
+  const isEnabled = isEnabledEnv() || Boolean(config.forceEnable);
 
   const defaultImport = references.default;
   if (!defaultImport || defaultImport.length === 0) return;
   // process all calls
   defaultImport.forEach((ref) => processReference(t, ref, isEnabled));
 
+  // if not enabled let import to be stripped
+  if (!isEnabled) return;
+
+  // add named import
   const methodIdentifier = defaultImport[0].node;
   const statement = createNamedImport(
     t,

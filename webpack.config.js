@@ -5,7 +5,7 @@ const { resolve, basename } = require('path');
 
 // This function generates configuration for files in the
 // ./src/examples/ folder
-const generateExampleEntries = function() {
+const generateExampleEntries = function () {
   const src = './examples';
 
   // Get all subdirectories in the ./src/apps,
@@ -20,7 +20,7 @@ const generateExampleEntries = function() {
   const exampleDirs = getDirectories(src);
 
   return exampleDirs.reduce((entry, dir) => {
-    entry['./' + basename(dir) + '/bundle'] = `${dir}/index.js`;
+    entry['./' + basename(dir) + '/bundle'] = `${dir}/index`;
     return entry;
   }, {});
 };
@@ -43,16 +43,29 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.js$/,
+        test: /\.(t|j)sx?$/,
         loader: 'babel-loader',
         options: {
-          presets: [['@babel/preset-env', { targets: { ie: '11' } }]],
+          presets: [['@babel/preset-env', { targets: { chrome: '60' } }]],
+          plugins: [
+            [
+              'module-resolver',
+              {
+                alias: {
+                  'react-magnetic-di/babel.macro': './src/babel/macro.js',
+                },
+              },
+            ],
+            './src/babel',
+            'macros',
+          ],
         },
       },
     ],
   },
 
   resolve: {
+    extensions: ['.ts', '.tsx', '.js', '.json'],
     alias: {
       'react-magnetic-di': resolve(__dirname, './src'),
     },

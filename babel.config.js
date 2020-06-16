@@ -6,7 +6,7 @@ module.exports = {
     '@babel/preset-react',
     '@babel/preset-flow',
   ],
-  plugins: ['@babel/plugin-proposal-class-properties', './src/babel'],
+  plugins: ['@babel/plugin-proposal-class-properties'],
   env: {
     test: {
       presets: ['@babel/preset-env'],

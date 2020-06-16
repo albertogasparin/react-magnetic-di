@@ -1,9 +1,9 @@
-const { ENABLED_ENVS, PACKAGE_NAME, PACKAGE_FUNCTION } = require('./constants');
+const { PACKAGE_NAME, PACKAGE_FUNCTION } = require('./constants');
 const processReference = require('./processor');
+const { isEnabledEnv } = require('./utils');
 
 module.exports = function (babel) {
   const { types: t } = babel;
-  const isEnabledEnv = babel.env(ENABLED_ENVS);
 
   return {
     visitor: {
@@ -20,11 +20,13 @@ module.exports = function (babel) {
         // ensuring we affect on lications where it is called
         const methodIdentifier = importSpecifier.local.name;
         const binding = path.scope.getBinding(methodIdentifier);
+
+        if (!binding) return;
         const references = binding.referencePaths.filter((ref) =>
           t.isCallExpression(ref.container)
         );
 
-        const isEnabled = isEnabledEnv || Boolean(opts.forceEnable);
+        const isEnabled = isEnabledEnv() || Boolean(opts.forceEnable);
 
         // for each of that location we apply a tranformation
         references.forEach((ref) => processReference(t, ref, isEnabled));

@@ -48,4 +48,14 @@ const createNamedImport = (t, pkgName, pkgFn, localName) => {
   return statement;
 };
 
-module.exports = { getComponentDeclaration, assert, createNamedImport };
+const isEnabledEnv = () => {
+  const env = process.env.BABEL_ENV || process.env.NODE_ENV || 'development';
+  return ['development', 'test'].includes(env);
+};
+
+module.exports = {
+  getComponentDeclaration,
+  assert,
+  createNamedImport,
+  isEnabledEnv,
+};
