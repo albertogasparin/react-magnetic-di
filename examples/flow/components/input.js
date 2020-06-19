@@ -6,7 +6,9 @@ export function useTheme() {
   return useState<any>({ color: '#777' });
 }
 
-export function Input() {
+export type InputProps = {| value?: string |};
+
+export function Input(props: InputProps) {
   di(useTheme);
 
   const [style] = useTheme();
@@ -14,6 +16,7 @@ export function Input() {
     <input
       style={{ border: `1px solid ${style.color}` }}
       placeholder="Type..."
+      {...props}
     />
   );
 }

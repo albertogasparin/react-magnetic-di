@@ -1,28 +1,28 @@
 // @flow
 /* eslint-disable no-redeclare, no-unused-vars */
 
-import type { Node, ComponentType } from 'react';
+import type { Node, AbstractComponent } from 'react';
 
 type Dependency = Function;
 
 declare export class DiProvider extends React$Component<
   {
     children: Node,
-    target?: ComponentType<any> | ComponentType<any>[],
+    target?: AbstractComponent<any> | AbstractComponent<any>[],
     use: Dependency[],
   },
   {
     getDependencies: (
       deps: Dependency[],
-      target: ComponentType<any> | ComponentType<any>[]
+      target: AbstractComponent<any> | AbstractComponent<any>[]
     ) => Dependency[],
   }
 > {}
 
-declare export function withDi(
-  component: ComponentType<any>,
+declare export function withDi<Props>(
+  component: AbstractComponent<Props>,
   dependencies: Dependency[]
-): void;
+): AbstractComponent<Props>;
 
 declare export function mock<T: Dependency>(original: T, mock: T): T;
 

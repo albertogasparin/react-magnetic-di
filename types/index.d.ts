@@ -8,10 +8,10 @@ declare module 'react-magnetic-di' {
     { getDependencies: (deps: Dependency[]) => Dependency[] }
   > {}
 
-  function withDi(
-    component: ComponentType<any>,
+  function withDi<Props>(
+    component: ComponentType<Props>,
     dependencies: Dependency[]
-  ): void;
+  ): ComponentType<Props>;
 
   function mock<T extends Dependency>(original: T, mock: T): T;
 

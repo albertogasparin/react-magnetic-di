@@ -1,4 +1,4 @@
-import React, { useContext, useMemo } from 'react';
+import React, { useContext, useMemo, forwardRef } from 'react';
 import PropTypes from 'prop-types';
 
 import { KEY } from './constants';
@@ -41,11 +41,11 @@ DiProvider.propTypes = {
 };
 
 export function withDi(Comp, deps, target) {
-  const WrappedComponent = () => (
+  const WrappedComponent = forwardRef((props, ref) => (
     <DiProvider use={deps} target={target}>
-      <Comp />
+      <Comp ref={ref} {...props} />
     </DiProvider>
-  );
+  ));
   WrappedComponent.displayName = `withDi(${getDisplayName(Comp)})`;
   return WrappedComponent;
 }
