@@ -36,7 +36,7 @@ ruleTester.run('exhaustive-inject', rule, {
       }
     `,
     {
-      // it should ignore components specified in options
+      // it should ignore components specified in config options
       code: `
         import { Suspense, useState, useMemo } from 'react';
         import { di } from 'react-magnetic-di';

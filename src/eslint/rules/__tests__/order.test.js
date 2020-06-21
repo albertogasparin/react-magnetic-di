@@ -11,6 +11,7 @@ RuleTester.setDefaultConfig({
 var ruleTester = new RuleTester();
 ruleTester.run('order', rule, {
   valid: [
+    // should pass if injection at the top
     `
       import { useState } from 'react';
       import { di } from 'react-magnetic-di';
@@ -20,6 +21,7 @@ ruleTester.run('order', rule, {
         return useState(false);
       }
     `,
+    // should pass if multiple injections sparated by comments
     `
       import { useState, useContext } from 'react';
       import { di } from 'react-magnetic-di';
@@ -35,6 +37,7 @@ ruleTester.run('order', rule, {
 
   invalid: [
     {
+      // should fail if a declaration is before injection
       code: `
         import { useState } from 'react';
         import { di } from 'react-magnetic-di';

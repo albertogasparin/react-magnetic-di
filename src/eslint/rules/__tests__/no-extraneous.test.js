@@ -12,7 +12,7 @@ RuleTester.setDefaultConfig({
 var ruleTester = new RuleTester();
 ruleTester.run('no-extraneous', rule, {
   valid: [
-    // it should ignore components/hooks with more than one occurrence
+    // it should pass with components/hooks with more than one occurrence
     `
       import { Fragment } from 'react';
       import { di } from 'react-magnetic-di';
@@ -28,7 +28,7 @@ ruleTester.run('no-extraneous', rule, {
 
   invalid: [
     {
-      // it should inject imported hooks
+      // it should fail if hook dependency is not used
       code: `
         import { useState } from 'react';
         import { di } from 'react-magnetic-di';
@@ -36,7 +36,8 @@ ruleTester.run('no-extraneous', rule, {
   
         function MyComponent() {
           di(useState, useQuery);
-          return useQuery();
+          useState();
+          return <div />;
         }
       `,
       errors: [
@@ -47,16 +48,16 @@ ruleTester.run('no-extraneous', rule, {
       ],
     },
     {
-      // it should inject imported React components
+      // it should fail if component dependency is not used
       code: `
         import { Suspense, useState } from 'react';
         import { di } from 'react-magnetic-di';
         import { Query } from 'react-apollo';
   
         function MyComponent() {
-          di(Suspense, useState, Query);
+          di(useState, Query);
           useState();
-          return <Suspense />;
+          return <div />;
         }
       `,
       errors: [
