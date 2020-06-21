@@ -15,7 +15,7 @@ const getDiIdentifier = (node) => {
   const importSpecifier = node.specifiers.find(
     (s) => s.imported && s.imported.name === PACKAGE_FUNCTION
   );
-  if (importSource === PACKAGE_NAME && importSpecifier) {
+  if (importSource.startsWith(PACKAGE_NAME) && importSpecifier) {
     return importSpecifier.local;
   }
 };
