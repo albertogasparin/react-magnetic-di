@@ -21,3 +21,7 @@ declare module 'react-magnetic-di' {
     static mock: typeof mock;
   }
 }
+
+declare module 'react-magnetic-di/macro' {
+  export * from 'react-magnetic-di';
+}
