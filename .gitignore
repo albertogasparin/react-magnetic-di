@@ -1,8 +1,7 @@
 node_modules
-lib
-babel
-coverage
-yarn.lock   
+/lib
+/coverage
+yarn.lock
 
 # misc
 .vscode

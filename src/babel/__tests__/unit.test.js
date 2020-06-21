@@ -2,7 +2,7 @@
 import { transform } from '@babel/core';
 import plugin from '../index';
 
-const babel = (code, { options, env } = {}) =>
+const babel = (code, { options } = {}) =>
   transform(code, {
     filename: 'noop.js',
     presets: [['@babel/preset-react', { development: false, pragma: '__jsx' }]],
@@ -11,7 +11,6 @@ const babel = (code, { options, env } = {}) =>
     configFile: false,
     sourceType: 'module',
     caller: { name: 'tests', supportsStaticESM: true },
-    envName: env,
   }).code;
 
 describe('babel plugin', () => {
@@ -138,7 +137,9 @@ describe('babel plugin', () => {
         return <Modal />;
       }
     `;
-    expect(babel(input, { env: 'production' })).toMatchSnapshot();
+    process.env.BABEL_ENV = 'production';
+    expect(babel(input)).toMatchSnapshot();
+    process.env.BABEL_ENV = undefined;
   });
 
   it('should do injection if force enabled', () => {
@@ -152,9 +153,9 @@ describe('babel plugin', () => {
         return <Modal />;
       }
     `;
-    expect(
-      babel(input, { options: { forceEnable: true }, env: 'production' })
-    ).toMatchSnapshot();
+    process.env.BABEL_ENV = 'production';
+    expect(babel(input, { options: { forceEnable: true } })).toMatchSnapshot();
+    process.env.BABEL_ENV = undefined;
   });
 
   it('should error if used without dependencies', () => {

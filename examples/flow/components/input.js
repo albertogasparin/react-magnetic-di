@@ -6,7 +6,7 @@ export function useTheme() {
   return useState<any>({ color: '#777' });
 }
 
-export type InputProps = {| value?: string |};
+type InputProps = {| value?: string |};
 
 export function Input(props: InputProps) {
   di(useTheme);

@@ -8,10 +8,11 @@ declare module 'react-magnetic-di' {
     { getDependencies: (deps: Dependency[]) => Dependency[] }
   > {}
 
-  function withDi<Props>(
-    component: ComponentType<Props>,
-    dependencies: Dependency[]
-  ): ComponentType<Props>;
+  function withDi<T extends ComponentType<any>>(
+    component: T,
+    dependencies: Dependency[],
+    target?: ComponentType<any> | null
+  ): T;
 
   function mock<T extends Dependency>(original: T, mock: T): T;
 
@@ -19,4 +20,8 @@ declare module 'react-magnetic-di' {
   class di {
     static mock: typeof mock;
   }
+}
+
+declare module 'react-magnetic-di/macro' {
+  export * from 'react-magnetic-di';
 }

@@ -1,0 +1,34 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`macro plugin should strip injection if not enabled environment 1`] = `
+"import React, { Component } from 'react';
+import Modal from 'modal';
+
+function MyComponent() {
+  return __jsx(Modal, null);
+}"
+`;
+
+exports[`macro plugin should work in class components 1`] = `
+"import { di } from \\"react-magnetic-di\\";
+import React, { Component } from 'react';
+import Modal from 'modal';
+
+class MyComponent extends Component {
+  render() {
+    var [_Modal] = di([Modal], MyComponent);
+    return __jsx(_Modal, null);
+  }
+
+}"
+`;
+
+exports[`macro plugin should work with renamed import and functional components 1`] = `
+"import { di as injectable, withDi } from \\"react-magnetic-di\\";
+import React from 'react';
+import Modal from 'modal';
+const MyComponent = withDi(() => {
+  var [_Modal] = injectable([Modal], null);
+  return __jsx(_Modal, null);
+}, []);"
+`;
