@@ -19,10 +19,11 @@ declare export class DiProvider extends React$Component<
   }
 > {}
 
-declare export function withDi<Props>(
-  component: AbstractComponent<Props>,
-  dependencies: Dependency[]
-): AbstractComponent<Props>;
+declare export function withDi<T: AbstractComponent<any>>(
+  component: T,
+  dependencies: Dependency[],
+  target?: AbstractComponent<any> | null
+): T;
 
 declare export function mock<T: Dependency>(original: T, mock: T): T;
 

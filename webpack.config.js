@@ -47,18 +47,6 @@ module.exports = {
         loader: 'babel-loader',
         options: {
           presets: [['@babel/preset-env', { targets: { chrome: '60' } }]],
-          plugins: [
-            [
-              'module-resolver',
-              {
-                alias: {
-                  'react-magnetic-di/babel.macro': './src/babel/macro.js',
-                },
-              },
-            ],
-            './src/babel',
-            'macros',
-          ],
         },
       },
     ],

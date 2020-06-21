@@ -23,13 +23,12 @@ class MyComponent extends Component {
 }"
 `;
 
-exports[`macro plugin should work with renamed default and functional components 1`] = `
-"import { di as injectable } from \\"react-magnetic-di\\";
+exports[`macro plugin should work with renamed import and functional components 1`] = `
+"import { di as injectable, withDi } from \\"react-magnetic-di\\";
 import React from 'react';
 import Modal from 'modal';
-
-const MyComponent = () => {
-  var [_Modal] = injectable([Modal], MyComponent);
+const MyComponent = withDi(() => {
+  var [_Modal] = injectable([Modal], null);
   return __jsx(_Modal, null);
-};"
+}, []);"
 `;

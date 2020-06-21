@@ -42,9 +42,11 @@ const assert = {
   },
 };
 
-const createNamedImport = (t, pkgName, pkgFn, localName) => {
+const createNamedImport = (t, pkgName, pkgFns, localNames) => {
   const statement = t.importDeclaration([], t.stringLiteral(pkgName));
-  statement.specifiers = [t.importSpecifier(localName, t.identifier(pkgFn))];
+  statement.specifiers = pkgFns.map((v, i) =>
+    t.importSpecifier(localNames[i], t.identifier(v))
+  );
   return statement;
 };
 

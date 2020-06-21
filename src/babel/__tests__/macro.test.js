@@ -3,7 +3,7 @@ import { transform } from '@babel/core';
 import plugin from 'babel-plugin-macros';
 
 const moduleAlias = {
-  alias: { 'react-magnetic-di/babel.macro': './src/babel/macro.js' },
+  alias: { 'react-magnetic-di/macro': './src/babel/macro.js' },
 };
 
 const babel = (code, { options, env } = {}) =>
@@ -25,7 +25,7 @@ describe('macro plugin', () => {
   it('should work in class components', () => {
     const input = `
         import React, { Component } from 'react';
-        import di from 'react-magnetic-di/babel.macro';
+        import { di } from 'react-magnetic-di/macro';
         import Modal from 'modal';
   
         class MyComponent extends Component {
@@ -38,16 +38,16 @@ describe('macro plugin', () => {
     expect(babel(input)).toMatchSnapshot();
   });
 
-  it('should work with renamed default and functional components', () => {
+  it('should work with renamed import and functional components', () => {
     const input = `
         import React from 'react';
-        import injectable from 'react-magnetic-di/babel.macro';
+        import { di as injectable, withDi } from 'react-magnetic-di/macro';
         import Modal from 'modal';
 
-        const MyComponent = () => {
+        const MyComponent = withDi(() => {
           injectable(Modal);
           return <Modal />;
-        };
+        }, []);
       `;
     expect(babel(input)).toMatchSnapshot();
   });
@@ -55,7 +55,7 @@ describe('macro plugin', () => {
   it('should strip injection if not enabled environment', () => {
     const input = `
       import React, { Component } from 'react';
-      import di from 'react-magnetic-di/babel.macro';
+      import { di } from 'react-magnetic-di/macro';
       import Modal from 'modal';
 
       function MyComponent() {

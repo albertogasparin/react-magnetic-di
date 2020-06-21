@@ -65,7 +65,7 @@ describe('DiProvider', () => {
 });
 
 describe('withDi', () => {
-  it('should wrap components with provider', () => {
+  it('should wrap component with provider and set target', () => {
     const children = jest.fn();
     const TextMock = mock(Text, () => '');
     const WrappedComponent = withDi(
@@ -77,7 +77,25 @@ describe('withDi', () => {
 
     expect(wrapper.find(DiProvider).props()).toEqual({
       children: expect.anything(),
-      target: undefined,
+      target: expect.any(Function),
+      use: [TextMock],
+    });
+  });
+
+  it('should wrap component with provider and allow target override', () => {
+    const children = jest.fn();
+    const TextMock = mock(Text, () => '');
+    const WrappedComponent = withDi(
+      () => <Context.Consumer>{children}</Context.Consumer>,
+      [TextMock],
+      null
+    );
+
+    const wrapper = mount(<WrappedComponent />);
+
+    expect(wrapper.find(DiProvider).props()).toEqual({
+      children: expect.anything(),
+      target: null,
       use: [TextMock],
     });
   });

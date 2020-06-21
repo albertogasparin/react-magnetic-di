@@ -8,24 +8,31 @@ const diMacro = ({ references, babel, config = {} }) => {
   const { types: t } = babel;
   const isEnabled = isEnabledEnv() || Boolean(config.forceEnable);
 
-  const defaultImport = references.default;
-  if (!defaultImport || defaultImport.length === 0) return;
-  // process all calls
-  defaultImport.forEach((ref) => processReference(t, ref, isEnabled));
+  const importedMethods = Object.keys(references).filter(
+    (v) => references[v].length
+  );
+  const diImport = references[PACKAGE_FUNCTION] || [];
+  // process all di calls
+  diImport.forEach((ref) => processReference(t, ref, isEnabled));
 
-  // if not enabled let import to be stripped
-  if (!isEnabled) return;
+  // if not enabled and only di was imported, let import to be stripped
+  if (
+    importedMethods.length === 1 &&
+    importedMethods[0] === PACKAGE_FUNCTION &&
+    !isEnabled
+  )
+    return;
 
-  // add named import
-  const methodIdentifier = defaultImport[0].node;
+  // add named imports
+  const { scope: methodScope } = references[importedMethods[0]][0];
   const statement = createNamedImport(
     t,
     PACKAGE_NAME,
-    PACKAGE_FUNCTION,
-    methodIdentifier
+    importedMethods,
+    importedMethods.map((k) => references[k][0].node)
   );
 
-  const programPath = defaultImport[0].scope.getProgramParent().path;
+  const programPath = methodScope.getProgramParent().path;
 
   const targetPath = programPath
     .get('body')
@@ -33,7 +40,7 @@ const diMacro = ({ references, babel, config = {} }) => {
       (p) =>
         p.node &&
         p.node.source &&
-        p.node.source.value === PACKAGE_NAME + '/babel.macro'
+        p.node.source.value === PACKAGE_NAME + '/macro'
     );
 
   if (targetPath) {

@@ -48,6 +48,8 @@ Edit your Babel config file (`.babelrc` / `babel.config.js` / ...) and add:
   ],
 ```
 
+If you are using Create React App or babel macros, you don't need the babel plugin: just import from `react-magnetic-di/macro` (see next paragraph).
+
 ### Using dependency injection in your components
 
 Given a component with complex UI interaction or data dependencies, like a Modal or an Apollo Query, we want to be able integration test it without necessarily test those other dependencies.
@@ -56,6 +58,9 @@ To achieve that, we mark such dependencies in the `render` function of the class
 ```jsx
 import React, { Component } from 'react';
 import { di } from 'react-magnetic-di';
+// or
+import { di } from 'react-magnetic-di/macro';
+
 import { Modal } from 'material-ui';
 import { Query } from 'react-apollo';
 
@@ -96,15 +101,15 @@ In the unit/integration tests or storybooks we can create a mock implementation 
 
 ```jsx
 import React from 'react';
-import { DiProvider, di } from 'react-magnetic-di';
+import { DiProvider, mock } from 'react-magnetic-di';
 import { Modal } from 'material-ui';
 import { useQuery } from 'react-apollo-hooks';
 
 // mock() accepts the original implementation as first argument
 // and the replacement implementation as second
-// (you can also import { mock } if don't like di prefix)
-const ModalOpenMock = di.mock(Modal, () => <div />);
-const useQueryMock = di.mock(useQuery, () => ({ data: null }));
+// (you can also import { di } and use di.mock() if you like)
+const ModalOpenMock = mock(Modal, () => <div />);
+const useQueryMock = mock(useQuery, () => ({ data: null }));
 
 // test-enzyme.js
 it('should render with enzyme', () => {
@@ -147,11 +152,26 @@ storiesOf('Modal content', module).add('with text', () => (
 
 In the example above `MyComponent` will have both `ModalOpen` and `useQuery` replaced while `MyOtherComponent` only `ModalOpen`. Be aware that `target` needs an actual component declaration to work, so will not work in cases where the component is fully anonymous (eg: `export default () => ...` or `forwardRef(() => ...)`).
 
+The library also provides a `withDi` HOC in case you want to export components with dependencies alredy injected:
+
+```jsx
+import React from 'react';
+import { withDi, mock } from 'react-magnetic-di';
+import { Modal } from 'material-ui';
+import { MyComponent } from './my-component';
+
+const ModalOpenMock = mock(Modal, () => <div />);
+
+export default withDi(MyComponent, [Modal]);
+```
+
+In this case the target will be automatically set to `MyComponent`. If you wish to override that
+
 ### Configuration Options
 
-#### Enable depepndency injection on production (or custom env)
+#### Enable dependency injection on production (or custom env)
 
-By default dependency injection is enabled on `development` and `test` environments only, which means `di(...)` is removed on production builds. If you want to allow depepency injection on production too (or on a custom env) you can use the `forceEnable` option:
+By default dependency injection is enabled on `development` and `test` environments only, which means `di(...)` is removed on production builds. If you want to allow dependency injection on production too (or on a custom env) you can use the `forceEnable` option:
 
 ```
 // In your .babelrc / babel.config.js

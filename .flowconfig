@@ -8,6 +8,7 @@
 
 [options]
 module.name_mapper='^react-magnetic-di' ->'<PROJECT_ROOT>/src'
+module.name_mapper='^react-magnetic-di/macro' ->'<PROJECT_ROOT>/macro'
 # Provides a way to suppress flow errors in the following line.
 # Example: // $FlowFixMe: This following line is borked because of reasons.
 # Example: // $ExpectError: This following line is correctly ignored by flow.

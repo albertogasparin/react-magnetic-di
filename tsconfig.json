@@ -12,7 +12,7 @@
     "baseUrl": ".",
     "paths": {
       "react-magnetic-di": ["types"],
-      "react-magnetic-di/babel.macro": ["babel.macro/types"]
+      "react-magnetic-di/macro": ["macro/types"]
     }
   },
   "include": ["examples/**/*"]

@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
-import { DiProvider, mock } from 'react-magnetic-di';
-import di from 'react-magnetic-di/babel.macro';
+import { di, DiProvider, mock, withDi } from 'react-magnetic-di/macro';
 
 const useStateMock = mock(useState, () => useState(true));
 
 const MyComponent = () => {
   di(useState);
   const [open, setOpen] = useState(false);
-  return <button>{open ? 'open' : 'closed'}</button>;
+  return (
+    <button onClick={() => setOpen(!open)}>{open ? 'open' : 'closed'}</button>
+  );
 };
+
+const MyComponentWithDi = withDi(MyComponent, [useStateMock]);
 
 /**
  * Main App
@@ -20,9 +23,7 @@ const App = () => (
     <main>
       <MyComponent />
       <hr />
-      <DiProvider use={[useStateMock]}>
-        <MyComponent />
-      </DiProvider>
+      <MyComponentWithDi />
     </main>
   </div>
 );
