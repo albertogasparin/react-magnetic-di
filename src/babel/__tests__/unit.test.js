@@ -247,10 +247,63 @@ describe('babel plugin', () => {
       function MyComponent() {
         di(MyComponent);
         return <div />;
-      }w
+      }
     `;
     expect(() => babel(input)).toThrow(
       'Invalid di(...) call: cannot inject self.'
     );
   });
+});
+
+describe('displayName', () => {
+  it('should be correct for variable declaration', () => {
+    const input = `
+      import { withDi } from 'react-magnetic-di';
+
+      const Example = withDi(() => null, []);
+    `;
+    expect(babel(input)).toMatchSnapshot();
+  });
+
+  it('should be correct for named export', () => {
+    const input = `
+      import { withDi } from 'react-magnetic-di';
+
+      export const Example = withDi(() => null, []);
+    `;
+    expect(babel(input)).toMatchSnapshot();
+  });
+
+  it('should not be changed for default export', () => {
+    const input = `
+      import { withDi } from 'react-magnetic-di';
+
+      export default withDi(() => null, []);
+    `;
+    expect(babel(input)).toMatchSnapshot();
+  });
+
+  it('should be correct for variable declaration with renamed import', () => {
+    const input = `
+      import { withDi as withInjection } from 'react-magnetic-di';
+
+      export const Example = withInjection(() => null, []);
+    `;
+    expect(babel(input)).toMatchSnapshot();
+  });
+
+  it.todo(
+    'should not be duplicated if set elsewhere'
+    /*
+      () => {
+        const input = `
+          import { withDi } from 'react-magnetic-di';
+
+          const Example = withDi(() => null, []);
+          Example.displayName = 'CustomName';
+        `;
+        expect(babel(input)).toMatchSnapshot();
+      }
+    */
+  );
 });
