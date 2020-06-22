@@ -64,7 +64,9 @@ describe('macro plugin', () => {
       }
     `;
     process.env.BABEL_ENV = 'production';
+    process.env.NODE_ENV = 'production';
     expect(babel(input)).toMatchSnapshot();
     process.env.BABEL_ENV = undefined;
+    process.env.NODE_ENV = 'test';
   });
 });
