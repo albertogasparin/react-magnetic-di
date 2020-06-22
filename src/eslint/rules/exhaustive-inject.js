@@ -20,6 +20,12 @@ const getReactIdentifiers = (node) => {
 module.exports = {
   meta: {
     type: 'suggestion',
+    docs: {
+      description:
+        'Requires external components/hooks to be marked as injectable',
+      category: 'Best Practices',
+      recommended: false,
+    },
     fixable: 'code',
     schema: [
       {
@@ -32,8 +38,8 @@ module.exports = {
     ],
     messages: {
       missingInject:
-        "di(...) has a missing dependency: '{{name}}'. " +
-        'Either include it or remove the dependency injection call',
+        "Dependency '{{name}}' has not being marked as injectable. " +
+        'Add it to the list of the injectable dependencies',
     },
   },
   create: function (context) {
@@ -79,7 +85,7 @@ module.exports = {
         const diVars = getDiVars(diStatements);
 
         throughVars.forEach((varNode) => {
-          const isInjectable = isHookName(varNode) || isComponentName(varNode);
+          const isInjectable = isHookName(varNode);
           if (
             !isInjectable ||
             isInjected(diVars, varNode) ||

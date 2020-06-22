@@ -6,12 +6,14 @@ export function useTheme() {
   return useState<any>({ color: '#777' });
 }
 
-type InputProps = {| value?: string |};
+type InputProps = {|
+  value?: string,
+|};
 
 export function Input(props: InputProps) {
   di(useTheme);
-
   const [style] = useTheme();
+
   return (
     <input
       style={{ border: `1px solid ${style.color}` }}
