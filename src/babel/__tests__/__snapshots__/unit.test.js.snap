@@ -129,3 +129,26 @@ class MyComponent2 extends Component {
 
 ;"
 `;
+
+exports[`displayName should be correct for named export 1`] = `
+"import { withDi } from 'react-magnetic-di';
+export const Example = withDi(() => null, []);
+Example.displayName = \\"Example\\";"
+`;
+
+exports[`displayName should be correct for variable declaration 1`] = `
+"import { withDi } from 'react-magnetic-di';
+const Example = withDi(() => null, []);
+Example.displayName = \\"Example\\";"
+`;
+
+exports[`displayName should be correct for variable declaration with renamed import 1`] = `
+"import { withDi as withInjection } from 'react-magnetic-di';
+export const Example = withInjection(() => null, []);
+Example.displayName = \\"Example\\";"
+`;
+
+exports[`displayName should not be changed for default export 1`] = `
+"import { withDi } from 'react-magnetic-di';
+export default withDi(() => null, []);"
+`;

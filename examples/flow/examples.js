@@ -17,8 +17,6 @@ export const useThemeInputExample = di.mock(useThemeInput, () => {
   return useState<any>({ color: '#E77' });
 });
 
-export const InputExample2 = withDi(Input, [useThemeInputExample]);
-
 export const useThemeLabelExample = di.mock(useThemeLabel, () => {
   return useState<any>({ color: '#FA0' });
 });

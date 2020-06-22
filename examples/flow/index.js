@@ -1,7 +1,7 @@
 // @flow
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { DiProvider } from 'react-magnetic-di';
+import { DiProvider, withDi } from 'react-magnetic-di';
 
 import { Section } from './components/section';
 
@@ -10,6 +10,8 @@ import {
   useThemeInputExample,
   useThemeLabelExample,
 } from './examples';
+
+const SectionWithDi = withDi(Section, [InputExample]);
 
 /**
  * Main App
@@ -27,6 +29,8 @@ const App = () => (
       <DiProvider use={[useThemeLabelExample, useThemeInputExample]}>
         <Section title="Multiple dependency injection" />
       </DiProvider>
+      <hr />
+      <SectionWithDi title="HOC injection" />
     </main>
   </div>
 );

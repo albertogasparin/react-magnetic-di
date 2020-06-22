@@ -1,5 +1,6 @@
-const { PACKAGE_NAME, PACKAGE_FUNCTION } = require('./constants');
-const processReference = require('./processor');
+const { PACKAGE_NAME, PACKAGE_FUNCTION, HOC_FUNCTION } = require('./constants');
+const processDIReference = require('./processor-di');
+const processHOCReference = require('./processor-hoc');
 const { isEnabledEnv } = require('./utils');
 
 module.exports = function (babel) {
@@ -11,25 +12,45 @@ module.exports = function (babel) {
         // first we look at the imports:
         // if not our package and not the right function, ignore
         const importSource = path.node.source.value;
-        const importSpecifier = path.node.specifiers.find(
+        const importDISpecifier = path.node.specifiers.find(
           (s) => s.imported && s.imported.name === PACKAGE_FUNCTION
         );
-        if (importSource !== PACKAGE_NAME || !importSpecifier) return;
-
-        // then we locate all usages of the method
-        // ensuring we affect on lications where it is called
-        const methodIdentifier = importSpecifier.local.name;
-        const binding = path.scope.getBinding(methodIdentifier);
-
-        if (!binding) return;
-        const references = binding.referencePaths.filter((ref) =>
-          t.isCallExpression(ref.container)
+        const importHOCSpecifier = path.node.specifiers.find(
+          (s) => s.imported && s.imported.name === HOC_FUNCTION
         );
+        if (importSource !== PACKAGE_NAME) return;
 
-        const isEnabled = isEnabledEnv() || Boolean(opts.forceEnable);
+        if (importDISpecifier) {
+          // then we locate all usages of the method
+          // ensuring we affect only locations where it is called
+          const methodIdentifier = importDISpecifier.local.name;
+          const binding = path.scope.getBinding(methodIdentifier);
 
-        // for each of that location we apply a tranformation
-        references.forEach((ref) => processReference(t, ref, isEnabled));
+          if (!binding) return;
+          const references = binding.referencePaths.filter((ref) =>
+            t.isCallExpression(ref.container)
+          );
+
+          const isEnabled = isEnabledEnv() || Boolean(opts.forceEnable);
+
+          // for each of that location we apply a tranformation
+          references.forEach((ref) => processDIReference(t, ref, isEnabled));
+        }
+
+        if (importHOCSpecifier) {
+          // then we locate all usages of the method
+          // ensuring we affect only locations where it is called
+          const methodIdentifier = importHOCSpecifier.local.name;
+          const binding = path.scope.getBinding(methodIdentifier);
+
+          if (!binding) return;
+          const references = binding.referencePaths.filter((ref) =>
+            t.isCallExpression(ref.container)
+          );
+
+          // for each of that location we apply a tranformation
+          references.forEach((ref) => processHOCReference(t, ref));
+        }
       },
     },
   };
