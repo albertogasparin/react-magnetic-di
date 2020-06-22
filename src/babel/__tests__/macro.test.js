@@ -68,6 +68,7 @@ describe('macro plugin', () => {
     expect(babel(input)).toMatchSnapshot();
     process.env.BABEL_ENV = undefined;
     process.env.NODE_ENV = 'test';
+
   });
 
   it('should process withDi', () => {
