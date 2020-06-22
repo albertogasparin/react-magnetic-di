@@ -51,8 +51,11 @@ const createNamedImport = (t, pkgName, pkgFns, localNames) => {
 };
 
 const isEnabledEnv = () => {
-  const env = process.env.BABEL_ENV || process.env.NODE_ENV || 'development';
-  return ['development', 'test'].includes(env);
+  return (
+    ['development', 'test'].includes(process.env.BABEL_ENV) ||
+    ['development', 'test'].includes(process.env.NODE_ENV) ||
+    (!process.env.BABEL_ENV && !process.env.NODE_ENV)
+  );
 };
 
 module.exports = {
