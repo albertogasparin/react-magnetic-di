@@ -3,6 +3,11 @@ const { getDiIdentifier, isDiStatement } = require('../utils');
 module.exports = {
   meta: {
     type: 'problem',
+    docs: {
+      description: 'Enforce injectable definition at the top of the block',
+      category: 'Possible Errors',
+      recommended: true,
+    },
     // fixable: 'code',
     schema: [],
     messages: {

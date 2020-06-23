@@ -3,6 +3,12 @@ const { getDiIdentifier, getDiStatements, getDiVars } = require('../utils');
 module.exports = {
   meta: {
     type: 'problem',
+    docs: {
+      description:
+        'Disallow dependencies to be marked as injectable more than once',
+      category: 'Possible Errors',
+      recommended: true,
+    },
     // fixable: 'code',
     schema: [],
     messages: {

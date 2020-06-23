@@ -1,11 +1,11 @@
 // @flow
 import React, { useState } from 'react';
-import { di, withDi } from 'react-magnetic-di';
+import { mock } from 'react-magnetic-di';
 
 import { Input, useTheme as useThemeInput } from './components/input';
 import { useTheme as useThemeLabel } from './components/label';
 
-export const InputExample = di.mock(Input, () => {
+export const InputExample = mock(Input, () => {
   return (
     <select>
       <option>Type...?</option>
@@ -13,10 +13,10 @@ export const InputExample = di.mock(Input, () => {
   );
 });
 
-export const useThemeInputExample = di.mock(useThemeInput, () => {
+export const useThemeInputExample = mock(useThemeInput, () => {
   return useState<any>({ color: '#E77' });
 });
 
-export const useThemeLabelExample = di.mock(useThemeLabel, () => {
+export const useThemeLabelExample = mock(useThemeLabel, () => {
   return useState<any>({ color: '#FA0' });
 });

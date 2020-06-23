@@ -6,7 +6,9 @@ export function useTheme() {
   return useState<any>({ color: '#333' });
 }
 
-export type LabelProps = {| children?: Node |};
+type LabelProps = {|
+  children?: Node,
+|};
 
 export function Label({ children = 'Label' }: LabelProps) {
   di(useTheme);

@@ -5,7 +5,9 @@ import { di } from 'react-magnetic-di';
 import { Label } from './label';
 import { Input } from './input';
 
-export type Props = {| title: string |};
+type Props = {|
+  title: string,
+|};
 
 export class Section extends Component<Props> {
   render() {

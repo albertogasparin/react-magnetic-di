@@ -8,6 +8,11 @@ const {
 module.exports = {
   meta: {
     type: 'suggestion',
+    docs: {
+      description: 'Disallow injecting dependencies not being used',
+      category: 'Possible Errors',
+      recommended: true,
+    },
     // fixable: 'code',
     schema: [
       {
@@ -20,7 +25,7 @@ module.exports = {
     ],
     messages: {
       extraneousInjectable:
-        "di(...) has an extraneous dependency: '{{name}}'. " +
+        "Extraneous dependency: '{{name}}'. " +
         'If it is not being used, remove it from the injectable list',
     },
   },
@@ -80,11 +85,14 @@ module.exports = {
             return;
         }
         const parentBlock = getParentDiBlock(varNode, diIdentifier);
-        blockReferences.get(parentBlock).through.push(varNode);
+        const blockVars = blockReferences.get(parentBlock);
+        if (!blockVars) return;
+        blockVars.through.push(varNode);
       },
 
       'BlockStatement:exit'(node) {
         const blockVars = blockReferences.get(node);
+        if (!blockVars) return;
         blockVars.di.forEach((varNode) => {
           const occurrences = blockVars.through.filter(
             (v) => v.name === varNode.name
