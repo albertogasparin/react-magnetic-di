@@ -3,7 +3,7 @@
 
 import type { Node, AbstractComponent } from 'react';
 
-type Dependency = Function;
+export type Dependency = Function;
 
 declare export class DiProvider extends React$Component<
   {
