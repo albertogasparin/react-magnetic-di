@@ -40,7 +40,7 @@ DiProvider.propTypes = {
   use: PropTypes.arrayOf(PropTypes.func).isRequired,
 };
 
-export function withDi(Comp, deps, target = Comp) {
+export function withDi(Comp, deps, target = null) {
   const WrappedComponent = forwardRef((props, ref) => (
     <DiProvider use={deps} target={target}>
       <Comp ref={ref} {...props} />

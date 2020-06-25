@@ -7,7 +7,7 @@ export type Dependency = Function;
 
 declare export class DiProvider extends React$Component<
   {
-    children: Node,
+    children?: Node,
     target?: AbstractComponent<any> | AbstractComponent<any>[],
     use: Dependency[],
   },
@@ -22,7 +22,7 @@ declare export class DiProvider extends React$Component<
 declare export function withDi<T: AbstractComponent<any>>(
   component: T,
   dependencies: Dependency[],
-  target?: AbstractComponent<any> | null
+  target?: AbstractComponent<any> | AbstractComponent<any>[]
 ): T;
 
 declare export function mock<T: Dependency>(original: T, mock: T): T;

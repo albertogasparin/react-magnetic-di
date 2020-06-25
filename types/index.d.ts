@@ -4,14 +4,18 @@ declare module 'react-magnetic-di' {
   type Dependency = Function;
 
   class DiProvider extends Component<
-    { use: Dependency[]; children: ReactNode },
+    {
+      use: Dependency[];
+      target?: ComponentType<any> | ComponentType<any>[];
+      children?: ReactNode;
+    },
     { getDependencies: (deps: Dependency[]) => Dependency[] }
   > {}
 
   function withDi<T extends ComponentType<any>>(
     component: T,
     dependencies: Dependency[],
-    target?: ComponentType<any> | null
+    target?: ComponentType<any> | ComponentType<any>[]
   ): T;
 
   function mock<T extends Dependency>(original: T, mock: T): T;

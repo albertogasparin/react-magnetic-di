@@ -23,6 +23,10 @@ const App = () => (
     <main>
       <MyComponent />
       <hr />
+      <DiProvider use={[useStateMock]} target={MyComponent}>
+        <MyComponent />
+      </DiProvider>
+      <hr />
       <MyComponentWithDi />
     </main>
   </div>

@@ -165,7 +165,7 @@ const ModalOpenMock = mock(Modal, () => <div />);
 export default withDi(MyComponent, [Modal]);
 ```
 
-In this case the target will be automatically set to `MyComponent`. If you wish to override that
+`withDi` supports the same API as `DiProvider`, where `target` is the third argument of the HOC `withDi(MyComponent, [Modal], MyComponent)` in case you want to limit injection to a specific component only.
 
 ### Configuration Options
 
