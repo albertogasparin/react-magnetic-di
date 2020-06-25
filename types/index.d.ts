@@ -15,7 +15,7 @@ declare module 'react-magnetic-di' {
   function withDi<T extends ComponentType<any>>(
     component: T,
     dependencies: Dependency[],
-    target?: ComponentType<any> | ComponentType<any>[];
+    target?: ComponentType<any> | ComponentType<any>[]
   ): T;
 
   function mock<T extends Dependency>(original: T, mock: T): T;
