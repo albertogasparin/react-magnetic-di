@@ -2,7 +2,7 @@
 
 import React, { Component, Fragment } from 'react';
 import { mount } from 'enzyme';
-import { di, DiProvider, mock } from '../../index';
+import { di, DiProvider, withDi, mock } from '../../index';
 
 const Wrapper = ({ children }) => children;
 const Text = () => 'original';
@@ -71,6 +71,19 @@ describe('Integration', () => {
           <Label />
           <Input />
         </DiProvider>
+      </DiProvider>
+    );
+
+    expect(wrapper.debug()).toMatchSnapshot();
+  });
+
+  it('should get closest dependency if multiple providers using same type', () => {
+    const TextMock2 = mock(Text, () => 'closest injectable');
+    const WrappedInput = withDi(Input, [TextMock2]);
+    const wrapper = mount(
+      <DiProvider use={[TextMock]}>
+        <Label />
+        <WrappedInput />
       </DiProvider>
     );
 

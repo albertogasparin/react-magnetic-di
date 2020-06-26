@@ -1,1 +1,1 @@
-export const KEY = Symbol.for('magnetic-di');
+export const KEY = Symbol.for('di');

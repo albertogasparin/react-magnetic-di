@@ -17,11 +17,18 @@ export const DiProvider = ({ children, use, target }) => {
 
     return {
       getDependencies(realDeps, targetChild) {
-        // First we collect dependencies from parent providers (if any)
-        // If a dependency is not defined we return the original
+        // First we collect dependencies from parent provider(s) (if any)
         const dependencies = getDependencies(realDeps, targetChild);
+        // If no target or target is in the array of targets, map use
         if (!targetChild || !targets || targets.includes(targetChild)) {
-          return dependencies.map((dep) => useMap.get(dep) || dep);
+          return dependencies.map((dep) => {
+            // dep can be either the original or a replacement
+            // if another provider at the top has already swapped it
+            // so we check if here we need to inject a different one
+            // or return the original / parent replacement
+            const real = dep[KEY] || dep;
+            return useMap.get(real) || dep;
+          });
         }
         return dependencies;
       },

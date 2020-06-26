@@ -19,6 +19,27 @@ exports[`Integration should allow override composition 1`] = `
 </DiProvider>"
 `;
 
+exports[`Integration should get closest dependency if multiple providers using same type 1`] = `
+"<DiProvider use={{...}}>
+  <Label>
+    <Wrapper>
+      <di(Text)>
+        mock
+      </di(Text)>
+    </Wrapper>
+  </Label>
+  <withDi(Input)>
+    <DiProvider use={{...}} target={{...}}>
+      <Input>
+        <di(Text)>
+          closest injectable
+        </di(Text)>
+      </Input>
+    </DiProvider>
+  </withDi(Input)>
+</DiProvider>"
+`;
+
 exports[`Integration should only override dependencies of specified target 1`] = `
 "<DiProvider target={{...}} use={{...}}>
   <DiProvider target={[Function: Label]} use={{...}}>
