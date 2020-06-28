@@ -9,13 +9,13 @@ export function warnOnce(message) {
   }
 }
 
-export function getDisplayName(Comp) {
-  return Comp.displayName || Comp.name || 'Unknown';
+export function getDisplayName(Comp, fallback = 'Unknown') {
+  return Comp.displayName || Comp.name || fallback;
 }
 
 export function mock(original, mockImpl) {
   mockImpl.displayName =
-    mockImpl.displayName || `di(${getDisplayName(original)})`;
+    getDisplayName(mockImpl, '') || `di(${getDisplayName(original)})`;
   mockImpl[KEY] = original;
   return mockImpl;
 }
