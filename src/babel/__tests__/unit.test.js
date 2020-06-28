@@ -47,7 +47,7 @@ describe('babel plugin', () => {
   it('should work in functional components declaration', () => {
     const input = `
       import React from 'react';
-      import { di, mock } from 'react-magnetic-di';
+      import { di, injectable } from 'react-magnetic-di';
       import Modal from 'modal';
       
       function MyComponent() {
@@ -61,7 +61,7 @@ describe('babel plugin', () => {
   it('should work in functional components expression', () => {
     const input = `
       import React from 'react';
-      import { di, mock } from 'react-magnetic-di';
+      import { di, injectable } from 'react-magnetic-di';
       import Modal from 'modal';
       
       const MyComponent = function () {
@@ -75,7 +75,7 @@ describe('babel plugin', () => {
   it('should work in wrapped functional components', () => {
     const input = `
       import React, { forwardRef } from 'react';
-      import { di, mock } from 'react-magnetic-di';
+      import { di, injectable } from 'react-magnetic-di';
       import Modal from 'modal';
       
       const MyComponent = forwardRef(() => {
@@ -230,10 +230,10 @@ describe('babel plugin', () => {
       import { di } from 'react-magnetic-di';
       import Modal from 'modal';
 
-      const ModalMock = di.mock(Modal);
+      const ModalDi = di.mock(Modal, () => null);
 
       function MyComponent() {
-        return <ModalMock />;
+        return <ModalDi />;
       } 
     `;
     expect(babel(input)).toMatchSnapshot();

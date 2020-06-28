@@ -15,10 +15,10 @@ exports[`babel plugin should not error if not a call expression 1`] = `
 "import React from 'react';
 import { di } from 'react-magnetic-di';
 import Modal from 'modal';
-const ModalMock = di.mock(Modal);
+const ModalDi = di.mock(Modal, () => null);
 
 function MyComponent() {
-  return __jsx(ModalMock, null);
+  return __jsx(ModalDi, null);
 }"
 `;
 
@@ -59,7 +59,7 @@ const MyComponent = () => {
 
 exports[`babel plugin should work in functional components declaration 1`] = `
 "import React from 'react';
-import { di, mock } from 'react-magnetic-di';
+import { di, injectable } from 'react-magnetic-di';
 import Modal from 'modal';
 
 function MyComponent() {
@@ -70,7 +70,7 @@ function MyComponent() {
 
 exports[`babel plugin should work in functional components expression 1`] = `
 "import React from 'react';
-import { di, mock } from 'react-magnetic-di';
+import { di, injectable } from 'react-magnetic-di';
 import Modal from 'modal';
 
 const MyComponent = function () {
@@ -81,7 +81,7 @@ const MyComponent = function () {
 
 exports[`babel plugin should work in wrapped functional components 1`] = `
 "import React, { forwardRef } from 'react';
-import { di, mock } from 'react-magnetic-di';
+import { di, injectable } from 'react-magnetic-di';
 import Modal from 'modal';
 const MyComponent = /*#__PURE__*/forwardRef(() => {
   var [_Modal] = di([Modal], null);

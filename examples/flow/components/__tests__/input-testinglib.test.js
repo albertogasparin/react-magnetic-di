@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { render } from '@testing-library/react';
-import { di, DiProvider } from 'react-magnetic-di';
+import { DiProvider, injectable } from 'react-magnetic-di';
 
 import { Input, useTheme } from '../input';
 
@@ -11,13 +11,13 @@ const renderWithDi = (node, dependencies = []) =>
     wrapper: (p) => <DiProvider use={dependencies} {...p} />,
   });
 
-const useThemeMock = di.mock(useTheme, () => {
+const useThemeDi = injectable(useTheme, () => {
   return useState({ color: '#B00' });
 });
 
 describe('Input', () => {
   it('should render with theme', () => {
-    const { container } = renderWithDi(<Input />, [useThemeMock]);
+    const { container } = renderWithDi(<Input />, [useThemeDi]);
     expect(container).toMatchInlineSnapshot(`
       <div>
         <input

@@ -10,8 +10,8 @@ export const DiProvider = ({ children, use, target }) => {
 
   // memo provider value so gets computed only once
   const value = useMemo(() => {
-    // create a map of dependency real -> mock components for fast lookup
-    const useMap = use.reduce((m, d) => m.set(d[KEY], d), new Map());
+    // create a map of dependency real -> replacement for fast lookup
+    const replacementMap = use.reduce((m, d) => m.set(d[KEY], d), new Map());
     // support single or multiple targets
     const targets = target && (Array.isArray(target) ? target : [target]);
 
@@ -27,7 +27,7 @@ export const DiProvider = ({ children, use, target }) => {
             // so we check if here we need to inject a different one
             // or return the original / parent replacement
             const real = dep[KEY] || dep;
-            return useMap.get(real) || dep;
+            return replacementMap.get(real) || dep;
           });
         }
         return dependencies;

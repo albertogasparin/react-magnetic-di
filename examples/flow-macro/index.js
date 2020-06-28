@@ -2,9 +2,9 @@
 
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
-import { di, mock, withDi } from 'react-magnetic-di/macro';
+import { di, injectable, withDi } from 'react-magnetic-di/macro';
 
-const useStateMock = mock(useState, () => useState(true));
+const useStateDi = injectable(useState, () => useState(true));
 
 const MyComponent = () => {
   di(useState);
@@ -12,7 +12,7 @@ const MyComponent = () => {
   return <button onClick={setOpen}>{open ? 'open' : 'closed'}</button>;
 };
 
-const MyComponentWithDi = withDi(MyComponent, [useStateMock]);
+const MyComponentWithDi = withDi(MyComponent, [useStateDi]);
 
 /**
  * Main App

@@ -2,7 +2,7 @@
 
 import React, { Component, Fragment } from 'react';
 import { mount } from 'enzyme';
-import { di, DiProvider, withDi, mock } from '../../index';
+import { di, DiProvider, withDi, injectable } from '../../index';
 
 const Wrapper = ({ children }) => children;
 const Text = () => 'original';
@@ -25,8 +25,8 @@ class Input extends Component {
   }
 }
 
-const TextMock = mock(Text, () => 'mock');
-const WrapperMock = mock(Wrapper, ({ children }) => children);
+const TextDi = injectable(Text, () => 'replacement');
+const WrapperDi = injectable(Wrapper, ({ children }) => children);
 
 describe('Integration', () => {
   it('should return real dependencies if provider less', () => {
@@ -42,7 +42,7 @@ describe('Integration', () => {
 
   it('should override all dependencies of same type', () => {
     const wrapper = mount(
-      <DiProvider use={[TextMock]}>
+      <DiProvider use={[TextDi]}>
         <Label />
         <Input />
       </DiProvider>
@@ -53,8 +53,8 @@ describe('Integration', () => {
 
   it('should allow override composition', () => {
     const wrapper = mount(
-      <DiProvider use={[WrapperMock]}>
-        <DiProvider use={[TextMock]}>
+      <DiProvider use={[WrapperDi]}>
+        <DiProvider use={[TextDi]}>
           <Label />
           <Input />
         </DiProvider>
@@ -66,8 +66,8 @@ describe('Integration', () => {
 
   it('should only override dependencies of specified target', () => {
     const wrapper = mount(
-      <DiProvider target={[Input]} use={[WrapperMock]}>
-        <DiProvider target={Label} use={[TextMock]}>
+      <DiProvider target={[Input]} use={[WrapperDi]}>
+        <DiProvider target={Label} use={[TextDi]}>
           <Label />
           <Input />
         </DiProvider>
@@ -78,10 +78,10 @@ describe('Integration', () => {
   });
 
   it('should get closest dependency if multiple providers using same type', () => {
-    const TextMock2 = mock(Text, () => 'closest injectable');
-    const WrappedInput = withDi(Input, [TextMock2]);
+    const TextDi2 = injectable(Text, () => 'closest injectable');
+    const WrappedInput = withDi(Input, [TextDi2]);
     const wrapper = mount(
-      <DiProvider use={[TextMock]}>
+      <DiProvider use={[TextDi]}>
         <Label />
         <WrappedInput />
       </DiProvider>

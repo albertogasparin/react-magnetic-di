@@ -18,10 +18,14 @@ declare module 'react-magnetic-di' {
     target?: ComponentType<any> | ComponentType<any>[]
   ): T;
 
+  /** @deprecated use injectable instead */
   function mock<T extends Dependency>(original: T, mock: T): T;
+
+  function injectable<T extends Dependency>(from: T, implementation: T): T;
 
   function di(...dependencies: Dependency[]): void;
   class di {
+    /** @deprecated use injectable instead */
     static mock: typeof mock;
   }
 }
