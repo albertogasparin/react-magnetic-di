@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
-import { di, DiProvider, mock, withDi } from 'react-magnetic-di/macro';
+import { di, DiProvider, injectable, withDi } from 'react-magnetic-di/macro';
 
-const useStateMock = mock(useState, () => useState(true));
+const useStateDi = injectable(useState, () => useState(true));
 
 const MyComponent = () => {
   di(useState);
@@ -12,7 +12,7 @@ const MyComponent = () => {
   );
 };
 
-const MyComponentWithDi = withDi(MyComponent, [useStateMock]);
+const MyComponentWithDi = withDi(MyComponent, [useStateDi]);
 
 /**
  * Main App
@@ -23,7 +23,7 @@ const App = () => (
     <main>
       <MyComponent />
       <hr />
-      <DiProvider use={[useStateMock]} target={MyComponent}>
+      <DiProvider use={[useStateDi]} target={MyComponent}>
         <MyComponent />
       </DiProvider>
       <hr />

@@ -1,3 +1,4 @@
+import { PACKAGE_NAME } from './constants';
 import { Context } from './context';
 import { warnOnce, mock } from './utils';
 
@@ -10,13 +11,15 @@ function di(deps, target) {
     return getDependencies(deps, target);
   } else {
     warnOnce(
-      `Seems like you are using react-magnetic-di without Babel plugin. ` +
-        `Please add 'react-magnetic-di/babel' to your Babel config to enabled dependency injection. ` +
-        'Without such plugin di(...) is a no-op.'
+      `Seems like you are using ${PACKAGE_NAME} without Babel plugin. ` +
+        `Please add '${PACKAGE_NAME}/babel-plugin' to your Babel config ` +
+        `or import from '${PACKAGE_NAME}/macro' if your are using 'babel-plugin-macros'. ` +
+        'di(...) run as a no-op.'
     );
   }
 }
 
+/** @deprecated use injectable instead */
 di.mock = mock;
 
 export { di };

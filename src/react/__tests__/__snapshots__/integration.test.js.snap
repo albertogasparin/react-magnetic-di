@@ -6,13 +6,13 @@ exports[`Integration should allow override composition 1`] = `
     <Label>
       <di(Wrapper)>
         <di(Text)>
-          mock
+          replacement
         </di(Text)>
       </di(Wrapper)>
     </Label>
     <Input>
       <di(Text)>
-        mock
+        replacement
       </di(Text)>
     </Input>
   </DiProvider>
@@ -24,7 +24,7 @@ exports[`Integration should get closest dependency if multiple providers using s
   <Label>
     <Wrapper>
       <di(Text)>
-        mock
+        replacement
       </di(Text)>
     </Wrapper>
   </Label>
@@ -46,7 +46,7 @@ exports[`Integration should only override dependencies of specified target 1`] =
     <Label>
       <Wrapper>
         <di(Text)>
-          mock
+          replacement
         </di(Text)>
       </Wrapper>
     </Label>
@@ -64,13 +64,13 @@ exports[`Integration should override all dependencies of same type 1`] = `
   <Label>
     <Wrapper>
       <di(Text)>
-        mock
+        replacement
       </di(Text)>
     </Wrapper>
   </Label>
   <Input>
     <di(Text)>
-      mock
+      replacement
     </di(Text)>
   </Input>
 </DiProvider>"

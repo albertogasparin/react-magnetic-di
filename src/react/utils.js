@@ -13,9 +13,12 @@ export function getDisplayName(Comp, fallback = 'Unknown') {
   return Comp.displayName || Comp.name || fallback;
 }
 
-export function mock(original, mockImpl) {
-  mockImpl.displayName =
-    getDisplayName(mockImpl, '') || `di(${getDisplayName(original)})`;
-  mockImpl[KEY] = original;
-  return mockImpl;
+export function injectable(from, implementation) {
+  implementation.displayName =
+    getDisplayName(implementation, '') || `di(${getDisplayName(from)})`;
+  implementation[KEY] = from;
+  return implementation;
 }
+
+/** @deprecated use injectable instead */
+export const mock = injectable;

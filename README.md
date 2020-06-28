@@ -10,7 +10,7 @@
   <!--a href="CONTRIBUTING"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" /></a-->
 </p>
 
-A new take for dependency injection in React for your tests, storybooks and even experiments in production.
+A new take for dependency injection / dependency replacement in React for your tests, storybooks and even experiments in production.
 
 - Close-to-zero performance overhead on dev/testing
 - **Zero** performance overhead on production (code gets stripped unless told otherwise)
@@ -18,15 +18,11 @@ A new take for dependency injection in React for your tests, storybooks and even
 - Replaces dependencies at any depth of the React tree
 - Allows selective injection
 - Enforces separation of concerns, keeps your component API clean
-- Just uses Context, it does not mess up with React internals or require
+- Just uses Context, it does not mess up with React internals or modules/require
 
 ## Philosophy
 
-Dependency injection and component injection for testing purposes is not a new topic. Indeed, the ability to provide a custom implementation of a component/hook while testing or writing storybooks and examples it is extremely valuable.
-
-A common pattern to solve this problem is injecting those "dependencies" via props or using mocking libraries at import/require level. Those approaches however have some of downsides, like leaking internal implementation details into the component's public API, being quite fragile or introducing additional typing complexity.
-
-`react-magnetic-di` takes inspiration from decorators, and with a touch of Babel magic and React Context allows you to optionally override such dependencies, with nearly-zero performance overhead while developing/testing (it's basically a function call and a map lookup) and it is fully removed (by default) on production builds.
+Dependency injection and component injection is not a new topic. Especially the ability to provide a custom implementation of a component/hook while testing or writing storybooks and examples it is extremely valuable. `react-magnetic-di` takes inspiration from decorators, and with a touch of Babel magic and React Context allows you to optionally override "marked" dependencies inside your components so you can swap implementations only when needed.
 
 ## Usage
 
@@ -48,12 +44,11 @@ Edit your Babel config file (`.babelrc` / `babel.config.js` / ...) and add:
   ],
 ```
 
-If you are using Create React App or babel macros, you don't need the babel plugin: just import from `react-magnetic-di/macro` (see next paragraph).
+If you are using Create React App or babel macros, you don't need the babel plugin: just import the methods from `react-magnetic-di/macro` (see next example).
 
-### Using dependency injection in your components
+### Using injection replacement in your components
 
-Given a component with complex UI interaction or data dependencies, like a Modal or an Apollo Query, we want to be able integration test it without necessarily test those other dependencies.
-To achieve that, we mark such dependencies in the `render` function of the class component:
+Given a component with complex UI interaction or data dependencies, like a Modal or an Apollo Query, we want to easily be able to integration test it. To achieve that, we "mark" such dependencies in the `render` function of the class component:
 
 ```jsx
 import React, { Component } from 'react';
@@ -81,11 +76,6 @@ class MyComponent extends Component {
 Or on our functional component with hooks:
 
 ```jsx
-import React, { Component } from 'react';
-import { di } from 'react-magnetic-di';
-import { Modal } from 'material-ui';
-import { useQuery } from 'react-apollo-hooks';
-
 function MyComponent() {
   // "mark" any type of function/class as injectable
   di(Modal, useQuery);
@@ -95,27 +85,26 @@ function MyComponent() {
 }
 ```
 
-### Leveraging dependency injection in tests and storybooks
+### Leveraging dependency replacement in tests and storybooks
 
-In the unit/integration tests or storybooks we can create a mock implementation and wrap the component with `DiProvider` to override any dependency:
+In the unit/integration tests or storybooks we can create a new injectable implementation and wrap the component with `DiProvider` to override such dependency:
 
 ```jsx
 import React from 'react';
-import { DiProvider, mock } from 'react-magnetic-di';
+import { DiProvider, injectable } from 'react-magnetic-di';
 import { Modal } from 'material-ui';
 import { useQuery } from 'react-apollo-hooks';
 
-// mock() accepts the original implementation as first argument
+// injectable() needs the original implementation as first argument
 // and the replacement implementation as second
-// (you can also import { di } and use di.mock() if you like)
-const ModalOpenMock = mock(Modal, () => <div />);
-const useQueryMock = mock(useQuery, () => ({ data: null }));
+const ModalOpenDi = injectable(Modal, () => <div />);
+const useQueryDi = injectable(useQuery, () => ({ data: null }));
 
 // test-enzyme.js
 it('should render with enzyme', () => {
   const container = mount(<MyComponent />, {
     wrappingComponent: DiProvider,
-    wrappingComponentProps: { use: [ModalOpenMock, useQueryMock] },
+    wrappingComponentProps: { use: [ModalOpenDi, useQueryDi] },
   });
   expect(container.html()).toMatchSnapshot();
 });
@@ -123,14 +112,14 @@ it('should render with enzyme', () => {
 // test-testing-library.js
 it('should render with react-testing-library', () => {
   const { container } = render(<MyComponent />, {
-    wrapper: (p) => <DiProvider use={[ModalOpenMock, useQueryMock]} {...p} />,
+    wrapper: (p) => <DiProvider use={[ModalOpenDi, useQueryDi]} {...p} />,
   });
   expect(container).toMatchSnapshot();
 });
 
 // story.js
 storiesOf('Modal content', module).add('with text', () => (
-  <DiProvider use={[ModalOpenMock, useQueryMock]}>
+  <DiProvider use={[ModalOpenDi, useQueryDi]}>
     <MyComponent />
   </DiProvider>
 ));
@@ -141,8 +130,8 @@ In the example above we replace all `Modal` and `useQuery` dependencies across a
 ```jsx
 // story.js
 storiesOf('Modal content', module).add('with text', () => (
-  <DiProvider target={[MyComponent, MyOtherComponent]} use={[ModalOpen]}>
-    <DiProvider target={MyComponent} use={[useQuery]}>
+  <DiProvider target={[MyComponent, MyOtherComponent]} use={[ModalOpenDi]}>
+    <DiProvider target={MyComponent} use={[useQueryDi]}>
       <MyComponent />
       <MyOtherComponent>
     </DiProvider>
@@ -150,28 +139,28 @@ storiesOf('Modal content', module).add('with text', () => (
 ));
 ```
 
-In the example above `MyComponent` will have both `ModalOpen` and `useQuery` replaced while `MyOtherComponent` only `ModalOpen`. Be aware that `target` needs an actual component declaration to work, so will not work in cases where the component is fully anonymous (eg: `export default () => ...` or `forwardRef(() => ...)`).
+In the example above `MyComponent` will have both `ModalOpen` and `useQuery` replaced while `MyOtherComponent` only `ModalOpen`. Be aware that `target` needs an **actual component** declaration to work, so will not work in cases where the component is fully anonymous (eg: `export default () => ...` or `forwardRef(() => ...)`).
 
 The library also provides a `withDi` HOC in case you want to export components with dependencies alredy injected:
 
 ```jsx
 import React from 'react';
-import { withDi, mock } from 'react-magnetic-di';
+import { withDi, injectable } from 'react-magnetic-di';
 import { Modal } from 'material-ui';
 import { MyComponent } from './my-component';
 
-const ModalOpenMock = mock(Modal, () => <div />);
+const ModalOpenDi = injectable(Modal, () => <div />);
 
-export default withDi(MyComponent, [Modal]);
+export default withDi(MyComponent, [ModalOpenDi]);
 ```
 
 `withDi` supports the same API as `DiProvider`, where `target` is the third argument of the HOC `withDi(MyComponent, [Modal], MyComponent)` in case you want to limit injection to a specific component only.
 
 ### Configuration Options
 
-#### Enable dependency injection on production (or custom env)
+#### Enable dependency replacement on production (or custom env)
 
-By default dependency injection is enabled on `development` and `test` environments only, which means `di(...)` is removed on production builds. If you want to allow dependency injection on production too (or on a custom env) you can use the `forceEnable` option:
+By default dependency replacement is enabled on `development` and `test` environments only, which means `di(...)` is removed on production builds. If you want to allow injection on production too (or on a custom env) you can use the `forceEnable` option:
 
 ```
 // In your .babelrc / babel.config.js
@@ -185,7 +174,7 @@ By default dependency injection is enabled on `development` and `test` environme
 ## Current limitations
 
 - Does not support Enzyme shallow ([due to shallow not fully supporting context](https://github.com/enzymejs/enzyme/issues/2176)). If you wish to shallow anyway, you could mock `di` and manually return the array of mocked dependencies, but it is not recommended.
-- Does not support dynamic `use` and `target` props
+- Does not support dynamic `use` and `target` props (changes are ignored)
 
 ## Contributing
 
