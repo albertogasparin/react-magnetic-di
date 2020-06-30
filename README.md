@@ -32,7 +32,7 @@ npm i react-magnetic-di
 yarn add react-magnetic-di
 ```
 
-### Adding babel plugin
+### Adding babel plugin (or using macro)
 
 Edit your Babel config file (`.babelrc` / `babel.config.js` / ...) and add:
 
@@ -162,7 +162,7 @@ export default withDi(MyComponent, [ModalOpenDi]);
 
 By default dependency replacement is enabled on `development` and `test` environments only, which means `di(...)` is removed on production builds. If you want to allow injection on production too (or on a custom env) you can use the `forceEnable` option:
 
-```
+```js
 // In your .babelrc / babel.config.js
   // ... other stuff like presets
   plugins: [
@@ -170,6 +170,19 @@ By default dependency replacement is enabled on `development` and `test` environ
     ['react-magnetic-di/babel-plugin', { forceEnable: true }],
   ],
 ```
+
+## Eslint plugin and rules
+
+In order to enforce better practices, this package exports some eslint rules:
+
+| rule                | description                                                                              | options                  |
+| ------------------- | ---------------------------------------------------------------------------------------- | ------------------------ |
+| `order`             | enforces `di(...)` to be the top of the block, to reduce chances of partial replacements | -                        |
+| `exhaustive-inject` | enforces all external components/hooks being used to be marked as injectable.            | `ignore`: array of names |
+| `no-duplicate`      | prohibits marking the same dependency as injectable more than once in the same block     | -                        |
+| `no-extraneous`     | enforces dependencies to be consumed in the scope, to prevent unused variables           | -                        |
+
+The rules are exported from `react-magnetic-di/eslint-plugin`. Unfortunately Eslint does not allow plugins that are not npm packages, so rules needs to be imported via other means.
 
 ## Current limitations
 
