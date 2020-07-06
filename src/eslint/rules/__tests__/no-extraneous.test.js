@@ -1,5 +1,6 @@
 import { RuleTester } from 'eslint';
 import rule from '../no-extraneous';
+import { genericCases } from './utils';
 
 RuleTester.setDefaultConfig({
   parserOptions: {
@@ -12,6 +13,9 @@ RuleTester.setDefaultConfig({
 var ruleTester = new RuleTester();
 ruleTester.run('no-extraneous', rule, {
   valid: [
+    // it should pass generic cases
+    ...genericCases,
+
     // it should pass with components/hooks with more than one occurrence
     `
       import { Fragment } from 'react';

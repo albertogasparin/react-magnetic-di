@@ -1,16 +1,21 @@
 import { RuleTester } from 'eslint';
 import rule from '../order';
+import { genericCases } from './utils';
 
 RuleTester.setDefaultConfig({
   parserOptions: {
     ecmaVersion: 6,
     sourceType: 'module',
+    ecmaFeatures: { jsx: true },
   },
 });
 
 var ruleTester = new RuleTester();
 ruleTester.run('order', rule, {
   valid: [
+    // it should pass generic cases
+    ...genericCases,
+
     // should pass if injection at the top
     `
       import { useState } from 'react';
