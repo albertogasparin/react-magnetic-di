@@ -100,6 +100,8 @@ module.exports = {
       // as JSX elements are not treated as variables, for each JSX tag
       // we check if there is a block with di() above and if that includes it
       'JSXOpeningElement:exit'(node) {
+        if (!diIdentifier) return;
+
         let varNode;
         switch (node.name.type) {
           case 'JSXIdentifier': {

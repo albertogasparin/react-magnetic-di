@@ -69,6 +69,8 @@ module.exports = {
       // as JSX elements are not treated as variables, for each JSX tag
       // we check if there is a block with di() above and collect the tag as var
       'JSXOpeningElement:exit'(node) {
+        if (!diIdentifier) return;
+
         let varNode;
         switch (node.name.type) {
           case 'JSXIdentifier': {
@@ -91,6 +93,8 @@ module.exports = {
       },
 
       'BlockStatement:exit'(node) {
+        if (!diIdentifier) return;
+
         const blockVars = blockReferences.get(node);
         if (!blockVars) return;
         blockVars.di.forEach((varNode) => {

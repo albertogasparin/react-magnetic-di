@@ -1,5 +1,6 @@
 import { RuleTester } from 'eslint';
 import rule from '../exhaustive-inject';
+import { genericCases } from './utils';
 
 RuleTester.setDefaultConfig({
   parserOptions: {
@@ -12,6 +13,9 @@ RuleTester.setDefaultConfig({
 var ruleTester = new RuleTester();
 ruleTester.run('exhaustive-inject', rule, {
   valid: [
+    // it should pass generic cases
+    ...genericCases,
+
     // it should ignore built-in react components
     `
       import { Fragment } from 'react';

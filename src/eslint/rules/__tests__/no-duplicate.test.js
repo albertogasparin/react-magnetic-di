@@ -1,16 +1,21 @@
 import { RuleTester } from 'eslint';
 import rule from '../no-duplicate';
+import { genericCases } from './utils';
 
 RuleTester.setDefaultConfig({
   parserOptions: {
     ecmaVersion: 6,
     sourceType: 'module',
+    ecmaFeatures: { jsx: true },
   },
 });
 
 var ruleTester = new RuleTester();
 ruleTester.run('no-duplicate', rule, {
   valid: [
+    // it should pass generic cases
+    ...genericCases,
+
     // is should pass if only one occurrence
     `
       import { useState } from 'react';
