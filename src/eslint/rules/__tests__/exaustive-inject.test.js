@@ -39,6 +39,46 @@ ruleTester.run('exhaustive-inject', rule, {
         return useContext();
       }
     `,
+    // it should ignore components and hooks defined locally
+    `
+      import { useState } from 'react';
+      import { di } from 'react-magnetic-di';
+
+      function MyComponent() {
+        di(useState);
+        const ServiceLocal = () => null;
+        const useServiceLocal = () => null;
+
+        const [s] = useState();
+        useServiceLocal();
+        return <ServiceLocal />;
+      }
+    `,
+    // it should ignore components and hooks in props
+    `
+      import { useState } from 'react';
+      import { di } from 'react-magnetic-di';
+
+      function MyComponent({ useServiceProp, ServiceProp }) {
+        di(useState);
+        const [s] = useState();
+        useServiceProp();
+        return <ServiceProp />;
+      }
+    `,
+    // it should ignore components and hooks in default props
+    `
+      import { useState } from 'react';
+      import { di } from 'react-magnetic-di';
+      import { useDefaultService, DefaultService } from './service';
+
+      const MyComponent = ({ useService = useDefaultService, Service = DefaultService }) => {
+        di(useState);
+        useState();
+        useService();
+        return <Service />;
+      }
+    `,
     {
       // it should ignore components specified in config options
       code: `

@@ -17,6 +17,15 @@ const getReactIdentifiers = (node) => {
   }
 };
 
+const isDefaultProp = (node, diStatement) => {
+  // we assume order rule is enabled, so if the variable is used in an assignment
+  // defined before our di() statements, then it's probably default props
+  return (
+    node.parent.type === 'AssignmentPattern' &&
+    node.range[0] < diStatement.range[0]
+  );
+};
+
 module.exports = {
   meta: {
     type: 'suggestion',
@@ -90,7 +99,8 @@ module.exports = {
             !isInjectable ||
             isInjected(diVars, varNode) ||
             isReactIgnored(varNode) ||
-            isOptionsIgnored(varNode)
+            isOptionsIgnored(varNode) ||
+            isDefaultProp(varNode, diStatements[0])
           )
             return;
           report(varNode, diStatements[diStatements.length - 1]);
@@ -101,6 +111,10 @@ module.exports = {
       // we check if there is a block with di() above and if that includes it
       'JSXOpeningElement:exit'(node) {
         if (!diIdentifier) return;
+
+        // ignore if the component is declared locally
+        const localVars = context.getScope().variables.map((v) => v.name);
+        if (localVars.includes(node.name.name)) return;
 
         let varNode;
         switch (node.name.type) {
