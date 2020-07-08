@@ -79,6 +79,19 @@ ruleTester.run('exhaustive-inject', rule, {
         return <Service />;
       }
     `,
+    // it should ignore components handled in deeper scopes
+    `
+      import { useState, useMemo } from 'react';
+      import { di } from 'react-magnetic-di';
+      import { useDefaultService, DefaultService } from './service';
+
+      const MyComponent = ({ Service }) => {
+        di(useState);
+        useState();
+        const Component = useMemo(() => <Service />, [Service]);
+        return <Component />;
+      }
+    `,
     {
       // it should ignore components specified in config options
       code: `
