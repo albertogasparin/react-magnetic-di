@@ -5,6 +5,7 @@ const {
   getDiVars,
   isHookName,
   isComponentName,
+  isLocalVariable,
 } = require('../utils');
 
 const getReactIdentifiers = (node) => {
@@ -113,8 +114,8 @@ module.exports = {
         if (!diIdentifier) return;
 
         // ignore if the component is declared locally
-        const localVars = context.getScope().variables.map((v) => v.name);
-        if (localVars.includes(node.name.name)) return;
+        if (isLocalVariable(node.name, context.getScope(), diIdentifier))
+          return;
 
         let varNode;
         switch (node.name.type) {

@@ -10,6 +10,24 @@ const isHookName = (node) => /^use[A-Z0-9].*$/.test(node.name);
 
 const isComponentName = (node) => !/^[a-z]/.test(node.name);
 
+const isLocalVariable = (node, scope, diIdentifier) => {
+  do {
+    // if we reach module/global scope then is not local
+    if (scope.type === 'module' || scope.type === 'global') return false;
+
+    const isLocal = scope.variables.some((v) => v.name === node.name);
+    if (isLocal) return true;
+
+    // if we got to the scope containing di() and was not found in variables yet
+    // we presume it is not local
+    if (scope.references.some((r) => r.identifier.name === diIdentifier.name))
+      return false;
+    // eslint-disable-next-line no-cond-assign
+  } while ((scope = scope.upper));
+
+  return false;
+};
+
 const getDiIdentifier = (node) => {
   const importSource = node.source.value;
   const importSpecifier = node.specifiers.find(
@@ -50,6 +68,7 @@ module.exports = {
   isDiStatement,
   isHookName,
   isComponentName,
+  isLocalVariable,
   getDiIdentifier,
   getDiStatements,
   getParentDiBlock,
