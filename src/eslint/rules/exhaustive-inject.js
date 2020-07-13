@@ -68,6 +68,11 @@ module.exports = {
         data: { name: node.name },
         fix(fixer) {
           const lastArg = diStatement.expression.arguments.slice(-1)[0];
+          if (!lastArg) {
+            // if injection without args, let's add the var inside call
+            const [start, end] = diStatement.expression.callee.range;
+            return fixer.insertTextAfterRange([start, end + 1], node.name);
+          }
           return fixer.insertTextAfter(lastArg, `, ${node.name}`);
         },
       });
