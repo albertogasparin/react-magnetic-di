@@ -181,8 +181,9 @@ In order to enforce better practices, this package exports some eslint rules:
 | `exhaustive-inject` | enforces all external components/hooks being used to be marked as injectable.            | `ignore`: array of names |
 | `no-duplicate`      | prohibits marking the same dependency as injectable more than once in the same block     | -                        |
 | `no-extraneous`     | enforces dependencies to be consumed in the scope, to prevent unused variables           | -                        |
+| `sort-dependencies` | require injectable dependencies to be sorted                                             | -                        |
 
-The rules are exported from `react-magnetic-di/eslint-plugin`. Unfortunately Eslint does not allow plugins that are not npm packages, so rules needs to be imported via other means.
+The rules are exported from `react-magnetic-di/eslint-plugin`. Unfortunately Eslint does not allow plugins that are not npm packages, so rules needs to be imported via other means for now.
 
 ## Current limitations
 
