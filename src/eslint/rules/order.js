@@ -26,7 +26,7 @@ module.exports = {
       BlockStatement(node) {
         if (!diIdentifier) return;
 
-        node.body.forEach((statement, i) => {
+        (node.body || []).forEach((statement, i) => {
           if (!isDiStatement(statement, diIdentifier) || i === 0) return;
 
           const prev = node.body[i - 1];

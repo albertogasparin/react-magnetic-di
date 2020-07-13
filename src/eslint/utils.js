@@ -4,6 +4,7 @@ const PACKAGE_FUNCTION = 'di';
 const isDiStatement = (stm, spec) =>
   stm.type === 'ExpressionStatement' &&
   stm.expression &&
+  stm.expression.callee &&
   stm.expression.callee.name === spec.name;
 
 const isHookName = (node) => /^use[A-Z0-9].*$/.test(node.name);

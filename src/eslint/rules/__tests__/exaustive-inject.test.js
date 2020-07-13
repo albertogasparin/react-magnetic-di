@@ -219,5 +219,28 @@ ruleTester.run('exhaustive-inject', rule, {
         }
       `,
     },
+
+    {
+      // it should fix empty injections
+      code: `
+        import React, { useState } from 'react';
+        import { di } from 'react-magnetic-di';
+
+        const useData = () => {
+          di();
+          return useState();
+        };
+      `,
+      errors: [{ messageId: 'missingInject', type: 'ExpressionStatement' }],
+      output: `
+        import React, { useState } from 'react';
+        import { di } from 'react-magnetic-di';
+
+        const useData = () => {
+          di(useState);
+          return useState();
+        };
+      `,
+    },
   ],
 });
