@@ -11,7 +11,7 @@ type Props = {|
 
 export class Section extends Component<Props> {
   render() {
-    di(Label, Input);
+    di(Input, Label);
 
     const { title } = this.props;
     return (

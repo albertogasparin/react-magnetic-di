@@ -12,7 +12,7 @@ module.exports = {
     schema: [],
     messages: {
       unsortedInjectable:
-        'Expected dependencie names to be sorted. ' +
+        'Expected dependencies to be ordered by name. ' +
         "'{{name}}' should be before '{{prevName}}'.",
     },
   },

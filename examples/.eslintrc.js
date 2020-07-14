@@ -8,5 +8,6 @@ module.exports = {
     'local/exhaustive-inject': ['error'],
     'local/no-duplicate': ['error'],
     'local/no-extraneous': ['error'],
+    'local/sort-dependencies': ['error'],
   },
 };
