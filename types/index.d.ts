@@ -24,6 +24,12 @@ declare module 'react-magnetic-di' {
   function injectable<T extends Dependency>(from: T, implementation: T): T;
 
   function di(...dependencies: Dependency[]): void;
+  /** allow using di without Babel */
+  function di<T extends Dependency>(
+    dependencies: T[],
+    self: ComponentType<any> | null
+  ): T[];
+
   class di {
     /** @deprecated use injectable instead */
     static mock: typeof mock;

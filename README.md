@@ -189,6 +189,26 @@ The rules are exported from `react-magnetic-di/eslint-plugin`. Unfortunately Esl
 
 - Does not support Enzyme shallow ([due to shallow not fully supporting context](https://github.com/enzymejs/enzyme/issues/2176)). If you wish to shallow anyway, you could mock `di` and manually return the array of mocked dependencies, but it is not recommended.
 - Does not support dynamic `use` and `target` props (changes are ignored)
+- Officially supports injecting only functions/classes. If you need to inject some other data types, create a simple getter and use that as dependency.
+- Does not replace default props (or default parameters in general): so dependencies provided as default parameters (eg `function MyComponent ({ modal = Modal }) { ... }`) will be ignored. If you accept the dependency as prop/argument you should inject it via prop/argument, as having a double injection strategy is just confusing.
+
+## Can it be used without Babel plugin?
+
+Yes, but you will have to handle variable assignment yourself, which is a bit verbose. In this mode `di` needs an array of dependencies as first argument and the component, or `null`, as second (to make `target` behaviour work). Moreover, `di` won't be removed on prod builds and ESLint rules are not currently compatible with this mode.
+
+```js
+import React, { Component } from 'react';
+import { di } from 'react-magnetic-di';
+import { Modal as ModalInj } from 'material-ui';
+import { useQuery as useQueryInj } from 'react-apollo';
+
+function MyComponent() {
+  const [Modal, useQuery] = di([ModalInj, useQueryInj], MyComponent);
+
+  const { data } = useQuery();
+  return <Modal>{data && 'Done!'}</Modal>;
+}
+```
 
 ## Contributing
 
