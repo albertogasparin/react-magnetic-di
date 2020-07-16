@@ -37,6 +37,17 @@ ruleTester.run('sort-dependencies', rule, {
         return null;
       }
     `,
+    // should group components (first) and hooks/functions (second)
+    `
+      import { useContext, useState } from 'react';
+      import { di } from 'react-magnetic-di';
+      import { MyStuff, ZooStuff, fetch } from './my-stuff';
+
+      export const MyComponent = ({ src, useSmall = true }) => {
+        di(MyStuff, ZooStuff, fetch, useContext, useState);
+        return <MyStuff src={src} useSmall={useSmall} />;
+      }
+    `,
   ],
 
   invalid: [
