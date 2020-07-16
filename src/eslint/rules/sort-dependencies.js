@@ -1,5 +1,8 @@
 const { getDiIdentifier, getDiStatements } = require('../utils');
 
+// use simple numeric comparison to have uppercase (components) first
+const compareName = (a, b) => (a.name > b.name ? 1 : -1);
+
 module.exports = {
   meta: {
     type: 'suggestion',
@@ -54,13 +57,11 @@ module.exports = {
           const args = statement.expression.arguments;
           // sort uppercase first, lowercase after
           // so we get components and hooks grouped
-          const sortedArgs = args
-            .slice()
-            .sort((a, b) => a.name.localeCompare(b.name));
+          const sortedArgs = args.slice().sort(compareName);
 
           args.forEach((arg, i) => {
             const prevArg = args[i - 1];
-            if (prevArg && arg.name.localeCompare(prevArg.name) < 0) {
+            if (prevArg && compareName(arg, prevArg) < 0) {
               report(arg, prevArg, args, sortedArgs);
             }
           });
