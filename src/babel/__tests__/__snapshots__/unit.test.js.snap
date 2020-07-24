@@ -148,6 +148,12 @@ export const Example = withInjection(() => null, []);
 Example.displayName = \\"Example\\";"
 `;
 
+exports[`displayName should ignore locations where it is wrapped 1`] = `
+"import { withDi } from 'react-magnetic-di';
+import { withIntl } from 'react-intl';
+export const Example = withIntl(withDi(() => null, []));"
+`;
+
 exports[`displayName should not be changed for default export 1`] = `
 "import { withDi } from 'react-magnetic-di';
 export default withDi(() => null, []);"

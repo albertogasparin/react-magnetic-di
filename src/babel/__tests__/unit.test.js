@@ -292,6 +292,16 @@ describe('displayName', () => {
     expect(babel(input)).toMatchSnapshot();
   });
 
+  it('should ignore locations where it is wrapped', () => {
+    const input = `
+      import { withDi } from 'react-magnetic-di';
+      import { withIntl } from 'react-intl';
+
+      export const Example = withIntl(withDi(() => null, []));
+    `;
+    expect(babel(input)).toMatchSnapshot();
+  });
+
   it.todo(
     'should not be duplicated if set elsewhere'
     /*

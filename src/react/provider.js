@@ -53,6 +53,6 @@ export function withDi(Comp, deps, target = null) {
       <Comp ref={ref} {...props} />
     </DiProvider>
   ));
-  WrappedComponent.displayName = `withDi(${getDisplayName(Comp)})`;
+  WrappedComponent.displayName = getDisplayName(Comp, 'withDi');
   return WrappedComponent;
 }
