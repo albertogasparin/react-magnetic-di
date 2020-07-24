@@ -9,13 +9,14 @@ export function warnOnce(message) {
   }
 }
 
-export function getDisplayName(Comp, fallback = 'Unknown') {
-  return Comp.displayName || Comp.name || fallback;
+export function getDisplayName(Comp, wrapper = '') {
+  const name = Comp.displayName || Comp.name;
+  return !name || !wrapper ? name : `${wrapper}(${name})`;
 }
 
 export function injectable(from, implementation) {
   implementation.displayName =
-    getDisplayName(implementation, '') || `di(${getDisplayName(from)})`;
+    getDisplayName(implementation) || getDisplayName(from, 'di');
   implementation[KEY] = from;
   return implementation;
 }

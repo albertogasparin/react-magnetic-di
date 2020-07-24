@@ -124,4 +124,17 @@ describe('withDi', () => {
       use: [TextDi],
     });
   });
+
+  it('should enhance displayName if component has displayNanme', () => {
+    function MyComponent() {}
+    const WrappedComponent = withDi(MyComponent, []);
+
+    expect(WrappedComponent.displayName).toEqual('withDi(MyComponent)');
+  });
+
+  it('should not set displayName if component has not', () => {
+    const WrappedComponent = withDi(() => null, []);
+
+    expect(WrappedComponent.displayName).toEqual('');
+  });
 });
