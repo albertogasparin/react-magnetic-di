@@ -125,7 +125,8 @@ storiesOf('Modal content', module).add('with text', () => (
 ));
 ```
 
-In the example above we replace all `Modal` and `useQuery` dependencies across all components in the tree with the custom versions. If you want to replace dependencies **only** for a specific component (or set of components) you can use the `target` prop:
+In the example above we replace all `Modal` and `useQuery` dependencies across all components in the tree with the custom versions. 
+If you want to replace dependencies **only** for a specific component (or set of components) you can use the `target` prop:
 
 ```jsx
 // story.js
@@ -141,7 +142,7 @@ storiesOf('Modal content', module).add('with text', () => (
 
 In the example above `MyComponent` will have both `ModalOpen` and `useQuery` replaced while `MyOtherComponent` only `ModalOpen`. Be aware that `target` needs an **actual component** declaration to work, so will not work in cases where the component is fully anonymous (eg: `export default () => ...` or `forwardRef(() => ...)`).
 
-The library also provides a `withDi` HOC in case you want to export components with dependencies alredy injected:
+The library also provides a `withDi` HOC in case you want to export components with dependencies already injected:
 
 ```jsx
 import React from 'react';
@@ -154,7 +155,11 @@ const ModalOpenDi = injectable(Modal, () => <div />);
 export default withDi(MyComponent, [ModalOpenDi]);
 ```
 
-`withDi` supports the same API as `DiProvider`, where `target` is the third argument of the HOC `withDi(MyComponent, [Modal], MyComponent)` in case you want to limit injection to a specific component only.
+`withDi` supports the same API and capabilities as `DiProvider`, where `target` is the third argument of the HOC `withDi(MyComponent, [Modal], MyComponent)` in case you want to limit injection to a specific component only.
+
+When you have the same dependency replaced multiple times, there are two behaviours that determine which injectable will "win":
+- the one defined on the closest `DiProvider` wins. So you can declare more specific replacements by wrapping components with `DiProvider` or `withDi` and those will win over same type injectables on other top level `DiProvider`s
+- the injectable defined last in the `use` array wins. So you can define common injectables but still override each type case by case (eg: `<DiProvider use={[...commonDeps, specificInjectable]}>`
 
 ### Configuration Options
 
@@ -171,9 +176,9 @@ By default dependency replacement is enabled on `development` and `test` environ
   ],
 ```
 
-## Eslint plugin and rules
+## ESLint plugin and rules
 
-In order to enforce better practices, this package exports some eslint rules:
+In order to enforce better practices, this package exports some ESLint rules:
 
 | rule                | description                                                                              | options                  |
 | ------------------- | ---------------------------------------------------------------------------------------- | ------------------------ |
@@ -183,7 +188,7 @@ In order to enforce better practices, this package exports some eslint rules:
 | `no-extraneous`     | enforces dependencies to be consumed in the scope, to prevent unused variables           | -                        |
 | `sort-dependencies` | require injectable dependencies to be sorted                                             | -                        |
 
-The rules are exported from `react-magnetic-di/eslint-plugin`. Unfortunately Eslint does not allow plugins that are not npm packages, so rules needs to be imported via other means for now.
+The rules are exported from `react-magnetic-di/eslint-plugin`. Unfortunately ESLint does not allow plugins that are not npm packages, so rules needs to be imported via other means for now.
 
 ## Current limitations
 
@@ -192,7 +197,9 @@ The rules are exported from `react-magnetic-di/eslint-plugin`. Unfortunately Esl
 - Officially supports injecting only functions/classes. If you need to inject some other data types, create a simple getter and use that as dependency.
 - Does not replace default props (or default parameters in general): so dependencies provided as default parameters (eg `function MyComponent ({ modal = Modal }) { ... }`) will be ignored. If you accept the dependency as prop/argument you should inject it via prop/argument, as having a double injection strategy is just confusing.
 
-## Can it be used without Babel plugin?
+## FAQ
+
+#### Can it be used without Babel plugin?
 
 Yes, but you will have to handle variable assignment yourself, which is a bit verbose. In this mode `di` needs an array of dependencies as first argument and the component, or `null`, as second (to make `target` behaviour work). Moreover, `di` won't be removed on prod builds and ESLint rules are not currently compatible with this mode.
 
@@ -209,6 +216,7 @@ function MyComponent() {
   return <Modal>{data && 'Done!'}</Modal>;
 }
 ```
+
 
 ## Contributing
 
