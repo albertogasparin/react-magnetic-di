@@ -15,10 +15,12 @@ export function Input(props: InputProps) {
   const [style] = useTheme();
 
   return (
-    <input
-      style={{ border: `1px solid ${style.color}` }}
-      placeholder="Type..."
-      {...props}
-    />
+    <>
+      <input
+        style={{ border: `1px solid ${style.color}` }}
+        placeholder="Type..."
+        {...props}
+      />
+    </>
   );
 }

@@ -7,9 +7,11 @@ import { useTheme as useThemeLabel } from './components/label';
 
 export const InputExample = injectable(Input, () => {
   return (
-    <select>
-      <option>Type...?</option>
-    </select>
+    <>
+      <select>
+        <option>Type...?</option>
+      </select>
+    </>
   );
 });
 
