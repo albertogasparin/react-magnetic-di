@@ -22,7 +22,7 @@ import Modal from 'modal';
 
 class MyComponent extends Component {
   render() {
-    var [_Modal] = di([Modal], MyComponent);
+    const [_Modal] = di([Modal], MyComponent);
     return __jsx(_Modal, null);
   }
 
@@ -35,7 +35,7 @@ import React from 'react';
 import Modal from 'modal';
 
 const MyComponent = () => {
-  var [_Modal] = injectable([Modal], MyComponent);
+  const [_Modal] = injectable([Modal], MyComponent);
   return __jsx(DiProvider, null, __jsx(_Modal, null));
 };"
 `;

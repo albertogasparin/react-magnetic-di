@@ -18,13 +18,19 @@ function processReference(t, ref, isEnabled) {
   // generating variable declarations with array destructuring
   // assigning them the result of the method call, with arguments
   // now wrapped in an array
-  ref.scope.push({
-    id: t.arrayPattern(dependencyIdentifiers),
-    init: t.callExpression(ref.node, [
-      t.arrayExpression(args),
-      getComponentDeclaration(t, ref.scope) || t.nullLiteral(),
-    ]),
-  });
+  statement.replaceWith(
+    t.variableDeclaration('const', [
+      t.variableDeclarator(
+        t.arrayPattern(dependencyIdentifiers),
+        t.callExpression(ref.node, [
+          t.arrayExpression(args),
+          getComponentDeclaration(t, ref.scope) || t.nullLiteral(),
+        ])
+      ),
+    ])
+  );
+
+  ref.scope.registerDeclaration(statement);
 
   args.forEach((argIdentifier) => {
     // for each argument we get the dependency variable name
@@ -35,9 +41,6 @@ function processReference(t, ref, isEnabled) {
     ref.scope.rename(name);
     argIdentifier.name = name;
   });
-
-  // remove the original statement
-  statement.remove();
 }
 
 module.exports = processReference;

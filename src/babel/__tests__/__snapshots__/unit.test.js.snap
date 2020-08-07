@@ -6,7 +6,7 @@ import { di } from 'react-magnetic-di';
 import Modal from 'modal';
 
 function MyComponent() {
-  var [_Modal] = di([Modal], MyComponent);
+  const [_Modal] = di([Modal], MyComponent);
   return __jsx(_Modal, null);
 }"
 `;
@@ -32,6 +32,18 @@ function MyComponent() {
 }"
 `;
 
+exports[`babel plugin should work and maintain location if not first 1`] = `
+"import React from 'react';
+import { di } from 'react-magnetic-di';
+import Modal from 'modal';
+export const MyComponent = function () {
+  const something = ''; // comment
+
+  const [_Modal] = di([Modal], MyComponent);
+  return __jsx(_Modal, null);
+};"
+`;
+
 exports[`babel plugin should work in class components 1`] = `
 "import React, { Component } from 'react';
 import { di } from 'react-magnetic-di';
@@ -39,7 +51,7 @@ import Modal from 'modal';
 
 class MyComponent extends Component {
   render() {
-    var [_Modal] = di([Modal], MyComponent);
+    const [_Modal] = di([Modal], MyComponent);
     return __jsx(_Modal, null);
   }
 
@@ -52,7 +64,7 @@ import { di } from 'react-magnetic-di';
 import Modal from 'modal';
 
 const MyComponent = () => {
-  var [_Modal] = di([Modal], MyComponent);
+  const [_Modal] = di([Modal], MyComponent);
   return __jsx(_Modal, null);
 };"
 `;
@@ -63,7 +75,7 @@ import { di, injectable } from 'react-magnetic-di';
 import Modal from 'modal';
 
 function MyComponent() {
-  var [_Modal] = di([Modal], MyComponent);
+  const [_Modal] = di([Modal], MyComponent);
   return __jsx(_Modal, null);
 }"
 `;
@@ -74,7 +86,7 @@ import { di, injectable } from 'react-magnetic-di';
 import Modal from 'modal';
 
 const MyComponent = function () {
-  var [_Modal] = di([Modal], MyComponent);
+  const [_Modal] = di([Modal], MyComponent);
   return __jsx(_Modal, null);
 };"
 `;
@@ -84,7 +96,7 @@ exports[`babel plugin should work in wrapped functional components 1`] = `
 import { di, injectable } from 'react-magnetic-di';
 import Modal from 'modal';
 const MyComponent = /*#__PURE__*/forwardRef(() => {
-  var [_Modal] = di([Modal], null);
+  const [_Modal] = di([Modal], null);
   return __jsx(_Modal, null);
 });"
 `;
@@ -96,7 +108,7 @@ import { di } from 'react-magnetic-di';
 const useModalStatus = () => true;
 
 const MyComponent2 = () => {
-  var [_useModalStatus] = di([useModalStatus], MyComponent2);
+  const [_useModalStatus] = di([useModalStatus], MyComponent2);
 
   const status = _useModalStatus();
 
@@ -112,7 +124,7 @@ import Modal from 'modal';
 const useModalStatus = () => true;
 
 function MyComponent() {
-  var [_Modal, _useModalStatus] = di([Modal, useModalStatus], MyComponent);
+  const [_Modal, _useModalStatus] = di([Modal, useModalStatus], MyComponent);
 
   const isOpen = _useModalStatus();
 
@@ -121,7 +133,7 @@ function MyComponent() {
 
 class MyComponent2 extends Component {
   render() {
-    var [_Modal2] = di([Modal], MyComponent2);
+    const [_Modal2] = di([Modal], MyComponent2);
     return __jsx(_Modal2, null);
   }
 

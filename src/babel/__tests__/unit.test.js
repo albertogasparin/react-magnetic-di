@@ -72,6 +72,22 @@ describe('babel plugin', () => {
     expect(babel(input)).toMatchSnapshot();
   });
 
+  it('should work and maintain location if not first', () => {
+    const input = `
+      import React from 'react';
+      import { di } from 'react-magnetic-di';
+      import Modal from 'modal';
+      
+      export const MyComponent = function () {
+        const something = '';
+        // comment
+        di(Modal);
+        return <Modal />;
+      }
+    `;
+    expect(babel(input)).toMatchSnapshot();
+  });
+
   it('should work in wrapped functional components', () => {
     const input = `
       import React, { forwardRef } from 'react';
