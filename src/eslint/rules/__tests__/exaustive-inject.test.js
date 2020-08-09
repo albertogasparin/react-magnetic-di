@@ -92,6 +92,23 @@ ruleTester.run('exhaustive-inject', rule, {
         return <Component />;
       }
     `,
+    // it should ignore components created in upper scopes
+    `
+      import React, { forwardRef, useState } from 'react';
+      import { di } from 'react-magnetic-di';
+
+      export const MyComponent = (ComponentArg, useArg) => {
+        const WithHOC = forwardRef(
+          (props) => {
+            di(useState);
+            useState();
+            useArg();
+            return <ComponentArg {...props} />;
+          }
+        );
+        return WithHOC;
+      };
+    `,
     {
       // it should ignore components specified in config options
       code: `
@@ -239,6 +256,54 @@ ruleTester.run('exhaustive-inject', rule, {
         const useData = () => {
           di(useState);
           return useState();
+        };
+      `,
+    },
+    {
+      // it should fix locally defined component in module scope
+      code: `
+        import React from 'react';
+        import { di } from 'react-magnetic-di';
+        const MyLocalComponent = () => null;
+
+        const MyComponent = () => {
+          di();
+          return <MyLocalComponent />;
+        };
+      `,
+      errors: [{ messageId: 'missingInject', type: 'ExpressionStatement' }],
+      output: `
+        import React from 'react';
+        import { di } from 'react-magnetic-di';
+        const MyLocalComponent = () => null;
+
+        const MyComponent = () => {
+          di(MyLocalComponent);
+          return <MyLocalComponent />;
+        };
+      `,
+    },
+    {
+      // it should fix locally defined hook in module scope
+      code: `
+        import React from 'react';
+        import { di } from 'react-magnetic-di';
+        const useLocal = () => {};
+
+        const useHook = () => {
+          di();
+          return useLocal();
+        };
+      `,
+      errors: [{ messageId: 'missingInject', type: 'ExpressionStatement' }],
+      output: `
+        import React from 'react';
+        import { di } from 'react-magnetic-di';
+        const useLocal = () => {};
+
+        const useHook = () => {
+          di(useLocal);
+          return useLocal();
         };
       `,
     },

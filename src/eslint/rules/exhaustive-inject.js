@@ -106,6 +106,7 @@ module.exports = {
             isInjected(diVars, varNode) ||
             isReactIgnored(varNode) ||
             isOptionsIgnored(varNode) ||
+            isLocalVariable(varNode, context.getScope()) ||
             isDefaultProp(varNode, diStatements[0])
           )
             return;
@@ -119,8 +120,7 @@ module.exports = {
         if (!diIdentifier) return;
 
         // ignore if the component is declared locally
-        if (isLocalVariable(node.name, context.getScope(), diIdentifier))
-          return;
+        if (isLocalVariable(node.name, context.getScope())) return;
 
         let varNode;
         switch (node.name.type) {
