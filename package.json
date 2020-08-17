@@ -9,6 +9,7 @@
   "main": "lib/cjs/index.js",
   "module": "lib/esm/index.js",
   "types": "./types/index.d.ts",
+  "sideEffects": false,
   "repository": {
     "type": "git",
     "url": "git+https://albertogasparin@github.com/albertogasparin/react-magnetic-di.git"
