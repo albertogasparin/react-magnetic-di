@@ -1,18 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, FunctionComponent } from 'react';
 import ReactDOM from 'react-dom';
 import { di, DiProvider, injectable, withDi } from 'react-magnetic-di/macro';
 
-const useStateDi = injectable(useState, () => useState(true));
+const useOpen = () => useState<boolean>(false);
+const Button: FunctionComponent<any> = (props) => <button {...props} />;
+
+const useOpenDi = injectable(useOpen, () => useState<boolean>(true));
+const ButtonDi = injectable(Button, (props) => <a {...props} />);
 
 const MyComponent = () => {
-  di(useState);
-  const [open, setOpen] = useState(false);
+  di(Button, useOpen);
+  const [open, setOpen] = useOpen();
   return (
-    <button onClick={() => setOpen(!open)}>{open ? 'open' : 'closed'}</button>
+    <Button onClick={() => setOpen(!open)}>{open ? 'open' : 'closed'}</Button>
   );
 };
 
-const MyComponentWithDi = withDi(MyComponent, [useStateDi]);
+const MyComponentWithDi = withDi(MyComponent, [ButtonDi, useOpenDi]);
 
 /**
  * Main App
@@ -23,7 +27,7 @@ const App = () => (
     <main>
       <MyComponent />
       <hr />
-      <DiProvider use={[useStateDi]} target={MyComponent}>
+      <DiProvider use={[ButtonDi, useOpenDi]} target={MyComponent}>
         <MyComponent />
       </DiProvider>
       <hr />
