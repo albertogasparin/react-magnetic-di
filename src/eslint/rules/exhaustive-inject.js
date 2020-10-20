@@ -58,7 +58,7 @@ module.exports = {
     const userOptions = Object.assign({ ignore: [] }, context.options[0]);
 
     const isInjected = (vars, n) => vars.some((v) => v.name === n.name);
-    const isReactIgnored = (n) => reactVars.some((v) => v.name === n.name);
+    const isReactIgnored = (n) => !!reactVars && reactVars.some((v) => v.name === n.name);
     const isOptionsIgnored = (n) => userOptions.ignore.includes(n.name);
 
     const report = (node, diStatement) =>

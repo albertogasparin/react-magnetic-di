@@ -83,4 +83,32 @@ export const genericCases = [
       return <Button {...props} onClick={handleClick} /> 
     };
   `,
+
+  // should not break with inline conditions following expressions
+  `
+    import React, { useState } from 'react';
+    import { di } from 'react-magnetic-di';
+    import { Button } from 'material-ui';
+
+    export const MyComponent = ({ onClick }) => {
+      di(Button, useState);
+      const [x] = useState();
+      const handleClick = (ev) => {
+        onClick && onClick(ev);
+      }
+      return <Button {...props} onClick={handleClick} /> 
+    };
+  `,
+
+  // should not break with functions
+  `
+    import { di } from 'react-magnetic-di';
+    import { useBla, otherFunction } from './bla';
+
+    export function useCustom () {
+      di(otherFunction, useBla);
+      const x = useBla();
+      return otherFunction(); 
+    };
+  `,
 ];

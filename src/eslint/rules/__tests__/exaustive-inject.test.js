@@ -286,7 +286,6 @@ ruleTester.run('exhaustive-inject', rule, {
     {
       // it should fix locally defined hook in module scope
       code: `
-        import React from 'react';
         import { di } from 'react-magnetic-di';
         const useLocal = () => {};
 
@@ -297,7 +296,6 @@ ruleTester.run('exhaustive-inject', rule, {
       `,
       errors: [{ messageId: 'missingInject', type: 'ExpressionStatement' }],
       output: `
-        import React from 'react';
         import { di } from 'react-magnetic-di';
         const useLocal = () => {};
 
