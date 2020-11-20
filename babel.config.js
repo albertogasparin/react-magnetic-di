@@ -2,7 +2,10 @@
 
 module.exports = {
   presets: [
-    ['@babel/preset-env', { modules: false }],
+    [
+      '@babel/preset-env',
+      { targets: { edge: '16' }, modules: false, loose: true },
+    ],
     '@babel/preset-react',
     '@babel/preset-flow',
   ],

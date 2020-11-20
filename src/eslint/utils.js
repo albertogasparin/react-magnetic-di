@@ -16,7 +16,7 @@ const isLocalVariable = (node, scope) => {
     // if we reach module/global scope then is not local
     if (scope.type === 'module' || scope.type === 'global') return false;
 
-    const isLocal = scope.variables.some((v) => v.name === node.name);
+    const isLocal = scope?.variables.some((v) => v.name === node.name);
     if (isLocal) return true;
 
     // eslint-disable-next-line no-cond-assign
