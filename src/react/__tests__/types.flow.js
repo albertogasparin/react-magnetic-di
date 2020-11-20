@@ -41,7 +41,7 @@ const useMock = () => [false];
  * injectable
  */
 
-// $FlowExpectedError Hook return type should be boolean
+// TODO: Hook return type should be boolean
 injectable(useHook, () => '');
 
 // Correct

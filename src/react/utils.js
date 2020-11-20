@@ -17,6 +17,12 @@ export function getDisplayName(Comp, wrapper = '') {
 export function injectable(from, implementation) {
   implementation.displayName =
     getDisplayName(implementation) || getDisplayName(from, 'di');
+  if (implementation[KEY] && implementation[KEY] !== from) {
+    warnOnce(
+      `You are trying to use replacement "${implementation.displayName}" on multiple injectables. ` +
+        `That will override only the last dependency, as each replacement is uniquely linked.`
+    );
+  }
   implementation[KEY] = from;
   return implementation;
 }
