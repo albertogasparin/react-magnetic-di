@@ -72,7 +72,7 @@
     "eslint-plugin-local": "^1.0.0",
     "eslint-plugin-react": "^7.20.0",
     "eslint-plugin-react-hooks": "^4.0.4",
-    "flow-bin": "^0.125.1",
+    "flow-bin": "^0.135.0",
     "flow-copy-source": "^2.0.9",
     "jest": "^26.0.1",
     "prettier": "^2.0.5",

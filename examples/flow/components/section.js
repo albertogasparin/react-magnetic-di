@@ -1,5 +1,5 @@
 // @flow
-import React, { Component } from 'react';
+import React, { Component, type Node } from 'react';
 import { di } from 'react-magnetic-di';
 
 import { Label } from './label';
@@ -10,7 +10,7 @@ type Props = {|
 |};
 
 export class Section extends Component<Props> {
-  render() {
+  render(): Node {
     di(Input, Label);
 
     const { title } = this.props;

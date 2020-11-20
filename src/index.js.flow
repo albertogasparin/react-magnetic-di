@@ -28,11 +28,16 @@ declare export function withDi<T: AbstractComponent<any>>(
 /** @deprecated use injectable instead */
 declare export function mock<T: Dependency>(original: T, mock: T): T;
 
-type ExtractReturn<Fn> = $Call<<T>((...Iterable<any>) => T) => T, Fn>;
 declare export function injectable<T: Dependency>(
   from: T,
-  implementation: (...args: any[]) => ExtractReturn<T>
+  implementation: T
 ): T;
+
+// type ExtractReturn<Fn> = $Call<<T>((...Iterable<any>) => T) => T, Fn>;
+// declare export function injectable<T: (...args: any) => any>(
+//   from: T,
+//   implementation: Class<any> | ((...args: any) => ExtractReturn<T>)
+// ): T;
 
 function di(...dependencies: Dependency[]) {
   /** @deprecated use injectable instead */
