@@ -1,6 +1,9 @@
+/**
+ * @jest-environment jsdom
+ */
 /* eslint-env jest */
 
-import React from 'react';
+import React, { forwardRef } from 'react';
 import { mount } from 'enzyme';
 
 import { Context } from '../context';
@@ -24,12 +27,15 @@ describe('DiProvider', () => {
 
   describe('getDependencies()', () => {
     const Text = () => 'text';
-    const Button = () => 'button';
+    const Button = forwardRef(() => 'button');
 
     it('should return all merged dependencies', () => {
       const children = jest.fn();
       const TextDi = injectable(Text, () => '');
-      const ButtonDi = injectable(Button, () => '');
+      const ButtonDi = injectable(
+        Button,
+        forwardRef(() => '')
+      );
 
       mount(
         <DiProvider use={[TextDi]}>

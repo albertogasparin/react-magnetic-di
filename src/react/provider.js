@@ -44,7 +44,9 @@ DiProvider.propTypes = {
     PropTypes.func,
     PropTypes.arrayOf(PropTypes.func),
   ]),
-  use: PropTypes.arrayOf(PropTypes.func).isRequired,
+  use: PropTypes.arrayOf(
+    PropTypes.oneOfType([PropTypes.func, PropTypes.object])
+  ).isRequired,
 };
 
 export function withDi(Comp, deps, target = null) {
