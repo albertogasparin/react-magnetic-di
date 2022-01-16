@@ -33,9 +33,7 @@
     "prepack": "npm run preversion -s && npm run build -s",
     "start": "webpack-dev-server"
   },
-  "dependencies": {
-    "@babel/eslint-parser": "^7.16.5"
-  },
+  "dependencies": {},
   "peerDependencies": {
     "prop-types": "^15.0.0",
     "react": "^16.9.0 || ^17.0.0"
@@ -51,6 +49,7 @@
   "devDependencies": {
     "@babel/cli": "^7.16.8",
     "@babel/core": "^7.16.7",
+    "@babel/eslint-parser": "^7.16.5",
     "@babel/plugin-proposal-class-properties": "^7.16.7",
     "@babel/plugin-transform-runtime": "^7.16.8",
     "@babel/preset-env": "^7.16.8",
