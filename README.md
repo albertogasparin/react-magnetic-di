@@ -176,6 +176,9 @@ By default dependency replacement is enabled on `development` and `test` environ
   ],
 ```
 
+In case of babel macro (eg for use with CRA), the `configName` key is `reactMagneticDi`.
+
+
 ## ESLint plugin and rules
 
 In order to enforce better practices, this package exports some ESLint rules:
