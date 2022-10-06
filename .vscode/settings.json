@@ -1,9 +1,10 @@
 {
-  "typescript.validate.enable": false,
+  "typescript.validate.enable": true,
   "javascript.validate.enable": false,
   "editor.formatOnSave": true,
   "flow.pathToFlow": "${workspaceRoot}/node_modules/.bin/flow",
   "flow.useNPMPackagedFlow": true,
   "prettier.singleQuote": true,
-  "prettier.trailingComma": "es5"
+  "prettier.trailingComma": "es5",
+  "typescript.tsdk": "node_modules/typescript/lib"
 }

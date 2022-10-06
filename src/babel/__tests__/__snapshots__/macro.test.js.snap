@@ -1,9 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`macro plugin should process withDi 1`] = `
-"import { withDi } from \\"react-magnetic-di\\";
+"import { withDi } from "react-magnetic-di";
 const Example = withDi(() => null, []);
-Example.displayName = \\"Example\\";"
+Example.displayName = "Example";"
 `;
 
 exports[`macro plugin should strip injection if not enabled environment 1`] = `
@@ -16,7 +16,7 @@ function MyComponent() {
 `;
 
 exports[`macro plugin should work in class components 1`] = `
-"import { di } from \\"react-magnetic-di\\";
+"import { di } from "react-magnetic-di";
 import React, { Component } from 'react';
 import Modal from 'modal';
 
@@ -30,7 +30,7 @@ class MyComponent extends Component {
 `;
 
 exports[`macro plugin should work with renamed import and functional components 1`] = `
-"import { di as injectable, DiProvider } from \\"react-magnetic-di\\";
+"import { di as injectable, DiProvider } from "react-magnetic-di";
 import React from 'react';
 import Modal from 'modal';
 

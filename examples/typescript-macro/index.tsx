@@ -2,10 +2,10 @@ import React, { useState, FunctionComponent } from 'react';
 import ReactDOM from 'react-dom';
 import { di, DiProvider, injectable, withDi } from 'react-magnetic-di/macro';
 
-const useOpen = () => useState<boolean>(false);
+const useOpen = () => useState(false);
 const Button: FunctionComponent<any> = (props) => <button {...props} />;
 
-const useOpenDi = injectable(useOpen, () => useState<boolean>(true));
+const useOpenDi = injectable(useOpen, () => useState(true));
 const ButtonDi = injectable(Button, (props) => <a {...props} />);
 
 const MyComponent = () => {
