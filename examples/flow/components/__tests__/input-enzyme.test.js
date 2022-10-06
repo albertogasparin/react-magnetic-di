@@ -23,7 +23,7 @@ describe('Input', () => {
   it('should render with theme', () => {
     const wrapper = mountWithDi(<Input />, [useThemeDi]);
     expect(wrapper.html()).toMatchInlineSnapshot(
-      `"<input style=\\"border: 1px solid #b00;\\" placeholder=\\"Type...\\">"`
+      `"<input style="border: 1px solid #b00;" placeholder="Type...">"`
     );
   });
 });
