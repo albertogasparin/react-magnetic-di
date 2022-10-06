@@ -1,6 +1,13 @@
 /* eslint-env jest */
 /* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/ban-ts-comment */
-import React, { useState } from 'react';
+import React, {
+  Component,
+  PureComponent,
+  useState,
+  memo,
+  PropsWithChildren,
+  ReactNode,
+} from 'react';
 
 import { injectable } from 'react-magnetic-di';
 
@@ -75,3 +82,61 @@ injectable(useHookObj1, () => ({ foo: 2 }));
 injectable(useHookObj1, () => ({ foo: 2, baz: [{}] }));
 injectable(useHookObj1, () => ({ foo: 2, baz: [{ baz: 'c' }] }));
 injectable(useHookObj1, () => ({ foo: 2, bar: () => 2 }));
+
+// React components test
+//
+class ClassTwoProps extends PureComponent<{
+  foo: string;
+  bar: number;
+  children: ReactNode;
+}> {
+  render = () => <>{this.props.foo}</>;
+}
+const FuncTwoProps = memo(
+  (props: { foo: string; bar: number; children: ReactNode }) => {
+    return <>{props.foo}</>;
+  }
+);
+
+class ClassOtherProp extends Component<{ foo: number }> {
+  render = () => <>{this.props.foo}</>;
+}
+const FuncOtherProp = (props: { foo: number }) => {
+  return <>{props.foo}</>;
+};
+
+class ClassOneProp extends Component<{ children: ReactNode }> {
+  render = () => <></>;
+}
+const FuncOneProp = (props: { children: ReactNode }) => {
+  return <></>;
+};
+
+class ClassNoProp extends Component {
+  render = () => <></>;
+}
+const FuncNoProp = () => {
+  return <></>;
+};
+
+// @ts-expect-error - wrong prop type
+injectable(ClassTwoProps, ClassOtherProp);
+// @ts-expect-error - wrong prop type
+injectable(ClassTwoProps, FuncOtherProp);
+// @ts-expect-error - wrong prop type
+injectable(FuncTwoProps, ClassOtherProp);
+// @ts-expect-error - wrong prop type
+injectable(FuncTwoProps, FuncOtherProp);
+
+// Correct
+injectable(ClassTwoProps, FuncTwoProps);
+injectable(ClassTwoProps, ClassOneProp);
+injectable(ClassTwoProps, FuncOneProp);
+injectable(ClassTwoProps, ClassNoProp);
+injectable(ClassTwoProps, FuncNoProp);
+// @ts-expect-error - this should be fine with React18 types
+injectable(FuncTwoProps, ClassOneProp);
+injectable(FuncTwoProps, FuncOneProp);
+// @ts-expect-error - this should be fine with React18 types
+injectable(FuncTwoProps, ClassNoProp);
+injectable(FuncTwoProps, FuncNoProp);
