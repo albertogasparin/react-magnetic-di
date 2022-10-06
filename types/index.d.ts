@@ -3,23 +3,19 @@ declare module 'react-magnetic-di' {
 
   type Dependency = Function;
 
-  export type DeepPartial<Type> = Type extends DeepPartialFunction<Type>
-    ? DeepPartialFunction<Type>
-    : Type extends Array<infer InferredArrayMember>
-    ? DeepPartialArray<InferredArrayMember>
+  type DeepPartial<Type> = Type extends (...args: any) => any
+    ? (...args: Parameters<Type>) => DeepPartial<ReturnType<Type>>
+    : Type extends ReadonlyArray<infer InferredArrayMember>
+    ? InferredArrayMember[] extends Type
+      ? Array<DeepPartial<InferredArrayMember>> // list
+      : DeepPartialObject<Type> // tuple
     : Type extends object
     ? DeepPartialObject<Type>
     : Type | undefined;
 
-  interface DeepPartialArray<Type> extends Array<DeepPartial<Type>> {}
-
   type DeepPartialObject<Type> = {
     [Key in keyof Type]?: DeepPartial<Type[Key]>;
   };
-
-  type DeepPartialFunction<Type> = Type extends (...args: any) => any
-    ? (...args: Parameters<Type>) => DeepPartialObject<ReturnType<Type>>
-    : Type;
 
   class DiProvider extends Component<
     {
@@ -39,7 +35,10 @@ declare module 'react-magnetic-di' {
   /** @deprecated use injectable instead */
   function mock<T extends Dependency>(original: T, mock: T): T;
 
-  function injectable<T extends Dependency>(from: T, implementation: DeepPartial<T>): T;
+  function injectable<T extends Dependency>(
+    from: T,
+    implementation: DeepPartial<T>
+  ): T;
 
   function di(...dependencies: Dependency[]): void;
   /** allow using di without Babel */
