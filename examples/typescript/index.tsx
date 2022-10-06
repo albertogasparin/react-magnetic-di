@@ -2,17 +2,19 @@ import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 import { DiProvider, di, withDi, injectable } from 'react-magnetic-di';
 
-const useStateDi = injectable(useState, () => useState(true));
+const useOpen = () => useState(false);
+
+const useOpenDi = injectable(useOpen, () => useState(true));
 
 const MyComponent = () => {
-  di(useState);
-  const [open, setOpen] = useState(false);
+  di(useOpen);
+  const [open, setOpen] = useOpen();
   return (
     <button onClick={() => setOpen(!open)}>{open ? 'open' : 'closed'}</button>
   );
 };
 
-const MyComponentWithDi = withDi(MyComponent, [useStateDi]);
+const MyComponentWithDi = withDi(MyComponent, [useOpenDi]);
 
 /**
  * Main App
@@ -23,7 +25,7 @@ const App = () => (
     <main>
       <MyComponent />
       <hr />
-      <DiProvider use={[useStateDi]}>
+      <DiProvider use={[useOpenDi]}>
         <MyComponent />
       </DiProvider>
       <hr />
