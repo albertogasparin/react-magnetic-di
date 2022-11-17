@@ -1,6 +1,6 @@
 // @flow
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { DiProvider, withDi } from 'react-magnetic-di';
 
 import { Section } from './components/section';
@@ -35,4 +35,5 @@ const App = () => (
   </div>
 );
 
-ReactDOM.render(<App />, document.getElementById('root'));
+const root = createRoot(document.getElementById('root'));
+root.render(<App />);

@@ -31,5 +31,6 @@ module.exports = {
     semi: ['off'],
     'react/no-direct-mutation-state': ['off'],
     'react/display-name': ['off'],
+    'react/prop-types': ['off'],
   },
 };
