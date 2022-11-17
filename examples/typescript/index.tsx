@@ -1,20 +1,17 @@
-import React, { useState } from 'react';
-import ReactDOM from 'react-dom';
-import { DiProvider, di, withDi, injectable } from 'react-magnetic-di';
+// @flow
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import { DiProvider, withDi } from 'react-magnetic-di';
 
-const useOpen = () => useState(false);
+import { Section } from './components/section';
 
-const useOpenDi = injectable(useOpen, () => useState(true));
+import {
+  InputExample,
+  useThemeInputExample,
+  useThemeLabelExample,
+} from './examples';
 
-const MyComponent = () => {
-  di(useOpen);
-  const [open, setOpen] = useOpen();
-  return (
-    <button onClick={() => setOpen(!open)}>{open ? 'open' : 'closed'}</button>
-  );
-};
-
-const MyComponentWithDi = withDi(MyComponent, [useOpenDi]);
+const SectionWithDi = withDi(Section, [InputExample]);
 
 /**
  * Main App
@@ -23,15 +20,21 @@ const App = () => (
   <div>
     <h1>Usage examples</h1>
     <main>
-      <MyComponent />
+      <Section title="No injection" />
       <hr />
-      <DiProvider use={[useOpenDi]}>
-        <MyComponent />
+      <DiProvider use={[InputExample]}>
+        <Section title="Single dependency injection" />
       </DiProvider>
       <hr />
-      <MyComponentWithDi />
+      <DiProvider use={[useThemeLabelExample, useThemeInputExample]}>
+        <Section title="Multiple dependency injection" />
+      </DiProvider>
+      <hr />
+      <SectionWithDi title="HOC injection" />
     </main>
   </div>
 );
 
-ReactDOM.render(<App />, document.getElementById('root'));
+// @ts-expect-error
+const root = createRoot(document.getElementById('root'));
+root.render(<App />);

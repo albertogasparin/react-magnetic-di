@@ -4,7 +4,7 @@
 /* eslint-env jest */
 
 import React, { forwardRef } from 'react';
-import { mount } from 'enzyme';
+import { render } from '@testing-library/react';
 
 import { Context } from '../context';
 import { DiProvider, withDi } from '../provider';
@@ -14,7 +14,7 @@ describe('DiProvider', () => {
   it('should expose state to consumers', () => {
     const children = jest.fn();
 
-    mount(
+    render(
       <DiProvider use={[]}>
         <Context.Consumer>{children}</Context.Consumer>
       </DiProvider>
@@ -37,7 +37,7 @@ describe('DiProvider', () => {
         forwardRef(() => '')
       );
 
-      mount(
+      render(
         <DiProvider use={[TextDi]}>
           <DiProvider use={[ButtonDi]}>
             <Context.Consumer>{children}</Context.Consumer>
@@ -54,7 +54,7 @@ describe('DiProvider', () => {
       const ButtonDi = injectable(Button, () => '');
       const MyComponent = () => null;
 
-      mount(
+      render(
         <DiProvider target={MyComponent} use={[TextDi]}>
           <DiProvider target={[]} use={[ButtonDi]}>
             <Context.Consumer>{children}</Context.Consumer>
@@ -73,7 +73,7 @@ describe('DiProvider', () => {
       const TextDi = injectable(Text, () => '');
       const TextDi2 = injectable(Text, () => '');
 
-      mount(
+      render(
         <DiProvider use={[TextDi, TextDi2]}>
           <Context.Consumer>{children}</Context.Consumer>
         </DiProvider>
@@ -91,7 +91,7 @@ describe('DiProvider', () => {
         [TextDi2]
       );
 
-      mount(
+      render(
         <DiProvider use={[TextDi, TextDi2]}>
           <WrappedConsumer />
         </DiProvider>
@@ -103,34 +103,6 @@ describe('DiProvider', () => {
 });
 
 describe('withDi', () => {
-  it('should wrap component with provider', () => {
-    const children = jest.fn(() => null);
-    const TextDi = injectable(Text, () => '');
-    const WrappedComponent = withDi(children, [TextDi]);
-
-    const wrapper = mount(<WrappedComponent />);
-
-    expect(wrapper.find(DiProvider).props()).toEqual({
-      children: expect.anything(),
-      target: null,
-      use: [TextDi],
-    });
-  });
-
-  it('should wrap component with provider and allow target override', () => {
-    const children = jest.fn(() => null);
-    const TextDi = injectable(Text, () => '');
-    const WrappedComponent = withDi(children, [TextDi], children);
-
-    const wrapper = mount(<WrappedComponent />);
-
-    expect(wrapper.find(DiProvider).props()).toEqual({
-      children: expect.anything(),
-      target: children,
-      use: [TextDi],
-    });
-  });
-
   it('should enhance displayName if component has displayNanme', () => {
     function MyComponent() {}
     const WrappedComponent = withDi(MyComponent, []);
