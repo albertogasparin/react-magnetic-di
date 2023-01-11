@@ -49,6 +49,7 @@ declare module 'react-magnetic-di' {
   /** @deprecated use injectable instead */
   function mock<T extends Dependency>(original: T, mock: T): T;
 
+  function injectable<T extends Dependency>(from: T, implementation: T): T;
   function injectable<T extends Dependency>(
     from: T,
     implementation: ComponentOrFunction<T>
