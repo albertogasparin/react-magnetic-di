@@ -62,7 +62,7 @@
     "babel-jest": "^29.3.1",
     "babel-loader": "^8.2.5",
     "babel-plugin-macros": "^3.1.0",
-    "babel-plugin-module-resolver": "^4.1.0",
+    "babel-plugin-module-resolver": "^5.0.0",
     "dtslint": "^4.2.1",
     "eslint": "^8.27.0",
     "eslint-plugin-flowtype": "^8.0.3",
