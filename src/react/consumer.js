@@ -5,9 +5,13 @@ import { warnOnce, mock } from './utils';
 function di(deps, target) {
   // check if babel plugin has been added
   if (Array.isArray(deps)) {
-    // Read context and grab all the dependencies override
-    // from all Providers in the tree
-    const { getDependencies = (v) => v } = Context._currentValue || {};
+    // Read context and grab all the dependencies override Providers in the tree
+    const { getDependencies = (v) => v } =
+      // grab value from alt renderer (eg react-test-renderer)
+      (Context._currentRenderer2 && Context._currentValue2) ||
+      // grab value from default renderer
+      Context._currentValue ||
+      {};
     return getDependencies(deps, target);
   } else {
     warnOnce(
