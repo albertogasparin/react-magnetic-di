@@ -10,7 +10,7 @@ declare module 'react-magnetic-di' {
   type Dependency = Function;
 
   type DeepPartial<Type> = Type extends (...args: any) => any
-    ? (...args: Parameters<Type>) => DeepPartial<ReturnType<Type>>
+    ? (...args: DeepPartial<Parameters<Type>>) => DeepPartial<ReturnType<Type>>
     : Type extends ReadonlyArray<infer InferredArrayMember>
     ? InferredArrayMember[] extends Type
       ? readonly InferredArrayMember[] extends Type
