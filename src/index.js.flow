@@ -5,19 +5,21 @@ import type { Node, AbstractComponent } from 'react';
 
 export type Dependency = Function;
 
-declare export class DiProvider extends React$Component<
-  {
-    children?: Node,
-    target?: AbstractComponent<any> | AbstractComponent<any>[],
-    use: Dependency[],
-  },
-  {
-    getDependencies: (
-      deps: Dependency[],
-      target: AbstractComponent<any> | AbstractComponent<any>[]
-    ) => Dependency[],
-  }
-> {}
+declare export class DiProvider
+  extends
+    React$Component<
+      {
+        children?: Node,
+        target?: AbstractComponent<any> | AbstractComponent<any>[],
+        use: Dependency[],
+      },
+      {
+        getDependencies: (
+          deps: Dependency[],
+          target: AbstractComponent<any> | AbstractComponent<any>[]
+        ) => Dependency[],
+      }
+    > {}
 
 declare export function withDi<T: AbstractComponent<any>>(
   component: T,
@@ -33,11 +35,17 @@ declare export function injectable<T: Dependency>(
   implementation: T
 ): T;
 
-// type ExtractReturn<Fn> = $Call<<T>((...Iterable<any>) => T) => T, Fn>;
-// declare export function injectable<T: (...args: any) => any>(
-//   from: T,
-//   implementation: Class<any> | ((...args: any) => ExtractReturn<T>)
-// ): T;
+type ExtractReturn<Fn> = $Call<<T>((...Iterable<any>) => T) => T, Fn>;
+
+declare export var globalDi: {
+  use(deps: Dependency[]): void,
+  clear(): void,
+};
+
+declare export function runWithDi<T: (...args: any) => any>(
+  thunk: T,
+  dependencies: Dependency[]
+): ExtractReturn<T>;
 
 function di(...dependencies: Dependency[]) {
   /** @deprecated use injectable instead */

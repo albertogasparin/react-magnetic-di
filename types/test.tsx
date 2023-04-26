@@ -8,7 +8,7 @@ import React, {
   ReactNode,
 } from 'react';
 
-import { injectable } from 'react-magnetic-di';
+import { injectable, globalDi, runWithDi } from 'react-magnetic-di';
 
 /**
  * injectable types tests
@@ -139,3 +139,37 @@ injectable(FuncTwoProps, FuncOneProp);
 // @ts-expect-error - this should be fine with React18 types
 injectable(FuncTwoProps, ClassNoProp);
 injectable(FuncTwoProps, FuncNoProp);
+
+/**
+ * globalDi types tests
+ */
+const globalDep = () => '';
+// @ts-expect-error - must provide deps
+globalDi.use();
+// @ts-expect-error - must provide array deps
+globalDi.use(globalDep);
+
+// Correct
+globalDi.use([globalDep]);
+globalDi.clear();
+
+/**
+ * runWithDi types tests
+ */
+const runTestFn = () => '';
+const runTestAsyncFn = async () => '';
+// @ts-expect-error - must be a thunk
+runWithDi(runTestFn(), []);
+// @ts-expect-error - must provide deps
+runWithDi(() => runTestFn());
+// @ts-expect-error - must provide array deps
+runWithDi(() => runTestFn(), globalDep);
+
+// Correct
+const rsync = runWithDi(() => runTestFn(), [globalDep]);
+rsync.split('');
+
+async () => {
+  const rasync = await runWithDi(() => runTestAsyncFn(), []);
+  rasync.split('');
+};

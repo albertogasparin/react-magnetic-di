@@ -32,3 +32,23 @@ export const TextDi = injectable(Text, () => <text-di />);
 export const WrapperDi = injectable(Wrapper, ({ children }) => (
   <wrapper-di>{children}</wrapper-di>
 ));
+
+export const fetchApi = async () => 'fetch';
+export const processApiData = (v) => v + ' process';
+
+export function transformer(data) {
+  const [_processApiData] = di([processApiData]);
+  return _processApiData(data);
+}
+
+export async function apiHandler() {
+  const [_fetchApi, _transformer] = di([fetchApi, transformer]);
+  const data = await _fetchApi();
+  return _transformer(data);
+}
+
+export const fetchApiDi = injectable(fetchApi, async () => 'fetch-di');
+export const processApiDataDi = injectable(
+  processApiData,
+  (v) => v + ' process-di'
+);
