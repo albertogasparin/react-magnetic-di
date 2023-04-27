@@ -1,7 +1,7 @@
 <p align="center">
   <img src="https://user-images.githubusercontent.com/84136/83958267-1c8f7f00-a8b3-11ea-9725-1d3530af5f8d.png" alt="react-magnetic-di logo" height="150" />
 </p>
-<h1 align="center">react-magnetic-di</h1>
+<h1 align="center">magnetic-di</h1>
 <p align="center">
   <a href="https://www.npmjs.com/package/react-magnetic-di"><img src="https://img.shields.io/npm/v/react-magnetic-di.svg"></a>
   <a href="https://bundlephobia.com/result?p=react-magnetic-di"><img src="https://img.shields.io/bundlephobia/minzip/react-magnetic-di.svg" /></a>
@@ -10,19 +10,19 @@
   <!--a href="CONTRIBUTING"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" /></a-->
 </p>
 
-A new take for dependency injection / dependency replacement in React for your tests, storybooks and even experiments in production.
+A new take for dependency injection / dependency replacement for your tests, storybooks and even experiments in production.
 
 - Close-to-zero performance overhead on dev/testing
 - **Zero** performance overhead on production (code gets stripped unless told otherwise)
-- Works with any kind of functions/classes (not only components) and in both class and functional components
-- Replaces dependencies at any depth of the React tree
-- Allows selective injection
+- Works with any kind of functions/classes (not only React components) and in both class and functional React components
+- Replaces dependencies at any depth of the React tree / call chain
+- Allows selective injection (React only)
 - Enforces separation of concerns, keeps your component API clean
-- Just uses Context, it does not mess up with React internals or modules/require
+- Just uses smart variable assignments, it does not mess up with React internals or modules/require
 
 ## Philosophy
 
-Dependency injection and component injection is not a new topic. Especially the ability to provide a custom implementation of a component/hook while testing or writing storybooks and examples it is extremely valuable. `react-magnetic-di` takes inspiration from decorators, and with a touch of Babel magic and React Context allows you to optionally override "marked" dependencies inside your components so you can swap implementations only when needed.
+Dependency injection and component injection is not a new topic. Especially the ability to provide a custom implementation of a component/hook while testing or writing storybooks and examples it is extremely valuable. `react-magnetic-di` takes inspiration from decorators, and with a touch of Babel magic and React Context / globals allows you to optionally override "marked" dependencies inside your components so you can swap implementations only when needed.
 
 ## Usage
 
@@ -125,7 +125,7 @@ storiesOf('Modal content', module).add('with text', () => (
 ));
 ```
 
-In the example above we replace all `Modal` and `useQuery` dependencies across all components in the tree with the custom versions. 
+In the example above we replace all `Modal` and `useQuery` dependencies across all components in the tree with the custom versions.
 If you want to replace dependencies **only** for a specific component (or set of components) you can use the `target` prop:
 
 ```jsx
@@ -158,8 +158,48 @@ export default withDi(MyComponent, [ModalOpenDi]);
 `withDi` supports the same API and capabilities as `DiProvider`, where `target` is the third argument of the HOC `withDi(MyComponent, [Modal], MyComponent)` in case you want to limit injection to a specific component only.
 
 When you have the same dependency replaced multiple times, there are two behaviours that determine which injectable will "win":
+
 - the one defined on the closest `DiProvider` wins. So you can declare more specific replacements by wrapping components with `DiProvider` or `withDi` and those will win over same type injectables on other top level `DiProvider`s
 - the injectable defined last in the `use` array wins. So you can define common injectables but still override each type case by case (eg: `<DiProvider use={[...commonDeps, specificInjectable]}>`
+
+### Using injection replacement outside of React
+
+The usage outside React is not much different, aside from the different way of clearing the replacements.
+
+```js
+import { fetchApi } from './fetch';
+
+export async function myApiFetcher() {
+  // "mark" any type of function/class as injectable
+  di(fetchApi);
+
+  const { data } = await fetchApi();
+  return data;
+}
+```
+
+In the tests, you can use either `globalDi` directly or the wrapper `runWithDi`. The main difference is that `runWithDi` will clear the replacements for you after function execution is terminated. Such util also handles async code, but might not work effectively with scheduled code paths, or event driven implementations. In those scenarios we recommend manually adding `globalDi.clear()` to `afterEach` to ensure there is no pollution between tests.
+
+```js
+import { injectable, globalDi, runWithDi } from 'react-magnetic-di';
+import { myApiFetcher, fetchApi } from '.';
+
+it('should call the API', async () => {
+  const fetchApiDi = injectable(
+    fetchApi,
+    jest.mock().mockResolvedValue('mock')
+  );
+  // either using globalDi use/clear manually
+  globalDi.use([fetchApiDi]);
+  const result = await myApiFetcher();
+  globalDi.clear();
+  // or using runWithDi which automatically handles use/clear
+  const result = await runWithDi(() => myApiFetcher(), [fetchApiDi]);
+
+  expect(fetchApiDi).toHaveBeenCalled();
+  expect(result).toEqual('mock');
+});
+```
 
 ### Configuration Options
 
@@ -177,7 +217,6 @@ By default dependency replacement is enabled on `development` and `test` environ
 ```
 
 In case of babel macro (eg for use with CRA), the `configName` key is `reactMagneticDi`.
-
 
 ## ESLint plugin and rules
 
@@ -219,7 +258,6 @@ function MyComponent() {
   return <Modal>{data && 'Done!'}</Modal>;
 }
 ```
-
 
 ## Contributing
 

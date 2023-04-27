@@ -1,4 +1,4 @@
-import { KEY } from './constants';
+import { KEY, PACKAGE_NAME } from './constants';
 
 const replacementMap = new Map();
 
@@ -8,6 +8,13 @@ export const globalDi = {
   },
 
   use(deps) {
+    if (replacementMap.size) {
+      throw new Error(
+        `There are already replacements configured for ${PACKAGE_NAME}. ` +
+          `Implicit merging is not supported, so please concatenate them before calling globalDi.use(). ` +
+          `If this is not expected, ensure you call globalDi.clear() after each test`
+      );
+    }
     deps.forEach((d) => {
       replacementMap.set(d[KEY], d);
     });

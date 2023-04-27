@@ -26,6 +26,11 @@ describe('globalDi', () => {
     globalDi.clear();
     expect(transformer('data')).toEqual('data process');
   });
+
+  it('should error when trying to use without having cleared first', () => {
+    globalDi.use([processApiDataDi]);
+    expect(() => globalDi.use([])).toThrow();
+  });
 });
 
 describe('runWithDi', () => {
