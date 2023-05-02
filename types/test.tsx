@@ -8,7 +8,7 @@ import React, {
   ReactNode,
 } from 'react';
 
-import { injectable, globalDi, runWithDi } from 'react-magnetic-di';
+import { injectable, runWithDi } from 'react-magnetic-di';
 
 /**
  * injectable types tests
@@ -141,21 +141,9 @@ injectable(FuncTwoProps, ClassNoProp);
 injectable(FuncTwoProps, FuncNoProp);
 
 /**
- * globalDi types tests
- */
-const globalDep = () => '';
-// @ts-expect-error - must provide deps
-globalDi.use();
-// @ts-expect-error - must provide array deps
-globalDi.use(globalDep);
-
-// Correct
-globalDi.use([globalDep]);
-globalDi.clear();
-
-/**
  * runWithDi types tests
  */
+const globalDep = () => '';
 const runTestFn = () => '';
 const runTestAsyncFn = async () => '';
 // @ts-expect-error - must be a thunk

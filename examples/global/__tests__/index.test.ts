@@ -1,20 +1,15 @@
 /* eslint-env jest */
 
-import { injectable, globalDi, runWithDi } from 'react-magnetic-di';
+import { injectable, runWithDi } from 'react-magnetic-di';
 import { fetchApi, processApiData, apiHandler, transformer } from '..';
 
 const mockData = { data: [10, 20] };
 
 describe('transformer', () => {
-  afterEach(() => {
-    globalDi.clear();
-  });
-
   it('should transform data via processor', () => {
     const processApiDataDi = injectable(processApiData, (v) => [100, 200]);
-    globalDi.use([processApiDataDi]);
 
-    const result = transformer(mockData);
+    const result = runWithDi(() => transformer(mockData), [processApiDataDi]);
 
     expect(result).toEqual([100, 200]);
   });

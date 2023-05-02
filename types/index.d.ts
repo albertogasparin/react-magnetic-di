@@ -62,11 +62,6 @@ declare module 'react-magnetic-di' {
     self: ComponentType<any> | null
   ): T[];
 
-  var globalDi: {
-    use(deps: Dependency[]): void;
-    clear(): void;
-  };
-
   function runWithDi<T extends () => any>(
     thunk: T,
     dependencies: Dependency[]

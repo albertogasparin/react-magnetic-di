@@ -37,11 +37,6 @@ declare export function injectable<T: Dependency>(
 
 type ExtractReturn<Fn> = $Call<<T>((...Iterable<any>) => T) => T, Fn>;
 
-declare export var globalDi: {
-  use(deps: Dependency[]): void,
-  clear(): void,
-};
-
 declare export function runWithDi<T: (...args: any) => any>(
   thunk: T,
   dependencies: Dependency[]

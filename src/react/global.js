@@ -10,9 +10,9 @@ export const globalDi = {
   use(deps) {
     if (replacementMap.size) {
       throw new Error(
-        `There are already replacements configured for ${PACKAGE_NAME}. ` +
-          `Implicit merging is not supported, so please concatenate them before calling globalDi.use(). ` +
-          `If this is not expected, ensure you call globalDi.clear() after each test`
+        `${PACKAGE_NAME} has replacements configured already. ` +
+          `Implicit merging is not supported, so please concatenate injectables. ` +
+          `If this is not expected, please file a bug report`
       );
     }
     deps.forEach((d) => {

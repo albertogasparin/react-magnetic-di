@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://user-images.githubusercontent.com/84136/83958267-1c8f7f00-a8b3-11ea-9725-1d3530af5f8d.png" alt="react-magnetic-di logo" height="150" />
+  <img src="https://user-images.githubusercontent.com/84136/83958267-1c8f7f00-a8b3-11ea-9725-1d3530af5f8d.png" alt="magnetic-di logo" height="150" />
 </p>
 <h1 align="center">magnetic-di</h1>
 <p align="center">
@@ -178,10 +178,10 @@ export async function myApiFetcher() {
 }
 ```
 
-In the tests, you can use either `globalDi` directly or the wrapper `runWithDi`. The main difference is that `runWithDi` will clear the replacements for you after function execution is terminated. Such util also handles async code, but might not work effectively with scheduled code paths, or event driven implementations. In those scenarios we recommend manually adding `globalDi.clear()` to `afterEach` to ensure there is no pollution between tests.
+In the tests, you can use `runWithDi`, which will setup and clear the replacements for you after function execution is terminated. Such util also handles async code, but might require you to wrap the entire test to work effectively with scheduled code paths, or event driven implementations.
 
 ```js
-import { injectable, globalDi, runWithDi } from 'react-magnetic-di';
+import { injectable, runWithDi } from 'react-magnetic-di';
 import { myApiFetcher, fetchApi } from '.';
 
 it('should call the API', async () => {
@@ -189,11 +189,7 @@ it('should call the API', async () => {
     fetchApi,
     jest.mock().mockResolvedValue('mock')
   );
-  // either using globalDi use/clear manually
-  globalDi.use([fetchApiDi]);
-  const result = await myApiFetcher();
-  globalDi.clear();
-  // or using runWithDi which automatically handles use/clear
+
   const result = await runWithDi(() => myApiFetcher(), [fetchApiDi]);
 
   expect(fetchApiDi).toHaveBeenCalled();
