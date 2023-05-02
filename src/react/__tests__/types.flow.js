@@ -2,7 +2,7 @@
 /* eslint-disable no-unused-vars, react/display-name */
 
 import React, { Component, type AbstractComponent } from 'react';
-import { injectable } from '../..';
+import { injectable, runWithDi } from '../..';
 
 /**
  * Originals
@@ -53,3 +53,18 @@ injectable(ClassComponent, FunctionalMock);
 injectable(TypedComponent, FunctionalMock);
 injectable(TypedComponent, ClassMock);
 injectable(useHook, useMock);
+
+/**
+ * runWithDi types tests
+ */
+const globalDep = () => '';
+const runTestFn = () => '';
+const runTestAsyncFn = async () => '';
+
+const rsync = runWithDi(() => runTestFn(), [globalDep]);
+rsync.split('');
+
+async () => {
+  const rasync = await runWithDi(() => runTestAsyncFn(), []);
+  rasync.split('');
+};

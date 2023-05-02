@@ -62,6 +62,11 @@ declare module 'react-magnetic-di' {
     self: ComponentType<any> | null
   ): T[];
 
+  function runWithDi<T extends () => any>(
+    thunk: T,
+    dependencies: Dependency[]
+  ): ReturnType<T>;
+
   class di {
     /** @deprecated use injectable instead */
     static mock: typeof mock;
