@@ -32,6 +32,7 @@ module.exports = {
 
   output: {
     path: resolve(__dirname, 'dist'),
+    publicPath: '/',
 
     // [name] here will be used from the "entry" object.
     // As each key in "entry" object forms a file path,
@@ -60,8 +61,7 @@ module.exports = {
   },
 
   devServer: {
-    contentBase: resolve(__dirname, 'examples'),
-    publicPath: '/',
+    static: resolve(__dirname, 'examples'),
     // hot: true,
   },
 };
