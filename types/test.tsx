@@ -8,7 +8,7 @@ import React, {
   ReactNode,
 } from 'react';
 
-import { injectable, runWithDi } from 'react-magnetic-di';
+import { injectable, runWithDi, stats } from 'react-magnetic-di';
 
 /**
  * injectable types tests
@@ -161,3 +161,17 @@ async () => {
   const rasync = await runWithDi(() => runTestAsyncFn(), []);
   rasync.split('');
 };
+
+/**
+ * stats types tests
+ */
+const unused = stats.unused();
+const missing = stats.missing();
+stats.reset();
+
+// Correct
+unused.length > 1;
+unused.map((f) => f.call(null));
+
+missing.length > 1;
+missing.map((f) => f.call(null));

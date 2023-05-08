@@ -197,6 +197,30 @@ it('should call the API', async () => {
 });
 ```
 
+### Tracking unused/missing injectables
+
+By default `magnetic-di` does not complain if an injectable is not used or if a dependency has not being replaced. In large codebases however, that might led to issues with stale, unused injectables or with lack of knowledge in what could be replaced. To ease introspection, the library provides a `stats` API that returns both `unused` and `missing` injectables.
+
+- `stats.unused()` returns an array of entries `{ get(), error() }` for all injectables that have not been used since `stats.reset()` has been called
+- `stats.missing()` returns an array of entries `{ get(), error() }` for all dependencies that have not been replaced since `stats.reset()` has been called
+
+This is an example of stats guard implementation using the returned `error()` helper:
+
+```js
+import { stats } from 'react-magnetic-di';
+
+beforeEach(() => {
+  // it's important to reset the stats after each test
+  stats.reset();
+});
+afterEach(() => {
+  stats.unused().forEach((entry) => {
+    // throw an error pointing at the test with the unused injectable
+    throw entry.error();
+  });
+});
+```
+
 ### Configuration Options
 
 #### Enable dependency replacement on production (or custom env)

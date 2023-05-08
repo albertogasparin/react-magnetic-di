@@ -2,7 +2,7 @@
 /* eslint-disable no-unused-vars, react/display-name */
 
 import React, { Component, type AbstractComponent } from 'react';
-import { injectable, runWithDi } from '../..';
+import { injectable, runWithDi, stats } from '../..';
 
 /**
  * Originals
@@ -68,3 +68,17 @@ async () => {
   const rasync = await runWithDi(() => runTestAsyncFn(), []);
   rasync.split('');
 };
+
+/**
+ * stats types tests
+ */
+const unused = stats.unused();
+const missing = stats.missing();
+stats.reset();
+
+// Correct
+unused.length > 1;
+unused.map((f) => f.call(null));
+
+missing.length > 1;
+missing.map((f) => f.call(null));
