@@ -78,7 +78,9 @@ stats.reset();
 
 // Correct
 unused.length > 1;
-unused.map((f) => f.call(null));
+unused[0].get().call;
+unused[0].error().stack;
 
 missing.length > 1;
-missing.map((f) => f.call(null));
+missing[0].get().call;
+missing[0].error().stack;
