@@ -48,7 +48,7 @@ declare export var stats: {
   /** Returns dependencies missing an injectable override */
   missing: () => Array<{ get: () => Dependency, error: () => Error }>,
   /** Resets stats */
-  reset: () => undefined,
+  reset: () => void,
 };
 
 function di(...dependencies: Dependency[]) {
