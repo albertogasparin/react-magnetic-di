@@ -1,12 +1,14 @@
 import { KEY } from './constants';
 
+const createState = () => ({
+  unused: new Map(),
+  used: new Set(),
+  missing: new Map(),
+  provided: new Set(),
+});
+
 export const stats = {
-  state: {
-    unused: new Map(),
-    used: new Set(),
-    missing: new Map(),
-    provided: new Set(),
-  },
+  state: createState(),
 
   set(replacedDep) {
     this.state.unused.set(
@@ -32,9 +34,7 @@ export const stats = {
   },
 
   reset() {
-    for (let key in this.state) {
-      this.state[key].clear();
-    }
+    this.state = createState();
   },
 
   unused() {

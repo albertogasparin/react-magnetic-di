@@ -197,12 +197,11 @@ it('should call the API', async () => {
 });
 ```
 
-### Tracking unused/missing injectables
+### Tracking unused injectables
 
-By default `magnetic-di` does not complain if an injectable is not used or if a dependency has not being replaced. In large codebases however, that might led to issues with stale, unused injectables or with lack of knowledge in what could be replaced. To ease introspection, the library provides a `stats` API that returns both `unused` and `missing` injectables.
+By default `magnetic-di` does not complain if an injectable is not used or if a dependency has not being replaced. In large codebases however, that might led to issues with stale, unused injectables or with lack of knowledge in what could be replaced. To ease introspection, the library provides a `stats` API that returns `unused` injectables.
 
 - `stats.unused()` returns an array of entries `{ get(), error() }` for all injectables that have not been used since `stats.reset()` has been called
-- `stats.missing()` returns an array of entries `{ get(), error() }` for all dependencies that have not been replaced since `stats.reset()` has been called
 
 This is an example of stats guard implementation using the returned `error()` helper:
 
