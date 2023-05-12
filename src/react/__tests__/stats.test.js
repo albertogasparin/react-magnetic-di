@@ -55,6 +55,17 @@ describe('stats', () => {
       expect(stats.unused()).toHaveLength(0);
     });
 
+    it('should not track overridden injectables', () => {
+      const WrapperOverrideDi = injectable(Wrapper, jest.fn());
+      const deps = [WrapperDi, WrapperOverrideDi];
+      render(
+        <DiProvider use={deps}>
+          <Label />
+        </DiProvider>
+      );
+      expect(stats.unused()).toHaveLength(0);
+    });
+
     it('should track missing injectables', () => {
       render(
         <DiProvider use={[TextDi]}>

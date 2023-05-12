@@ -11,6 +11,11 @@ export const stats = {
   state: createState(),
 
   set(replacedDep) {
+    // allow injectable override without flagging as unused
+    for (let injectable of this.state.unused.keys())
+      if (injectable[KEY].from === replacedDep[KEY].from)
+        this.state.unused.delete(injectable);
+
     this.state.unused.set(
       replacedDep,
       new Error(
