@@ -140,6 +140,42 @@ ruleTester.run('exhaustive-inject', rule, {
       `,
       options: [{ ignore: ['useQuery'] }],
     },
+    // it should ignore recursive components
+    `
+        import { Suspense, useState, useMemo } from 'react';
+        import { di } from 'react-magnetic-di';
+  
+        function MyComponent({ child }) {
+          di(useState);
+          useState();
+          useMemo();
+          return <MyComponent child={child} />
+        }
+      `,
+    // it should ignore recursive arrow function components
+    `
+        import { Suspense, useState, useMemo } from 'react';
+        import { di } from 'react-magnetic-di';
+  
+        const MyComponent = ({ child }) => {
+          di(useState);
+          useState();
+          useMemo();
+          return <MyComponent child={child} />
+        };
+      `,
+    // it should ignore recursive hooks
+    `
+        import { Suspense, useState } from 'react';
+        import { di } from 'react-magnetic-di';
+  
+        const useX = ({ child }) => {
+          di(useState);
+          useState();
+          if (!child.child) return null;
+          return useX(child.child)
+        };
+      `,
   ],
 
   invalid: [

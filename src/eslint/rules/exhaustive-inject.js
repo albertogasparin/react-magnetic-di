@@ -55,6 +55,10 @@ module.exports = {
   create: function (context) {
     let diIdentifier;
     let reactVars;
+    let currentComponentStack = [];
+    const isRecursiveComponent = (node) =>
+      currentComponentStack.includes(node.name);
+
     const userOptions = Object.assign({ ignore: [] }, context.options[0]);
 
     const isInjected = (vars, n) => vars?.some((v) => v.name === n.name);
@@ -83,6 +87,19 @@ module.exports = {
         if (!reactVars) reactVars = getReactIdentifiers(node);
       },
 
+      FunctionDeclaration(node) {
+        if (node.id && node.id.name) currentComponentStack.push(node.id.name);
+      },
+      'FunctionDeclaration:exit'(node) {
+        if (node.id && node.id.name) currentComponentStack.pop();
+      },
+      VariableDeclarator(node) {
+        if (node.id && node.id.name) currentComponentStack.push(node.id.name);
+      },
+      'VariableDeclarator:exit'(node) {
+        if (node.id && node.id.name) currentComponentStack.pop();
+      },
+
       // this is to handle hooks and components recognised as used variables
       // it does not cover JSX variables
       BlockStatement(node) {
@@ -107,7 +124,8 @@ module.exports = {
             isReactIgnored(varNode) ||
             isOptionsIgnored(varNode) ||
             isLocalVariable(varNode, context.getScope()) ||
-            isDefaultProp(varNode, diStatements[0])
+            isDefaultProp(varNode, diStatements[0]) ||
+            isRecursiveComponent(varNode)
           )
             return;
           report(varNode, diStatements[diStatements.length - 1]);
@@ -130,7 +148,8 @@ module.exports = {
             if (
               !isInjectable ||
               isReactIgnored(varNode) ||
-              isOptionsIgnored(varNode)
+              isOptionsIgnored(varNode) ||
+              isRecursiveComponent(varNode)
             )
               return;
             break;
