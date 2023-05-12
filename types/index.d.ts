@@ -1,11 +1,5 @@
 declare module 'react-magnetic-di' {
-  import {
-    ComponentType,
-    ReactNode,
-    Component,
-    ComponentProps,
-    ComponentClass,
-  } from 'react';
+  import { ComponentType, ReactNode, Component, ComponentProps } from 'react';
 
   type Dependency = Function;
 
@@ -66,6 +60,15 @@ declare module 'react-magnetic-di' {
     thunk: T,
     dependencies: Dependency[]
   ): ReturnType<T>;
+
+  const stats: {
+    /** Returns unused injectables */
+    unused(): Array<{ get(): Dependency; error(): Error }>;
+    /** Returns dependencies missing an injectable override */
+    missing(): Array<{ get(): Dependency; error(): Error }>;
+    /** Resets stats */
+    reset(): void;
+  };
 
   class di {
     /** @deprecated use injectable instead */

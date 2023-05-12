@@ -1,10 +1,15 @@
 import { KEY, PACKAGE_NAME } from './constants';
+import { stats } from './stats';
 
 const replacementMap = new Map();
 
 export const globalDi = {
   getDependencies(realDeps) {
-    return realDeps.map((dep) => replacementMap.get(dep) || dep);
+    return realDeps.map((dep) => {
+      const replacedDep = replacementMap.get(dep);
+      stats.track(replacedDep, dep);
+      return replacedDep || dep;
+    });
   },
 
   use(deps) {
@@ -16,6 +21,7 @@ export const globalDi = {
       );
     }
     deps.forEach((d) => {
+      stats.set(d);
       replacementMap.set(d[KEY], d);
     });
   },
