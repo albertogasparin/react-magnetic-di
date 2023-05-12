@@ -19,7 +19,10 @@ export const stats = {
     this.state.unused.set(
       replacedDep,
       new Error(
-        `Unused di injectable: ${replacedDep.displayName || replacedDep}`
+        `Unused "di" injectable: ${
+          replacedDep.displayName || replacedDep
+        }. If this is on purpose, add "{track: false}" at injectable creation.`,
+        { cause: replacedDep[KEY].cause }
       )
     );
   },
