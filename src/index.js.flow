@@ -32,7 +32,8 @@ declare export function mock<T: Dependency>(original: T, mock: T): T;
 
 declare export function injectable<T: Dependency>(
   from: T,
-  implementation: T
+  implementation: T,
+  options?: {| displayName?: string, track?: boolean |}
 ): T;
 
 type ExtractReturn<Fn> = $Call<<T>((...Iterable<any>) => T) => T, Fn>;

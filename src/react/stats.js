@@ -25,7 +25,7 @@ export const stats = {
       this.state.used.add(replacedDep);
       this.state.missing.delete(dep);
       this.state.provided.add(dep);
-    } else if (!dep[KEY] && !this.state.provided.has(dep)) {
+    } else if (!dep[KEY]?.from && !this.state.provided.has(dep)) {
       this.state.missing.set(
         dep,
         new Error(`Unreplaced di dependency: ${dep.displayName || dep}`)

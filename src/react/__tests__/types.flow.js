@@ -53,6 +53,8 @@ injectable(ClassComponent, FunctionalMock);
 injectable(TypedComponent, FunctionalMock);
 injectable(TypedComponent, ClassMock);
 injectable(useHook, useMock);
+injectable(useHook, useMock, { track: false });
+injectable(useHook, useMock, { displayName: 'useHookPrim1' });
 
 /**
  * runWithDi types tests

@@ -13,8 +13,8 @@ export const DiProvider = ({ children, use, target }) => {
   const value = useMemo(() => {
     // create a map of dependency real -> replacement for fast lookup
     const replacementMap = use.reduce((m, d) => {
-      stats.set(d);
-      return m.set(d[KEY], d);
+      if (d[KEY].track) stats.set(d);
+      return m.set(d[KEY].from, d);
     }, new Map());
     // support single or multiple targets
     const targets = target && (Array.isArray(target) ? target : [target]);
@@ -30,7 +30,7 @@ export const DiProvider = ({ children, use, target }) => {
             // if another provider at the top has already swapped it
             // so we check if here we need to inject a different one
             // or return the original / parent replacement
-            const real = dep[KEY] || dep;
+            const real = dep[KEY]?.from || dep;
             const replacedDep = replacementMap.get(real);
             stats.track(replacedDep, dep);
 

@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { render } from '@testing-library/react';
-import { DiProvider, runWithDi, stats } from '../../index';
+import { DiProvider, injectable, runWithDi, stats } from '../../index';
 import {
   Label,
   TextDi,
@@ -42,6 +42,17 @@ describe('stats', () => {
       expect(stats.unused()).toHaveLength(2);
       expect(stats.unused()[0].get()).toEqual(fetchApiDi);
       expect(stats.unused()[1].get()).toEqual(processApiDataDi);
+    });
+
+    it('should not track injectables with tracking false', () => {
+      const ignore = injectable(() => {}, jest.fn(), { track: false });
+      const deps = [TextDi, WrapperDi, ignore];
+      render(
+        <DiProvider use={deps}>
+          <Label />
+        </DiProvider>
+      );
+      expect(stats.unused()).toHaveLength(0);
     });
 
     it('should track missing injectables', () => {

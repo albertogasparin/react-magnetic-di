@@ -21,8 +21,8 @@ export const globalDi = {
       );
     }
     deps.forEach((d) => {
-      stats.set(d);
-      replacementMap.set(d[KEY], d);
+      if (d[KEY].track) stats.set(d);
+      replacementMap.set(d[KEY].from, d);
     });
   },
 

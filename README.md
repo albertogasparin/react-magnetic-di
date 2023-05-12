@@ -87,7 +87,7 @@ function MyComponent() {
 
 ### Leveraging dependency replacement in tests and storybooks
 
-In the unit/integration tests or storybooks we can create a new injectable implementation and wrap the component with `DiProvider` to override such dependency:
+In the unit/integration tests or storybooks we can create a new `injectable` implementation and wrap the component with `DiProvider` to override such dependency:
 
 ```jsx
 import React from 'react';
@@ -185,16 +185,28 @@ import { injectable, runWithDi } from 'react-magnetic-di';
 import { myApiFetcher, fetchApi } from '.';
 
 it('should call the API', async () => {
-  const fetchApiDi = injectable(
-    fetchApi,
-    jest.mock().mockResolvedValue('mock')
-  );
+  const fetchApiDi = injectable(fetchApi, jest.fn().mockResolvedValue('mock'));
 
   const result = await runWithDi(() => myApiFetcher(), [fetchApiDi]);
 
   expect(fetchApiDi).toHaveBeenCalled();
   expect(result).toEqual('mock');
 });
+```
+
+### injectables configuration
+
+When creating injectables you can provide a configuration object to customise some of its behaviour.
+For instance, you can provide a custom `displayName` to make debugging easier:
+
+```js
+const fetchApiDi = injectable(fetchApi, jest.fn(), { displayName: 'fetchApi' });
+```
+
+Or you can skip reporting it in `stats.unused()` (handy if you provide default injectables across tests):
+
+```js
+const fetchApiDi = injectable(fetchApi, jest.fn(), { track: false });
 ```
 
 ### Tracking unused injectables

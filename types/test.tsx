@@ -21,6 +21,8 @@ const useHookPrim1 = () => 'foo';
 injectable(useHookPrim1, () => true);
 // correct
 injectable(useHookPrim1, () => 'bar');
+injectable(useHookPrim1, () => 'bar', { track: false });
+injectable(useHookPrim1, () => 'bar', { displayName: 'useHookPrim1' });
 
 // Tuple hook simple test
 const useHookTuple1 = () => useState(true);
