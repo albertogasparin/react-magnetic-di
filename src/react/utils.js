@@ -14,16 +14,29 @@ export function getDisplayName(Comp, wrapper = '') {
   return !name || !wrapper ? name : `${wrapper}(${name})`;
 }
 
-export function injectable(from, implementation) {
+export function injectable(
+  from,
+  implementation,
+  { displayName, track = true } = {}
+) {
   implementation.displayName =
-    getDisplayName(implementation) || getDisplayName(from, 'di');
-  if (implementation[KEY] && implementation[KEY] !== from) {
+    displayName || getDisplayName(implementation) || getDisplayName(from, 'di');
+  if (implementation[KEY]?.from && implementation[KEY]?.from !== from) {
     warnOnce(
       `You are trying to use replacement "${implementation.displayName}" on multiple injectables. ` +
         `That will override only the last dependency, as each replacement is uniquely linked.`
     );
   }
-  implementation[KEY] = from;
+  Object.defineProperty(implementation, KEY, {
+    writable: true, // ideally this should be false, but sometimes devs reuse mocks
+    value: {
+      from,
+      track,
+      cause: new Error(
+        'Injectable created but not used. If this is on purpose, add "{track: false}"'
+      ),
+    },
+  });
   return implementation;
 }
 

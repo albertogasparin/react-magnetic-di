@@ -45,9 +45,14 @@ declare module 'react-magnetic-di' {
 
   function injectable<T extends Dependency>(
     from: T,
-    implementation: ComponentOrFunction<T>
+    implementation: ComponentOrFunction<T>,
+    options?: { displayName?: string; track?: boolean }
   ): T;
-  function injectable<T extends Dependency>(from: T, implementation: T): T;
+  function injectable<T extends Dependency>(
+    from: T,
+    implementation: T,
+    options?: { displayName?: string; track?: boolean }
+  ): T;
 
   function di(...dependencies: Dependency[]): void;
   /** allow using di without Babel */
