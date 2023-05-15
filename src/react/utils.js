@@ -29,7 +29,13 @@ export function injectable(
   }
   Object.defineProperty(implementation, KEY, {
     writable: true, // ideally this should be false, but sometimes devs reuse mocks
-    value: { from, track, cause: new Error() },
+    value: {
+      from,
+      track,
+      cause: new Error(
+        'Injectable created but not used. If this is on purpose, add "{track: false}"'
+      ),
+    },
   });
   return implementation;
 }
