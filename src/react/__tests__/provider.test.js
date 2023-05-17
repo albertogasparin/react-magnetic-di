@@ -100,6 +100,14 @@ describe('DiProvider', () => {
       expect(getDependencies([Text])).toEqual([TextDi2]);
     });
   });
+
+  it('should error when a non injectable is used', () => {
+    const cSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    expect(() => {
+      render(<DiProvider use={[jest.fn()]}>foo</DiProvider>);
+    }).toThrowError();
+    cSpy.mockRestore();
+  });
 });
 
 describe('withDi', () => {

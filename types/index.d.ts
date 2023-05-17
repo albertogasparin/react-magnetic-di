@@ -3,6 +3,8 @@ declare module 'react-magnetic-di' {
 
   type Dependency = Function;
 
+  type Injectable<T> = T & { [di: symbol]: 'Return type of injectable()' };
+
   type DeepPartial<Type> = Type extends (...args: any) => any
     ? (...args: Parameters<Type>) => DeepPartial<ReturnType<Type>>
     : Type extends ReadonlyArray<infer InferredArrayMember>
@@ -27,7 +29,7 @@ declare module 'react-magnetic-di' {
 
   class DiProvider extends Component<
     {
-      use: Dependency[];
+      use: Injectable<Dependency>[];
       target?: ComponentType<any> | ComponentType<any>[];
       children?: ReactNode;
     },
@@ -36,7 +38,7 @@ declare module 'react-magnetic-di' {
 
   function withDi<T extends ComponentType<any>>(
     component: T,
-    dependencies: Dependency[],
+    dependencies: Injectable<Dependency>[],
     target?: ComponentType<any> | ComponentType<any>[]
   ): T;
 
@@ -47,12 +49,12 @@ declare module 'react-magnetic-di' {
     from: T,
     implementation: ComponentOrFunction<T>,
     options?: { displayName?: string; track?: boolean }
-  ): T;
+  ): Injectable<T>;
   function injectable<T extends Dependency>(
     from: T,
     implementation: T,
     options?: { displayName?: string; track?: boolean }
-  ): T;
+  ): Injectable<T>;
 
   function di(...dependencies: Dependency[]): void;
   /** allow using di without Babel */
@@ -63,7 +65,7 @@ declare module 'react-magnetic-di' {
 
   function runWithDi<T extends () => any>(
     thunk: T,
-    dependencies: Dependency[]
+    dependencies: Injectable<Dependency>[]
   ): ReturnType<T>;
 
   const stats: {
