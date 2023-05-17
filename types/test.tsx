@@ -154,9 +154,11 @@ runWithDi(runTestFn(), []);
 runWithDi(() => runTestFn());
 // @ts-expect-error - must provide array deps
 runWithDi(() => runTestFn(), globalDep);
+// @ts-expect-error - must use injectables
+runWithDi(() => runTestFn(), [globalDep]);
 
 // Correct
-const rsync = runWithDi(() => runTestFn(), [globalDep]);
+const rsync = runWithDi(() => runTestFn(), [injectable(globalDep, jest.fn())]);
 rsync.split('');
 
 async () => {

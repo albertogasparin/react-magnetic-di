@@ -31,6 +31,12 @@ describe('globalDi', () => {
     globalDi.use([processApiDataDi]);
     expect(() => globalDi.use([])).toThrow();
   });
+
+  it('should error when a non injectable is used', () => {
+    expect(() => {
+      globalDi.use([jest.fn()]);
+    }).toThrowError();
+  });
 });
 
 describe('runWithDi', () => {

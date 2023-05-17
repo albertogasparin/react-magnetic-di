@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { KEY } from './constants';
 import { Context } from './context';
 import { stats } from './stats';
-import { getDisplayName } from './utils';
+import { assertValidInjectable, getDisplayName } from './utils';
 
 export const DiProvider = ({ children, use, target }) => {
   const { getDependencies } = useContext(Context);
@@ -13,6 +13,7 @@ export const DiProvider = ({ children, use, target }) => {
   const value = useMemo(() => {
     // create a map of dependency real -> replacement for fast lookup
     const replacementMap = use.reduce((m, d) => {
+      assertValidInjectable(d);
       if (d[KEY].track) stats.set(d);
       return m.set(d[KEY].from, d);
     }, new Map());

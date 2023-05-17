@@ -1,5 +1,6 @@
 import { KEY, PACKAGE_NAME } from './constants';
 import { stats } from './stats';
+import { assertValidInjectable } from './utils';
 
 const replacementMap = new Map();
 
@@ -21,6 +22,7 @@ export const globalDi = {
       );
     }
     deps.forEach((d) => {
+      assertValidInjectable(d);
       if (d[KEY].track) stats.set(d);
       replacementMap.set(d[KEY].from, d);
     });

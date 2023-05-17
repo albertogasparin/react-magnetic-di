@@ -9,6 +9,13 @@ export function warnOnce(message) {
   }
 }
 
+export function assertValidInjectable(dep) {
+  if (!dep[KEY])
+    throw new Error(
+      `Seems like you are trying to use "${dep}" as injectable, but magnetic-di needs the return value of "injectable()"`
+    );
+}
+
 export function getDisplayName(Comp, wrapper = '') {
   const name = Comp.displayName || Comp.name;
   return !name || !wrapper ? name : `${wrapper}(${name})`;

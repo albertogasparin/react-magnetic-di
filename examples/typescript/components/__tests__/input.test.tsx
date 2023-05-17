@@ -5,11 +5,11 @@
 
 import React, { type ReactElement, useState } from 'react';
 import { render } from '@testing-library/react';
-import { DiProvider, injectable } from 'react-magnetic-di';
+import { DiProvider, injectable, type Injectable } from 'react-magnetic-di';
 
 import { Input, useTheme } from '../input';
 
-const renderWithDi = (node: ReactElement, dependencies: Function[] = []) =>
+const renderWithDi = (node: ReactElement, dependencies: Injectable[] = []) =>
   render(node, {
     wrapper: (p) => <DiProvider use={dependencies} {...p} />,
   });
