@@ -3,7 +3,9 @@ declare module 'react-magnetic-di' {
 
   type Dependency = Function;
 
-  type Injectable<T> = T & { [di: symbol]: 'Return type of injectable()' };
+  type Injectable<T = Dependency> = T & {
+    [di: symbol]: 'Return type of injectable()';
+  };
 
   type DeepPartial<Type> = Type extends (...args: any) => any
     ? (...args: Parameters<Type>) => DeepPartial<ReturnType<Type>>
@@ -29,7 +31,7 @@ declare module 'react-magnetic-di' {
 
   class DiProvider extends Component<
     {
-      use: Injectable<Dependency>[];
+      use: Injectable[];
       target?: ComponentType<any> | ComponentType<any>[];
       children?: ReactNode;
     },
@@ -38,7 +40,7 @@ declare module 'react-magnetic-di' {
 
   function withDi<T extends ComponentType<any>>(
     component: T,
-    dependencies: Injectable<Dependency>[],
+    dependencies: Injectable[],
     target?: ComponentType<any> | ComponentType<any>[]
   ): T;
 
@@ -65,12 +67,12 @@ declare module 'react-magnetic-di' {
 
   function runWithDi<T extends () => any>(
     thunk: T,
-    dependencies: Injectable<Dependency>[]
+    dependencies: Injectable[]
   ): ReturnType<T>;
 
   const stats: {
     /** Returns unused injectables */
-    unused(): Array<{ get(): Dependency; error(): Error }>;
+    unused(): Array<{ get(): Injectable; error(): Error }>;
     /** Returns dependencies missing an injectable override */
     missing(): Array<{ get(): Dependency; error(): Error }>;
     /** Resets stats */
