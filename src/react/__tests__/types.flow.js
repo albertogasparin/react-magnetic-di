@@ -75,14 +75,9 @@ async () => {
  * stats types tests
  */
 const unused = stats.unused();
-const missing = stats.missing();
 stats.reset();
 
 // Correct
 unused.length > 1;
 unused[0].get().call;
 unused[0].error().stack;
-
-missing.length > 1;
-missing[0].get().call;
-missing[0].error().stack;

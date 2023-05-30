@@ -46,8 +46,6 @@ declare export function runWithDi<T: (...args: any) => any>(
 declare export var stats: {
   /** Returns unused injectables */
   unused: () => Array<{ get: () => Dependency, error: () => Error }>,
-  /** Returns dependencies missing an injectable override */
-  missing: () => Array<{ get: () => Dependency, error: () => Error }>,
   /** Resets stats */
   reset: () => void,
 };

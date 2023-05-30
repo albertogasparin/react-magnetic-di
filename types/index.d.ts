@@ -73,8 +73,6 @@ declare module 'react-magnetic-di' {
   const stats: {
     /** Returns unused injectables */
     unused(): Array<{ get(): Injectable; error(): Error }>;
-    /** Returns dependencies missing an injectable override */
-    missing(): Array<{ get(): Dependency; error(): Error }>;
     /** Resets stats */
     reset(): void;
   };
