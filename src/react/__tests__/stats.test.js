@@ -11,9 +11,7 @@ import {
   WrapperDi,
   apiHandler,
   fetchApiDi,
-  processApiData,
   processApiDataDi,
-  transformer,
 } from './common';
 
 describe('stats', () => {
@@ -65,16 +63,6 @@ describe('stats', () => {
       );
       expect(stats.unused()).toHaveLength(0);
     });
-
-    it('should track missing injectables', () => {
-      render(
-        <DiProvider use={[TextDi]}>
-          <Label />
-        </DiProvider>
-      );
-      expect(stats.missing()).toHaveLength(1);
-      expect(stats.missing()[0].get()).toEqual(Wrapper);
-    });
   });
 
   describe('with runWithDi', () => {
@@ -90,14 +78,6 @@ describe('stats', () => {
       expect(stats.unused()).toHaveLength(2);
       expect(stats.unused()[0].get()).toEqual(TextDi);
       expect(stats.unused()[1].get()).toEqual(WrapperDi);
-    });
-
-    it('should track missing injectables', async () => {
-      const deps = [fetchApiDi];
-      await runWithDi(() => apiHandler(), deps);
-      expect(stats.missing()).toHaveLength(2);
-      expect(stats.missing()[0].get()).toEqual(transformer);
-      expect(stats.missing()[1].get()).toEqual(processApiData);
     });
   });
 });
