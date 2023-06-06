@@ -418,6 +418,25 @@ describe('babel plugin auto', () => {
     expect(babel(input)).toMatchSnapshot();
   });
 
+  it('should not inject locally defined functions', () => {
+    const input = `
+      import React, { Fragment } from 'react';
+      import { di } from 'react-magnetic-di';
+      
+      const useModalStatus = () => true;
+      
+      const MyComponent = () => {
+        di();
+        const localStatus = () => false;
+        const LocalComponent = () => null;
+        const status = true ? localStatus() : useModalStatus();
+        const Component = true ? LocalComponent : Fragment;
+        return <Component />;
+      };
+    `;
+    expect(babel(input)).toMatchSnapshot();
+  });
+
   it('should not di html tags', () => {
     const input = `
       import React, { Suspense } from 'react';

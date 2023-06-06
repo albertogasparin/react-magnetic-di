@@ -69,6 +69,20 @@ const MyComponent = () => {
 };"
 `;
 
+exports[`babel plugin auto should not inject locally defined functions 1`] = `
+"import React, { Fragment } from 'react';
+import { di } from 'react-magnetic-di';
+const useModalStatus = () => true;
+const MyComponent = () => {
+  const [_Fragment, _useModalStatus] = di([Fragment, useModalStatus], MyComponent);
+  const localStatus = () => false;
+  const LocalComponent = () => null;
+  const status = true ? localStatus() : _useModalStatus();
+  const Component = true ? LocalComponent : _Fragment;
+  return __jsx(Component, null);
+};"
+`;
+
 exports[`babel plugin auto should not inject self 1`] = `
 "import React from 'react';
 import { di } from 'react-magnetic-di';

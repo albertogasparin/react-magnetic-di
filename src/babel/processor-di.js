@@ -4,6 +4,11 @@ function getSelfName(path) {
   return path.node.id?.name || path.parentPath.node.id?.name;
 }
 
+function isDefinedOutside(scope, name) {
+  // not locally defined but defined in parent scope
+  return !scope.hasOwnBinding(name) && scope.hasBinding(name);
+}
+
 function buildDepsArray(t, ref) {
   const diNames = new Set();
   const selfName = getSelfName(ref.getFunctionParent());
@@ -17,9 +22,15 @@ function buildDepsArray(t, ref) {
       if (!init) return; // var declared undefined
       if (t.isConditionalExpression(init)) {
         locallyRenamed.set(id.name, []);
-        if (t.isIdentifier(init.consequent))
+        if (
+          t.isIdentifier(init.consequent) &&
+          isDefinedOutside(ref.scope, init.consequent.name)
+        )
           locallyRenamed.get(id.name).push(init.consequent.name);
-        if (t.isIdentifier(init.alternate))
+        if (
+          t.isIdentifier(init.alternate) &&
+          isDefinedOutside(ref.scope, init.alternate.name)
+        )
           locallyRenamed.get(id.name).push(init.alternate.name);
         return;
       }
@@ -39,12 +50,7 @@ function buildDepsArray(t, ref) {
       )
         return;
 
-      if (
-        // not locally defined
-        !ref.scope.hasOwnBinding(name) &&
-        // but defined in parent scope
-        ref.scope.hasBinding(name)
-      ) {
+      if (isDefinedOutside(ref.scope, name)) {
         diNames.add(name);
       }
 
@@ -119,6 +125,7 @@ function processReference(t, ref, isEnabled) {
     ])
   );
 
+  console.log(ref);
   ref.scope.registerDeclaration(statement);
 
   args.forEach((argIdentifier) => {
