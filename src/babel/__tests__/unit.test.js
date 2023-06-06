@@ -176,22 +176,6 @@ describe('babel plugin', () => {
     process.env.BABEL_ENV = undefined;
   });
 
-  it('should error if used without dependencies', () => {
-    const input = `
-      import React from 'react';
-      import { di } from 'react-magnetic-di';
-      import Modal from 'modal';
-
-      function MyComponent() {
-        di();
-        return <Modal />;
-      }
-    `;
-    expect(() => babel(input)).toThrow(
-      'Invalid di(...) arguments: must be called with at least one argument.'
-    );
-  });
-
   it('should error if all arguments are wrapped', () => {
     const input = `
       import React from 'react';
@@ -268,6 +252,243 @@ describe('babel plugin', () => {
     expect(() => babel(input)).toThrow(
       'Invalid di(...) call: cannot inject self.'
     );
+  });
+
+  it('should error if used not as first call expression', () => {
+    const input = `
+      import { di } from 'react-magnetic-di';
+      import { useModal } from 'modal';
+
+      function MyComponent() {
+        useModal();
+        di();
+        return true;
+      }
+    `;
+    expect(() => babel(input)).toThrow(
+      'Invalid di(...) call: must be defined before other call expressions.'
+    );
+  });
+});
+
+describe('babel plugin auto', () => {
+  it('should work in class components', () => {
+    const input = `
+      import React, { Component } from 'react';
+      import { di } from 'react-magnetic-di';
+      import Modal from 'modal';
+
+      class MyComponent extends Component {
+        render() {
+          di();
+          return <Modal />;
+        }
+      }
+    `;
+    expect(babel(input)).toMatchSnapshot();
+  });
+
+  it('should work in functional components', () => {
+    const input = `
+      import React from 'react';
+      import { di } from 'react-magnetic-di';
+      import Modal from 'modal';
+      
+      const MyComponent = () => {
+        di();
+        return <Modal />;
+      };
+    `;
+    expect(babel(input)).toMatchSnapshot();
+  });
+
+  it('should work in functional components declaration', () => {
+    const input = `
+      import React from 'react';
+      import { di, injectable } from 'react-magnetic-di';
+      import Modal from 'modal';
+      
+      function MyComponent() {
+        di();
+        return <Modal />;
+      }
+    `;
+    expect(babel(input)).toMatchSnapshot();
+  });
+
+  it('should work in functional components expression', () => {
+    const input = `
+      import React from 'react';
+      import { di, injectable } from 'react-magnetic-di';
+      import Modal from 'modal';
+      
+      const MyComponent = function () {
+        di();
+        return <Modal />;
+      }
+    `;
+    expect(babel(input)).toMatchSnapshot();
+  });
+
+  it('should work in wrapped functional components', () => {
+    const input = `
+      import React, { forwardRef } from 'react';
+      import { di, injectable } from 'react-magnetic-di';
+      import Modal from 'modal';
+      
+      const MyComponent = forwardRef(() => {
+        di();
+        return <Modal />;
+      });
+    `;
+    expect(babel(input)).toMatchSnapshot();
+  });
+
+  it('should work with locally defined dependencies', () => {
+    const input = `
+      import React from 'react';
+      import { di } from 'react-magnetic-di';
+      
+      const useModalStatus = () => true;
+      
+      const MyComponent2 = () => {
+        di();
+        const status = useModalStatus();
+        return status;
+      };
+    `;
+    expect(babel(input)).toMatchSnapshot();
+  });
+
+  it('should work with multiple dependencies across multiple components', () => {
+    const input = `
+      import React, { Component } from 'react';
+      import { di } from 'react-magnetic-di';
+      import Modal from 'modal';
+
+      const useModalStatus = () => true;
+
+      function MyComponent() {
+        di();
+        const isOpen = useModalStatus();
+        return isOpen && <Modal />;
+      }
+
+      class MyComponent2 extends Component {
+        render() {
+          di();
+          this.foo();
+          return <Modal />;
+        }
+      };
+    `;
+    expect(babel(input)).toMatchSnapshot();
+  });
+
+  it('should not inject self', () => {
+    const input = `
+      import React from 'react';
+      import { di } from 'react-magnetic-di';
+      
+      const useModalStatus = () => true;
+      
+      const MyComponent = () => {
+        di();
+        const status = useModalStatus();
+        return <MyComponent />;
+      };
+    `;
+    expect(babel(input)).toMatchSnapshot();
+  });
+
+  it('should not di html tags', () => {
+    const input = `
+      import React, { Suspense } from 'react';
+      import { di } from 'react-magnetic-di';
+      
+      const useModalStatus = () => true;
+      
+      const MyComponent = () => {
+        di();
+        const status = useModalStatus();
+        return <div>{status}</div>;
+      };
+    `;
+    expect(babel(input)).toMatchSnapshot();
+  });
+
+  it('should not di default arguments', () => {
+    const input = `
+      import React, { useState } from 'react';
+      import { di } from 'react-magnetic-di';
+      
+      const useModalStatus = ({
+        fooArg = () => true
+      }) => {
+        di();
+        useState();
+        fooArg();
+      };
+    `;
+    expect(babel(input)).toMatchSnapshot();
+  });
+
+  it('should not di built-ins', () => {
+    const input = `
+      import React, { useState } from 'react';
+      import { di } from 'react-magnetic-di';
+      
+      const useModalStatus = ({
+        fooArg = () => true
+      }) => {
+        di();
+        useState();
+        return Boolean('asd');
+      };
+    `;
+    expect(babel(input)).toMatchSnapshot();
+  });
+
+  it('should strip di if no injectable dependencies found', () => {
+    const input = `
+      import { di } from 'react-magnetic-di';
+      
+      const useModalStatus = () => {
+        di();
+        return '';
+      };
+    `;
+    expect(babel(input)).toMatchSnapshot();
+  });
+
+  it('should ignore JSX object identifiers', () => {
+    const input = `
+      import React from 'react';
+      import { di } from 'react-magnetic-di';
+      import Modal from 'modal';
+
+      function MyComponent() {
+        di();
+        return <Modal.Bla />;
+      }
+    `;
+    expect(babel(input)).toMatchSnapshot();
+  });
+
+  it('should merge with provided dependencies', () => {
+    const input = `
+      import React from 'react';
+      import { di } from 'react-magnetic-di';
+      import Modal, { useModal, useModalData, config } from 'modal';
+
+      function MyComponent() {
+        di(config, useModal);
+        useModal() 
+        useModalData()
+        return <Modal />;
+      }
+    `;
+    expect(babel(input)).toMatchSnapshot();
   });
 });
 

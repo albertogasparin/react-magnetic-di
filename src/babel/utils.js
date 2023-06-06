@@ -23,11 +23,6 @@ const assert = {
     }
   },
   isValidCall(t, ref) {
-    if (!ref.container.arguments.length) {
-      throw ref.buildCodeFrameError(
-        'Invalid di(...) arguments: must be called with at least one argument. '
-      );
-    }
     if (!ref.container.arguments.every((node) => t.isIdentifier(node))) {
       throw ref.buildCodeFrameError(
         'Invalid di(...) arguments: must be called with plain identifiers. '
@@ -37,6 +32,13 @@ const assert = {
     if (decl && ref.container.arguments.some((v) => v.name === decl.name)) {
       throw ref.buildCodeFrameError(
         'Invalid di(...) call: cannot inject self.'
+      );
+    }
+  },
+  isValidLocation(t, ref, path) {
+    if (path.node.loc.start.line < ref.node.loc.start.line) {
+      throw ref.buildCodeFrameError(
+        'Invalid di(...) call: must be defined before other call expressions.'
       );
     }
   },

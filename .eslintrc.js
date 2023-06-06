@@ -4,6 +4,7 @@ module.exports = {
     browser: true,
     es6: true,
     node: true,
+    es2020: true,
   },
   extends: [
     'eslint:recommended',
@@ -14,7 +15,6 @@ module.exports = {
     ecmaFeatures: {
       jsx: true,
     },
-    ecmaVersion: 2018,
     sourceType: 'module',
   },
   settings: {

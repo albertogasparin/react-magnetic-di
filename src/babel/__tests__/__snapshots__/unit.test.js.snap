@@ -1,5 +1,162 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`babel plugin auto should ignore JSX object identifiers 1`] = `
+"import React from 'react';
+import { di } from 'react-magnetic-di';
+import Modal from 'modal';
+function MyComponent() {
+  return __jsx(Modal.Bla, null);
+}"
+`;
+
+exports[`babel plugin auto should merge with provided dependencies 1`] = `
+"import React from 'react';
+import { di } from 'react-magnetic-di';
+import Modal, { useModal, useModalData, config } from 'modal';
+function MyComponent() {
+  const [_Modal, _config, _useModal, _useModalData] = di([Modal, config, useModal, useModalData], MyComponent);
+  _useModal();
+  _useModalData();
+  return __jsx(_Modal, null);
+}"
+`;
+
+exports[`babel plugin auto should not di built-ins 1`] = `
+"import React, { useState } from 'react';
+import { di } from 'react-magnetic-di';
+const useModalStatus = ({
+  fooArg = () => true
+}) => {
+  const [_useState] = di([useState], useModalStatus);
+  _useState();
+  return Boolean('asd');
+};"
+`;
+
+exports[`babel plugin auto should not di default arguments 1`] = `
+"import React, { useState } from 'react';
+import { di } from 'react-magnetic-di';
+const useModalStatus = ({
+  fooArg = () => true
+}) => {
+  const [_useState] = di([useState], useModalStatus);
+  _useState();
+  fooArg();
+};"
+`;
+
+exports[`babel plugin auto should not di html tags 1`] = `
+"import React, { Suspense } from 'react';
+import { di } from 'react-magnetic-di';
+const useModalStatus = () => true;
+const MyComponent = () => {
+  const [_useModalStatus] = di([useModalStatus], MyComponent);
+  const status = _useModalStatus();
+  return __jsx("div", null, status);
+};"
+`;
+
+exports[`babel plugin auto should not inject self 1`] = `
+"import React from 'react';
+import { di } from 'react-magnetic-di';
+const useModalStatus = () => true;
+const MyComponent = () => {
+  const [_useModalStatus] = di([useModalStatus], MyComponent);
+  const status = _useModalStatus();
+  return __jsx(MyComponent, null);
+};"
+`;
+
+exports[`babel plugin auto should strip di if no injectable dependencies found 1`] = `
+"import { di } from 'react-magnetic-di';
+const useModalStatus = () => {
+  return '';
+};"
+`;
+
+exports[`babel plugin auto should work in class components 1`] = `
+"import React, { Component } from 'react';
+import { di } from 'react-magnetic-di';
+import Modal from 'modal';
+class MyComponent extends Component {
+  render() {
+    const [_Modal] = di([Modal], MyComponent);
+    return __jsx(_Modal, null);
+  }
+}"
+`;
+
+exports[`babel plugin auto should work in functional components 1`] = `
+"import React from 'react';
+import { di } from 'react-magnetic-di';
+import Modal from 'modal';
+const MyComponent = () => {
+  const [_Modal] = di([Modal], MyComponent);
+  return __jsx(_Modal, null);
+};"
+`;
+
+exports[`babel plugin auto should work in functional components declaration 1`] = `
+"import React from 'react';
+import { di, injectable } from 'react-magnetic-di';
+import Modal from 'modal';
+function MyComponent() {
+  const [_Modal] = di([Modal], MyComponent);
+  return __jsx(_Modal, null);
+}"
+`;
+
+exports[`babel plugin auto should work in functional components expression 1`] = `
+"import React from 'react';
+import { di, injectable } from 'react-magnetic-di';
+import Modal from 'modal';
+const MyComponent = function () {
+  const [_Modal] = di([Modal], MyComponent);
+  return __jsx(_Modal, null);
+};"
+`;
+
+exports[`babel plugin auto should work in wrapped functional components 1`] = `
+"import React, { forwardRef } from 'react';
+import { di, injectable } from 'react-magnetic-di';
+import Modal from 'modal';
+const MyComponent = /*#__PURE__*/forwardRef(() => {
+  const [_Modal] = di([Modal], null);
+  return __jsx(_Modal, null);
+});"
+`;
+
+exports[`babel plugin auto should work with locally defined dependencies 1`] = `
+"import React from 'react';
+import { di } from 'react-magnetic-di';
+const useModalStatus = () => true;
+const MyComponent2 = () => {
+  const [_useModalStatus] = di([useModalStatus], MyComponent2);
+  const status = _useModalStatus();
+  return status;
+};"
+`;
+
+exports[`babel plugin auto should work with multiple dependencies across multiple components 1`] = `
+"import React, { Component } from 'react';
+import { di } from 'react-magnetic-di';
+import Modal from 'modal';
+const useModalStatus = () => true;
+function MyComponent() {
+  const [_Modal, _useModalStatus] = di([Modal, useModalStatus], MyComponent);
+  const isOpen = _useModalStatus();
+  return isOpen && __jsx(_Modal, null);
+}
+class MyComponent2 extends Component {
+  render() {
+    const [_Modal2] = di([Modal], MyComponent2);
+    this.foo();
+    return __jsx(_Modal2, null);
+  }
+}
+;"
+`;
+
 exports[`babel plugin should do injection if force enabled 1`] = `
 "import React, { Component } from 'react';
 import { di } from 'react-magnetic-di';
