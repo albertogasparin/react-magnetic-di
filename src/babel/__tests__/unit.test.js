@@ -385,6 +385,23 @@ describe('babel plugin auto', () => {
     expect(babel(input)).toMatchSnapshot();
   });
 
+  it.only('should collect dependencies used in ternaries', () => {
+    const input = `
+      import React from 'react';
+      import { di } from 'react-magnetic-di';
+      import { Modal, ModalNew, useModal, useModalNew } from 'modal';
+
+      function MyComponent() {
+        di();
+        const Comp = true ? Modal : ModalNew;
+        const foo = true ? useModal : useModalNew;
+        foo();
+        return <Comp />;
+      }
+    `;
+    expect(babel(input)).toMatchSnapshot();
+  });
+
   it('should not inject self', () => {
     const input = `
       import React from 'react';

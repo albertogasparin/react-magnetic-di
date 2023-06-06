@@ -1,5 +1,18 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`babel plugin auto should collect dependencies used in ternaries 1`] = `
+"import React from 'react';
+import { di } from 'react-magnetic-di';
+import { Modal, ModalNew, useModal, useModalNew } from 'modal';
+function MyComponent() {
+  const [_Modal, _ModalNew, _useModal, _useModalNew] = di([Modal, ModalNew, useModal, useModalNew], MyComponent);
+  const Comp = true ? _Modal : _ModalNew;
+  const foo = true ? _useModal : _useModalNew;
+  foo();
+  return __jsx(Comp, null);
+}"
+`;
+
 exports[`babel plugin auto should ignore JSX object identifiers 1`] = `
 "import React from 'react';
 import { di } from 'react-magnetic-di';
