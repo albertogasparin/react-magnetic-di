@@ -36,7 +36,8 @@ const assert = {
     }
   },
   isValidLocation(t, ref, path) {
-    if (path.node.loc.start.line < ref.node.loc.start.line) {
+    // loc can be undefined if path added by some other babel plugin
+    if (path.node.loc?.start.line < ref.node.loc.start.line) {
       throw ref.buildCodeFrameError(
         'Invalid di(...) call: must be defined before other call expressions.'
       );

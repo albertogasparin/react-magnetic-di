@@ -385,7 +385,7 @@ describe('babel plugin auto', () => {
     expect(babel(input)).toMatchSnapshot();
   });
 
-  it.only('should collect dependencies used in ternaries', () => {
+  it('should collect dependencies used in ternaries', () => {
     const input = `
       import React from 'react';
       import { di } from 'react-magnetic-di';
