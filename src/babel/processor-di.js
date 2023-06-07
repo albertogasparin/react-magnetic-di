@@ -5,8 +5,14 @@ function getSelfName(path) {
 }
 
 function isDefinedOutside(scope, name) {
-  // not locally defined but defined in parent scope
-  return !scope.hasOwnBinding(name) && scope.hasBinding(name);
+  return (
+    // not built-ins
+    !(name in globalThis) &&
+    // not locally defined
+    !scope.hasOwnBinding(name) &&
+    // but defined in parent scope
+    scope.hasBinding(name)
+  );
 }
 
 function buildDepsArray(t, ref) {
@@ -44,9 +50,7 @@ function buildDepsArray(t, ref) {
         // is di()
         name === ref.node.name ||
         // is self
-        name === selfName ||
-        // built-ins
-        globalThis[name]
+        name === selfName
       )
         return;
 
@@ -71,12 +75,7 @@ function buildDepsArray(t, ref) {
       )
         return;
 
-      if (
-        // not locally defined
-        !ref.scope.hasOwnBinding(name) &&
-        // but defined in parent scope
-        ref.scope.hasBinding(name)
-      ) {
+      if (isDefinedOutside(ref.scope, name)) {
         diNames.add(name);
       }
 
@@ -125,7 +124,6 @@ function processReference(t, ref, isEnabled) {
     ])
   );
 
-  console.log(ref);
   ref.scope.registerDeclaration(statement);
 
   args.forEach((argIdentifier) => {

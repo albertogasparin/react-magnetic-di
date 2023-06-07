@@ -8,7 +8,9 @@ function MyComponent() {
   const [_Modal, _ModalNew, _useModal, _useModalNew] = di([Modal, ModalNew, useModal, useModalNew], MyComponent);
   const Comp = true ? _Modal : _ModalNew;
   const foo = true ? _useModal : _useModalNew;
+  const bar = true ? undefined : window;
   foo();
+  bar();
   return __jsx(Comp, null);
 }"
 `;

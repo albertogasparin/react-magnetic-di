@@ -395,7 +395,9 @@ describe('babel plugin auto', () => {
         di();
         const Comp = true ? Modal : ModalNew;
         const foo = true ? useModal : useModalNew;
+        const bar = true ? undefined : window
         foo();
+        bar();
         return <Comp />;
       }
     `;
