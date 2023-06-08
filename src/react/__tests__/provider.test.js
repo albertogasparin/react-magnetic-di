@@ -7,6 +7,7 @@ import React, { forwardRef } from 'react';
 import { render } from '@testing-library/react';
 
 import { Context } from '../context';
+import { di } from '../consumer';
 import { DiProvider, withDi } from '../provider';
 import { injectable } from '../utils';
 
@@ -107,6 +108,20 @@ describe('DiProvider', () => {
       render(<DiProvider use={[jest.fn()]}>foo</DiProvider>);
     }).toThrowError();
     cSpy.mockRestore();
+  });
+
+  describe('with various replacement types', () => {
+    const cases = [1, 'string', null, Symbol('test'), function () {}];
+    test.each(cases)('should hanlde dependency value %p', (value) => {
+      const spy = jest.fn();
+      const Child = () => spy(di([value]));
+      render(
+        <DiProvider use={[injectable(value, 'replaced')]}>
+          <Child />
+        </DiProvider>
+      );
+      expect(spy).toHaveBeenCalledWith(['replaced']);
+    });
   });
 });
 

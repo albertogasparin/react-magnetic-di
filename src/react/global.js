@@ -1,4 +1,4 @@
-import { KEY, PACKAGE_NAME } from './constants';
+import { PACKAGE_NAME, diRegistry } from './constants';
 import { stats } from './stats';
 import { assertValidInjectable } from './utils';
 
@@ -7,13 +7,13 @@ const replacementMap = new Map();
 export const globalDi = {
   getDependencies(realDeps) {
     return realDeps.map((dep) => {
-      const replacedDep = replacementMap.get(dep);
-      stats.track(replacedDep, dep);
-      return replacedDep || dep;
+      const replacedInj = replacementMap.get(dep);
+      stats.track(replacedInj, dep);
+      return replacedInj ? replacedInj.value : dep;
     });
   },
 
-  use(deps) {
+  use(injs) {
     if (replacementMap.size) {
       throw new Error(
         `${PACKAGE_NAME} has replacements configured already. ` +
@@ -21,10 +21,11 @@ export const globalDi = {
           `If this is not expected, please file a bug report`
       );
     }
-    deps.forEach((d) => {
-      assertValidInjectable(d);
-      if (d[KEY].track) stats.set(d);
-      replacementMap.set(d[KEY].from, d);
+    injs.forEach((inj) => {
+      assertValidInjectable(inj);
+      const injObj = diRegistry.get(inj);
+      if (injObj.track) stats.set(injObj);
+      replacementMap.set(injObj.from, injObj);
     });
   },
 

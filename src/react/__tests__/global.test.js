@@ -1,5 +1,7 @@
 /* eslint-env jest */
 import { globalDi, runWithDi } from '../global';
+import { di } from '../consumer';
+import { injectable } from '../utils';
 import {
   apiHandler,
   transformer,
@@ -36,6 +38,15 @@ describe('globalDi', () => {
     expect(() => {
       globalDi.use([jest.fn()]);
     }).toThrowError();
+  });
+
+  describe('with various replacement types', () => {
+    const cases = [1, 'string', null, Symbol('test'), function () {}];
+    test.each(cases)('should hanlde dependency value %p', (value) => {
+      globalDi.use([injectable(value, 'replaced')]);
+      const result = di([value]);
+      expect(result).toEqual(['replaced']);
+    });
   });
 });
 
