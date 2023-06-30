@@ -1,3 +1,5 @@
+const { PACKAGE_NAME } = require('./constants');
+
 const getComponentDeclaration = (t, scope) => {
   // function declarations
   if (scope.parentBlock.declaration) return scope.parentBlock.declaration.id;
@@ -9,37 +11,22 @@ const getComponentDeclaration = (t, scope) => {
 };
 
 const assert = {
-  isValidBlock(t, ref) {
-    const { block } = ref.scope;
-    if (
-      !t.isFunctionDeclaration(block) &&
-      !t.isFunctionExpression(block) &&
-      !t.isArrowFunctionExpression(block) &&
-      !t.isClassMethod(block)
-    ) {
-      throw ref.buildCodeFrameError(
-        'Invalid di(...) call: must be inside a render function of a component. '
-      );
-    }
-  },
-  isValidCall(t, ref) {
-    if (!ref.container.arguments.every((node) => t.isIdentifier(node))) {
+  isValidArgument(t, node, ref, self) {
+    if (!t.isIdentifier(node)) {
       throw ref.buildCodeFrameError(
         'Invalid di(...) arguments: must be called with plain identifiers. '
       );
     }
-    const decl = getComponentDeclaration(t, ref.scope);
-    if (decl && ref.container.arguments.some((v) => v.name === decl.name)) {
+    if (node.name === self.name) {
       throw ref.buildCodeFrameError(
         'Invalid di(...) call: cannot inject self.'
       );
     }
   },
-  isValidLocation(t, ref, path) {
-    // loc can be undefined if path added by some other babel plugin
-    if (path.node.loc?.start.line < ref.node.loc.start.line) {
+  isValidLocation(path, ref) {
+    if (!path) {
       throw ref.buildCodeFrameError(
-        'Invalid di(...) call: must be defined before other call expressions.'
+        'Invalid di(...) call: must be inside a render function of a component. '
       );
     }
   },
@@ -52,6 +39,60 @@ const createNamedImport = (t, pkgName, pkgFns, localNames) => {
   );
   return statement;
 };
+
+function collectDepsReferencePaths(t, bodyPaths) {
+  const references = [];
+
+  function addRef(path) {
+    const { referencePaths = [] } = path.scope.getBinding(path) || {};
+    references.push(...referencePaths);
+  }
+
+  bodyPaths.forEach((path) => {
+    if (path.isImportDeclaration()) {
+      if (path.node.importKind === 'type') return;
+      if (path.node.source.value === PACKAGE_NAME) return;
+      path.get('specifiers').forEach((sp) => {
+        if (sp.node.importKind === 'type') return;
+        if (sp.isImportDefaultSpecifier() || sp.isImportSpecifier()) {
+          addRef(sp.get('local'));
+        }
+      });
+    }
+    if (path.isExportNamedDeclaration()) {
+      if (path.node.exportKind === 'type') return;
+      if (path.node.declaration) {
+        path.get('declaration.declarations').forEach((dp) => {
+          if (dp.get('id').isIdentifier()) {
+            addRef(dp.get('id'));
+          }
+        });
+      } else {
+        path.get('specifiers').forEach((sp) => {
+          if (sp.node.exportKind === 'type') return;
+          if (sp.get('local').isIdentifier()) {
+            addRef(sp.get('local'));
+          }
+        });
+      }
+    }
+    if (path.isExportDefaultDeclaration()) {
+      if (path.node.exportKind === 'type') return;
+      const ref = path.get('declaration').isIdentifier()
+        ? path.get('declaration')
+        : path.get('declaration.id');
+      addRef(ref);
+    }
+  });
+  return references;
+}
+
+function collectDiReferencePaths(t, identifier, scope) {
+  // we locate all usages of the method
+  const { referencePaths = [] } = scope.getBinding(identifier.name) || {};
+
+  return referencePaths.filter((ref) => t.isCallExpression(ref.container));
+}
 
 const isEnabledEnv = () => {
   return (
@@ -66,4 +107,6 @@ module.exports = {
   assert,
   createNamedImport,
   isEnabledEnv,
+  collectDiReferencePaths,
+  collectDepsReferencePaths,
 };

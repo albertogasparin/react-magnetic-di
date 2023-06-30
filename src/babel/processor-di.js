@@ -1,138 +1,59 @@
 const { assert, getComponentDeclaration } = require('./utils');
 
-function getSelfName(path) {
-  return path.node.id?.name || path.parentPath.node.id?.name;
-}
+function processReference(t, path, state) {
+  const locationValue = state.getValueForPath(path);
+  const self = getComponentDeclaration(t, path.scope);
 
-function isDefinedOutside(scope, name) {
-  return (
-    // not built-ins
-    !(name in globalThis) &&
-    // not locally defined
-    !scope.hasOwnBinding(name) &&
-    // but defined in parent scope
-    scope.hasBinding(name)
-  );
-}
-
-function buildDepsArray(t, ref) {
-  const diNames = new Set();
-  const selfName = getSelfName(ref.getFunctionParent());
-  const parentBlock = ref.findParent((path) => path.isBlockStatement());
-
-  const locallyRenamed = new Map();
-
-  parentBlock.traverse({
-    VariableDeclarator(path) {
-      const { id, init } = path.node;
-      if (!init) return; // var declared undefined
-      if (t.isConditionalExpression(init)) {
-        locallyRenamed.set(id.name, []);
-        if (
-          t.isIdentifier(init.consequent) &&
-          isDefinedOutside(ref.scope, init.consequent.name)
-        )
-          locallyRenamed.get(id.name).push(init.consequent.name);
-        if (
-          t.isIdentifier(init.alternate) &&
-          isDefinedOutside(ref.scope, init.alternate.name)
-        )
-          locallyRenamed.get(id.name).push(init.alternate.name);
-        return;
-      }
-    },
-    CallExpression(path) {
-      assert.isValidLocation(t, ref, path);
-
-      const { name } = path.node.callee;
-      if (
-        !name ||
-        // is di()
-        name === ref.node.name ||
-        // is self
-        name === selfName
-      )
-        return;
-
-      if (isDefinedOutside(ref.scope, name)) {
-        diNames.add(name);
-      }
-
-      if (locallyRenamed.has(name)) {
-        locallyRenamed.get(name).forEach((v) => diNames.add(v));
-      }
-    },
-    JSXOpeningElement(path) {
-      const { name } = path.node.name;
-      if (
-        !name ||
-        // is di()
-        name === ref.node.name ||
-        // is self
-        name === selfName ||
-        // not tag name
-        name[0] !== name[0].toUpperCase()
-      )
-        return;
-
-      if (isDefinedOutside(ref.scope, name)) {
-        diNames.add(name);
-      }
-
-      if (locallyRenamed.has(name)) {
-        locallyRenamed.get(name).forEach((v) => diNames.add(v));
-      }
-    },
+  // Build list of dependencies
+  // combining used imports/exports in this function block
+  // with existing di expression (if any)
+  const depNames = [];
+  Array.from(locationValue.dependencyRefs).forEach((p) => {
+    if (!depNames.includes(p.node.name)) depNames.push(p.node.name);
   });
-  return Array.from(diNames).map((v) => t.identifier(v));
-}
+  locationValue.diRef?.container?.arguments?.forEach((n) => {
+    assert.isValidArgument(t, n, locationValue.diRef, self);
+    if (!depNames.includes(n.name)) depNames.push(n.name);
+  });
+  depNames.sort();
 
-function processReference(t, ref, isEnabled) {
-  assert.isValidBlock(t, ref);
-  assert.isValidCall(t, ref);
+  const elements = depNames.map((v) => t.identifier(v));
+  const args = depNames.map((v) => t.identifier(v));
+  // add di there
+  const declaration = t.variableDeclaration('const', [
+    t.variableDeclarator(
+      t.arrayPattern(elements),
+      t.callExpression(state.diIdentifier, [
+        t.arrayExpression(args),
+        self || t.nullLiteral(),
+      ])
+    ),
+  ]);
 
-  // from the arguments of the method we generate the list of dependency identifiers
-  let args = ref.container.arguments;
-  if (isEnabled) {
-    args = buildDepsArray(t, ref, args)
-      .concat(args)
-      .sort((a, b) => (a.name > b.name ? 1 : -1))
-      .filter((v, i, arr) => v.name !== arr[i + 1]?.name);
+  // We inject the new declaration either by replacing existing di
+  // or by replacing and adding the statement at the top.
+  // We need replacing to ensure we get a path so that registerDeclaration works
+  let declarationPath;
+  if (locationValue.diRef) {
+    declarationPath = locationValue.diRef.getStatementParent();
+    declarationPath.replaceWith(declaration);
+  } else {
+    path
+      .get('body.body.0')
+      .replaceWithMultiple([declaration, path.get('body.body.0').node]);
+    declarationPath = path.get('body.body.0');
   }
 
-  const dependencyIdentifiers = args.map((v) => t.identifier(v.name));
-  const statement = ref.getStatementParent();
-
-  // if should not be enabled, just remove the statement and exit
-  if (!isEnabled || dependencyIdentifiers.length === 0) {
-    statement.remove();
-    return;
-  }
-
-  // generating variable declarations with array destructuring
-  // assigning them the result of the method call, with arguments
-  // now wrapped in an array
-  statement.replaceWith(
-    t.variableDeclaration('const', [
-      t.variableDeclarator(
-        t.arrayPattern(dependencyIdentifiers),
-        t.callExpression(ref.node, [
-          t.arrayExpression(args),
-          getComponentDeclaration(t, ref.scope) || t.nullLiteral(),
-        ])
-      ),
-    ])
-  );
-
-  ref.scope.registerDeclaration(statement);
+  path.get('body').scope.registerDeclaration(declarationPath);
 
   args.forEach((argIdentifier) => {
-    // for each argument we get the dependency variable name
+    // For each argument we get the dependency variable name
     // then we rename it locally so we get a new unique identifier.
     // Then we manually revert just the argument identifier name back,
     // so it still points to the original dependency identifier name
     const name = argIdentifier.name;
-    ref.scope.rename(name);
+    const { scope } = path.get('body');
+    scope.rename(name, state.getAlias(name, scope));
     argIdentifier.name = name;
   });
 }

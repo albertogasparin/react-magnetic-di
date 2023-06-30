@@ -1,7 +1,6 @@
 const { createMacro } = require('babel-plugin-macros');
 
-const { PACKAGE_NAME, PACKAGE_FUNCTION, HOC_FUNCTION } = require('./constants');
-const processDIReference = require('./processor-di');
+const { PACKAGE_NAME, HOC_FUNCTION } = require('./constants');
 const processHOCReference = require('./processor-hoc');
 const { createNamedImport, isEnabledEnv } = require('./utils');
 
@@ -12,14 +11,6 @@ const diMacro = ({ references, babel, config = {} }) => {
   const importedMethods = Object.keys(references).filter(
     (v) => references[v].length
   );
-
-  // // if not enabled and only di was imported, let import to be stripped
-  // if (
-  //   importedMethods.length === 1 &&
-  //   importedMethods[0] === PACKAGE_FUNCTION &&
-  //   !isEnabled
-  // )
-  //   return;
 
   // add named imports
   const { scope: methodScope } = references[importedMethods[0]][0];
@@ -52,11 +43,8 @@ const diMacro = ({ references, babel, config = {} }) => {
     }
   }
 
-  const diImport = references[PACKAGE_FUNCTION] || [];
   const hocImports = references[HOC_FUNCTION] || [];
 
-  // process all di calls
-  diImport.forEach((ref) => processDIReference(t, ref, isEnabled));
   // process all HOC calls
   hocImports.forEach((ref) => processHOCReference(t, ref));
 };
