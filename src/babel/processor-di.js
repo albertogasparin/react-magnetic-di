@@ -61,8 +61,8 @@ function processReference(t, path, state) {
     argIdentifier.name = name;
   });
 
-  // ensure we add di import on program exit
-  state.shouldAddImport = !state.diIdentifier.loc;
+  // ensure we add di import
+  state.addDiImport(t);
 }
 
 module.exports = processReference;

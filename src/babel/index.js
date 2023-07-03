@@ -7,18 +7,22 @@ const {
 const processDiDeclaration = require('./processor-di');
 const processHOCReference = require('./processor-hoc');
 const {
-  isEnabledEnv,
-  createNamedImport,
   assert,
+  createNamedImport,
   collectDiReferencePaths,
   collectDepsReferencePaths,
+  isExcluded,
 } = require('./utils');
 
 class State {
   paths = new WeakMap();
   aliases = new Map();
   diIdentifier = null;
-  shouldAddImport = false;
+  programPath = null;
+
+  constructor(path) {
+    this.programPath = path;
+  }
 
   findDiIndentifier(t, body, scope) {
     const diImportNode = body.find(
@@ -43,6 +47,21 @@ class State {
     return this.paths.get(fnPath);
   }
 
+  getValueForPath(fnPath) {
+    return this.paths.get(fnPath);
+  }
+
+  getAlias(name, scope) {
+    if (!this.aliases.has(name)) {
+      this.aliases.set(name, scope.generateUid(name));
+    }
+    return this.aliases.get(name);
+  }
+
+  removeValueForPath(fnPath) {
+    return this.paths.delete(fnPath);
+  }
+
   addDi(diRef) {
     const parentFnPath = diRef.getFunctionParent();
     assert.isValidLocation(parentFnPath, diRef);
@@ -63,61 +82,48 @@ class State {
     value.dependencyRefs.add(depRef.node);
   }
 
-  getValueForPath(fnPath) {
-    return this.paths.get(fnPath);
-  }
+  addDiImport(t) {
+    if (this.diIdentifier.loc) return;
 
-  getAlias(name, scope) {
-    if (!this.aliases.has(name)) {
-      this.aliases.set(name, scope.generateUid(name));
-    }
-    return this.aliases.get(name);
+    const statement = createNamedImport(
+      t,
+      PACKAGE_NAME,
+      [PACKAGE_FUNCTION],
+      [this.diIdentifier]
+    );
+    this.programPath.unshiftContainer('body', statement);
+    // after adding, make this function a noop
+    this.addDiImport = () => {};
   }
 }
 
 module.exports = function (babel) {
   const { types: t } = babel;
-  let state;
+  let state = null;
 
   return {
     visitor: {
       Program: {
-        enter(path, { opts = {} }) {
-          // Currenrly we only enable di for imported/exported members
-          // given creating injectables requires source declarations.
-          // We do not support creating injectables in the same file as dep declaration
-          const isEnabled = isEnabledEnv() || Boolean(opts.forceEnable);
-          state = new State();
+        enter(path, { opts, file }) {
+          if (isExcluded(opts.exclude, file.opts.filename)) return;
+
+          state = new State(path);
           state.findDiIndentifier(t, path.node.body, path.scope);
 
           collectDiReferencePaths(t, state.diIdentifier, path.scope).forEach(
-            (p) => {
-              if (isEnabled) state.addDi(p);
-              else p.parentPath.remove();
-            }
+            (p) => state.addDi(p)
           );
-
-          if (!isEnabled) return;
 
           collectDepsReferencePaths(t, path.get('body')).forEach((p) =>
             state.addDependency(p)
           );
         },
-        exit(path) {
-          // if we ended up adding any di(), let's add the import at the top
-          if (state.shouldAddImport) {
-            const statement = createNamedImport(
-              t,
-              PACKAGE_NAME,
-              [PACKAGE_FUNCTION],
-              [state.diIdentifier]
-            );
-            path.unshiftContainer('body', statement);
-          }
-          // reset state vars
+        exit() {
+          // reset state so if babel processes the function again, we do not add another di
           state = null;
         },
       },
+
       Function(path) {
         // process only if function is a candidate to host di
         if (!state || !state.getValueForPath(path)) return;
@@ -132,12 +138,6 @@ module.exports = function (babel) {
 
         // create di declaration
         processDiDeclaration(t, path, state);
-
-        // console.log(
-        //   path.parentPath
-        //     .toString()
-        //     .replace(/(\w+)[\s\S]+di\(\[([^\]]+)[\s\S]+/, '$1: $2')
-        // );
       },
 
       ImportDeclaration(path) {

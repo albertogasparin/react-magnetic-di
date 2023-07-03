@@ -63,6 +63,7 @@
     "babel-loader": "^9.1.2",
     "babel-plugin-macros": "^3.1.0",
     "babel-plugin-module-resolver": "^5.0.0",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.26.2",
     "dtslint": "^4.2.1",
     "eslint": "^8.39.0",
     "eslint-plugin-flowtype": "^8.0.3",

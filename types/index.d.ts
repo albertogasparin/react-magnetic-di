@@ -1,7 +1,7 @@
 declare module 'react-magnetic-di' {
   import { ComponentType, ReactNode, Component, ComponentProps } from 'react';
 
-  type Dependency = Function;
+  type Dependency = unknown;
 
   type Injectable<T = Dependency> = T & {
     [di: symbol]: 'Return type of injectable()';
@@ -44,9 +44,6 @@ declare module 'react-magnetic-di' {
     target?: ComponentType<any> | ComponentType<any>[]
   ): T;
 
-  /** @deprecated use injectable instead */
-  function mock<T extends Dependency>(original: T, mock: T): T;
-
   function injectable<T extends Dependency>(
     from: T,
     implementation: ComponentOrFunction<T>,
@@ -70,17 +67,14 @@ declare module 'react-magnetic-di' {
     dependencies: Injectable[]
   ): ReturnType<T>;
 
+  function debug<T extends Function>(fn: T): string;
+
   const stats: {
     /** Returns unused injectables */
     unused(): Array<{ get(): Injectable; error(): Error }>;
     /** Resets stats */
     reset(): void;
   };
-
-  class di {
-    /** @deprecated use injectable instead */
-    static mock: typeof mock;
-  }
 }
 
 declare module 'react-magnetic-di/macro' {

@@ -55,5 +55,8 @@ export function injectable(
   return impl;
 }
 
-/** @deprecated use injectable instead */
-export const mock = injectable;
+export function debug(fn) {
+  const source = fn.toString();
+  const [, args] = source.match(/const \[[^\]]+\] = .*di.*\(\[([^\]]+)/) || [];
+  return args;
+}

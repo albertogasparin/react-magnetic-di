@@ -2,11 +2,11 @@
 import { transform } from '@babel/core';
 import plugin from '../index';
 
-const babel = (code, { options } = {}) =>
+const babel = (code, { options, extraPlugins = [] } = {}) =>
   transform(code, {
     filename: 'noop.js',
     presets: [['@babel/preset-react', { development: false, pragma: '__jsx' }]],
-    plugins: [[plugin, options]],
+    plugins: [[plugin, options], ...extraPlugins],
     babelrc: false,
     configFile: false,
     sourceType: 'module',
@@ -251,52 +251,21 @@ describe('babel plugin', () => {
     `);
   });
 
-  it('should strip injection if not enabled environment', () => {
+  it('should skip injection if file excluded', () => {
     const input = `
-      import React, { Component } from 'react';
-      import { di } from 'react-magnetic-di';
-      import Modal from 'modal';
+      import { useModal } from 'modal';
 
-      function MyComponent() {
-        di(myGlobal);
-        return <Modal />;
+      export function useMyModal() {
+        return useModal();
       }
     `;
-    process.env.BABEL_ENV = 'production';
-    process.env.NODE_ENV = 'production';
-    expect(babel(input)).toMatchInlineSnapshot(`
-      "import React, { Component } from 'react';
-      import { di } from 'react-magnetic-di';
-      import Modal from 'modal';
-      function MyComponent() {
-        return __jsx(Modal, null);
-      }"
-    `);
-    process.env.BABEL_ENV = undefined;
-    process.env.NODE_ENV = 'test';
-  });
-
-  it('should do injection if force enabled', () => {
-    const input = `
-      import React, { Component } from 'react';
-      import Modal from 'modal';
-
-      function MyComponent() {
-        return <Modal />;
-      }
-    `;
-    process.env.BABEL_ENV = 'production';
-    expect(babel(input, { options: { forceEnable: true } }))
+    expect(babel(input, { options: { exclude: /noop\.js/ } }))
       .toMatchInlineSnapshot(`
-      "import { di as _di } from "react-magnetic-di";
-      import React, { Component } from 'react';
-      import Modal from 'modal';
-      function MyComponent() {
-        const [_Modal] = _di([Modal], MyComponent);
-        return __jsx(_Modal, null);
+      "import { useModal } from 'modal';
+      export function useMyModal() {
+        return useModal();
       }"
     `);
-    process.env.BABEL_ENV = undefined;
   });
 
   it('should error if arguments are wrapped', () => {
@@ -539,6 +508,28 @@ describe('babel plugin', () => {
         const [_Modal, _config, _myGlobal, _useModal] = di([Modal, config, myGlobal, useModal], MyComponent);
         _useModal();
         return __jsx(_Modal, null);
+      }"
+    `);
+  });
+
+  it('shold work with other plugin manipulating imports', () => {
+    const input = `
+      import { useModal } from 'modal';
+
+      function useMyModal() {
+        return useModal();
+      }
+    `;
+    expect(
+      babel(input, { extraPlugins: ['transform-es2015-modules-commonjs'] })
+    ).toMatchInlineSnapshot(`
+      ""use strict";
+
+      var _reactMagneticDi = require("react-magnetic-di");
+      var _modal = require("modal");
+      function useMyModal() {
+        const [_useModal] = (0, _reactMagneticDi.di)([_modal.useModal], useMyModal);
+        return _useModal();
       }"
     `);
   });

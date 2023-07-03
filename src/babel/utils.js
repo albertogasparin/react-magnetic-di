@@ -99,19 +99,16 @@ function collectDiReferencePaths(t, identifier, scope) {
   return referencePaths.filter((ref) => t.isCallExpression(ref.container));
 }
 
-const isEnabledEnv = () => {
-  return (
-    ['development', 'test'].includes(process.env.BABEL_ENV) ||
-    ['development', 'test'].includes(process.env.NODE_ENV) ||
-    (!process.env.BABEL_ENV && !process.env.NODE_ENV)
-  );
+const isExcluded = (exclude = [], filename) => {
+  const excludes = [].concat(exclude);
+  return excludes.some((rx) => rx.test(filename));
 };
 
 module.exports = {
-  getComponentDeclaration,
   assert,
   createNamedImport,
-  isEnabledEnv,
   collectDiReferencePaths,
   collectDepsReferencePaths,
+  getComponentDeclaration,
+  isExcluded,
 };
