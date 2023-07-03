@@ -147,18 +147,20 @@ describe('babel plugin', () => {
       import React from 'react';
       
       export const useModalStatus = () => true;
+      export class MyStatus {}
       
       const MyComponent = () => {
-        return useModalStatus();
+        return useModalStatus() || new MyStatus();
       };
     `;
     expect(babel(input)).toMatchInlineSnapshot(`
       "import { di as _di } from "react-magnetic-di";
       import React from 'react';
       export const useModalStatus = () => true;
+      export class MyStatus {}
       const MyComponent = () => {
-        const [_useModalStatus] = _di([useModalStatus], MyComponent);
-        return _useModalStatus();
+        const [_MyStatus, _useModalStatus] = _di([MyStatus, useModalStatus], MyComponent);
+        return _useModalStatus() || new _MyStatus();
       };"
     `);
   });
@@ -466,6 +468,36 @@ describe('babel plugin', () => {
       }) => {
         return Boolean(fooArg());
       };"
+    `);
+  });
+
+  it('should not di component itself class', () => {
+    const input = `
+      export default class MyComponent {
+        static foo() {
+          return MyComponent.bar()
+        }
+      }
+    `;
+    expect(babel(input)).toMatchInlineSnapshot(`
+      "export default class MyComponent {
+        static foo() {
+          return MyComponent.bar();
+        }
+      }"
+    `);
+  });
+
+  it('should not di component itself function', () => {
+    const input = `
+      export function useModalStatus() {
+        return useModalStatus();
+      }
+    `;
+    expect(babel(input)).toMatchInlineSnapshot(`
+      "export function useModalStatus() {
+        return useModalStatus();
+      }"
     `);
   });
 

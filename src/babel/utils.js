@@ -8,6 +8,7 @@ const getComponentDeclaration = (t, scope) => {
   if (scope.parentBlock.id) return scope.parentBlock.id;
   // class declarations
   if (scope.parentBlock.type.includes('Class')) return scope.parent.block.id;
+  return null;
 };
 
 const assert = {
@@ -17,7 +18,7 @@ const assert = {
         'Invalid di(...) arguments: must be called with plain identifiers. '
       );
     }
-    if (node.name === self.name) {
+    if (node.name === self?.name) {
       throw ref.buildCodeFrameError(
         'Invalid di(...) call: cannot inject self.'
       );
@@ -62,11 +63,15 @@ function collectDepsReferencePaths(t, bodyPaths) {
     if (path.isExportNamedDeclaration()) {
       if (path.node.exportKind === 'type') return;
       if (path.node.declaration) {
-        path.get('declaration.declarations').forEach((dp) => {
-          if (dp.get('id').isIdentifier()) {
-            addRef(dp.get('id'));
-          }
-        });
+        if (path.get('declaration.id').isIdentifier()) {
+          addRef(path.get('declaration.id'));
+        } else {
+          path.get('declaration.declarations').forEach((dp) => {
+            if (dp.get('id').isIdentifier()) {
+              addRef(dp.get('id'));
+            }
+          });
+        }
       } else {
         path.get('specifiers').forEach((sp) => {
           if (sp.node.exportKind === 'type') return;

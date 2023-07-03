@@ -59,7 +59,8 @@ class State {
     );
     if (!parentFnPath) return;
     const value = this.getValueOrInit(parentFnPath);
-    value.dependencyRefs.add(depRef);
+    // store node instead of path as path might mutate!
+    value.dependencyRefs.add(depRef.node);
   }
 
   getValueForPath(fnPath) {
@@ -119,7 +120,7 @@ module.exports = function (babel) {
       },
       Function(path) {
         // process only if function is a candidate to host di
-        if (!state.getValueForPath(path)) return;
+        if (!state || !state.getValueForPath(path)) return;
 
         // convert arrow function returns as di needs a block
         if (!t.isBlockStatement(path.node.body)) {
@@ -132,8 +133,11 @@ module.exports = function (babel) {
         // create di declaration
         processDiDeclaration(t, path, state);
 
-        // ensure we add di import on program exit
-        state.shouldAddImport = !state.diIdentifier.loc;
+        // console.log(
+        //   path.parentPath
+        //     .toString()
+        //     .replace(/(\w+)[\s\S]+di\(\[([^\]]+)[\s\S]+/, '$1: $2')
+        // );
       },
 
       ImportDeclaration(path) {

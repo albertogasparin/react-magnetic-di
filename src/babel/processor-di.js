@@ -8,14 +8,18 @@ function processReference(t, path, state) {
   // combining used imports/exports in this function block
   // with existing di expression (if any)
   const depNames = [];
-  Array.from(locationValue.dependencyRefs).forEach((p) => {
-    if (!depNames.includes(p.node.name)) depNames.push(p.node.name);
+  Array.from(locationValue.dependencyRefs).forEach((n) => {
+    if (!depNames.includes(n.name) && n.name !== self?.name)
+      depNames.push(n.name);
   });
   locationValue.diRef?.container?.arguments?.forEach((n) => {
     assert.isValidArgument(t, n, locationValue.diRef, self);
     if (!depNames.includes(n.name)) depNames.push(n.name);
   });
   depNames.sort();
+
+  // if there are no valid candidates, exit
+  if (!depNames.length) return;
 
   const elements = depNames.map((v) => t.identifier(v));
   const args = depNames.map((v) => t.identifier(v));
@@ -56,6 +60,9 @@ function processReference(t, path, state) {
     scope.rename(name, state.getAlias(name, scope));
     argIdentifier.name = name;
   });
+
+  // ensure we add di import on program exit
+  state.shouldAddImport = !state.diIdentifier.loc;
 }
 
 module.exports = processReference;
