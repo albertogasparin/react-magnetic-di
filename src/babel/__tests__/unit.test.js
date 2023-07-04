@@ -251,7 +251,7 @@ describe('babel plugin', () => {
     `);
   });
 
-  it('should skip injection if file excluded', () => {
+  it('should skip injection if file excluded regexp', () => {
     const input = `
       import { useModal } from 'modal';
 
@@ -259,8 +259,25 @@ describe('babel plugin', () => {
         return useModal();
       }
     `;
-    expect(babel(input, { options: { exclude: /noop\.js/ } }))
-      .toMatchInlineSnapshot(`
+    const options = { exclude: /noop\.js/ };
+    expect(babel(input, { options })).toMatchInlineSnapshot(`
+      "import { useModal } from 'modal';
+      export function useMyModal() {
+        return useModal();
+      }"
+    `);
+  });
+
+  it('should skip injection if file excluded string', () => {
+    const input = `
+      import { useModal } from 'modal';
+
+      export function useMyModal() {
+        return useModal();
+      }
+    `;
+    const options = { exclude: ['noop.js'] };
+    expect(babel(input, { options })).toMatchInlineSnapshot(`
       "import { useModal } from 'modal';
       export function useMyModal() {
         return useModal();

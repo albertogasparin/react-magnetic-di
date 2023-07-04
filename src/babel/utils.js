@@ -100,7 +100,13 @@ function collectDiReferencePaths(t, identifier, scope) {
 }
 
 const isExcluded = (exclude = [], filename) => {
-  const excludes = [].concat(exclude);
+  const excludes = []
+    .concat(exclude)
+    .map((v) =>
+      v instanceof RegExp
+        ? v
+        : new RegExp(v.replace(/[/\-\\^$*+?.()|[\]{}]/g, '\\$&'))
+    );
   return excludes.some((rx) => rx.test(filename));
 };
 

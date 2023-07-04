@@ -99,7 +99,7 @@ class State {
 
 module.exports = function (babel) {
   const { types: t } = babel;
-  let state = null;
+  let stateCache = new WeakMap();
 
   return {
     visitor: {
@@ -107,7 +107,9 @@ module.exports = function (babel) {
         enter(path, { opts, file }) {
           if (isExcluded(opts.exclude, file.opts.filename)) return;
 
-          state = new State(path);
+          const state = new State(path);
+          stateCache.set(file, state);
+
           state.findDiIndentifier(t, path.node.body, path.scope);
 
           collectDiReferencePaths(t, state.diIdentifier, path.scope).forEach(
@@ -118,13 +120,11 @@ module.exports = function (babel) {
             state.addDependency(p)
           );
         },
-        exit() {
-          // reset state so if babel processes the function again, we do not add another di
-          state = null;
-        },
       },
 
-      Function(path) {
+      Function(path, { file }) {
+        const state = stateCache.get(file);
+
         // process only if function is a candidate to host di
         if (!state || !state.getValueForPath(path)) return;
 
@@ -138,6 +138,8 @@ module.exports = function (babel) {
 
         // create di declaration
         processDiDeclaration(t, path, state);
+        // once done, remove from cache so if babel calls function again we do not reprocess
+        state.removeValueForPath(path);
       },
 
       ImportDeclaration(path) {
