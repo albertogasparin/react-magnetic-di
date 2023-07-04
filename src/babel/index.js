@@ -11,7 +11,8 @@ const {
   createNamedImport,
   collectDiReferencePaths,
   collectDepsReferencePaths,
-  isExcluded,
+  isExcludedFile,
+  isEnabledEnv,
 } = require('./utils');
 
 class State {
@@ -105,7 +106,11 @@ module.exports = function (babel) {
     visitor: {
       Program: {
         enter(path, { opts, file }) {
-          if (isExcluded(opts.exclude, file.opts.filename)) return;
+          if (
+            isExcludedFile(opts.exclude, file.opts.filename) ||
+            !isEnabledEnv(opts.enabledEnvs)
+          )
+            return;
 
           const state = new State(path);
           stateCache.set(file, state);

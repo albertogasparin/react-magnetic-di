@@ -538,7 +538,9 @@ describe('babel plugin', () => {
       }
     `;
     expect(
-      babel(input, { extraPlugins: ['transform-es2015-modules-commonjs'] })
+      babel(input, {
+        extraPlugins: ['@babel/plugin-transform-modules-commonjs'],
+      })
     ).toMatchInlineSnapshot(`
       ""use strict";
 

@@ -4,7 +4,7 @@ let hasWarned = false;
 export function warnOnce(message) {
   if (!hasWarned) {
     // eslint-disable-next-line no-console
-    console.error('Warning:', message);
+    console.warn('Warning:', message);
     hasWarned = true;
   }
 }
@@ -40,7 +40,9 @@ export function injectable(
 
   if (diRegistry.has(impl) && diRegistry.get(impl).from !== from) {
     warnOnce(
-      `You are trying to use replacement "${impl.displayName}" on multiple injectables. ` +
+      `You are trying to use replacement "${
+        displayName || impl.displayName
+      }" on multiple injectables. ` +
         `That will override only the last dependency, as each replacement is uniquely linked.`
     );
   }
