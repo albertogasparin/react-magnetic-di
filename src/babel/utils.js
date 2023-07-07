@@ -110,9 +110,8 @@ const isExcludedFile = (exclude = [], filename) => {
   return excludes.some((rx) => rx.test(filename));
 };
 
-const isEnabledEnv = (enabledEnvs) => {
+const isEnabledEnv = (enabledEnvs = ['development', 'test']) => {
   return (
-    !enabledEnvs ||
     enabledEnvs.includes(process.env.BABEL_ENV) ||
     enabledEnvs.includes(process.env.NODE_ENV)
   );

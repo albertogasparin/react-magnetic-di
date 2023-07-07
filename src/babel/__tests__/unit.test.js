@@ -251,19 +251,92 @@ describe('babel plugin', () => {
     `);
   });
 
-  it('should skip injection if file excluded regexp', () => {
+  it('should work with dependencies used in nested functions', () => {
+    const input = `
+      import { useEffect } from 'react';
+      import { loadModal } from 'modal';
+
+      function MyComponent () {
+        useEffect(() => {
+          loadModal();
+        });
+      }
+
+      const withLoad = () => () => {
+        loadModal();
+      }
+
+      const withAfter = () => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              requestAnimationFrame(() => {
+                loadModal();
+              });
+            });
+          });
+        });
+      }
+    `;
+    const options = { closureAscendLimit: 3 };
+    expect(babel(input, { options })).toMatchInlineSnapshot(`
+      "import { di as _di } from "react-magnetic-di";
+      import { useEffect } from 'react';
+      import { loadModal } from 'modal';
+      function MyComponent() {
+        const [_loadModal, _useEffect] = _di([loadModal, useEffect], MyComponent);
+        _useEffect(() => {
+          const [_loadModal2] = _di([_loadModal], null);
+          _loadModal2();
+        });
+      }
+      const withLoad = () => {
+        const [_loadModal] = _di([loadModal], withLoad);
+        return () => {
+          const [_loadModal2] = _di([_loadModal], null);
+          _loadModal2();
+        };
+      };
+      const withAfter = () => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            const [_loadModal] = _di([loadModal], null);
+            requestAnimationFrame(() => {
+              const [_loadModal2] = _di([_loadModal], null);
+              requestAnimationFrame(() => {
+                const [_loadModal3] = _di([_loadModal2], null);
+                _loadModal3();
+              });
+            });
+          });
+        });
+      };"
+    `);
+  });
+
+  it('should skip audo injection if file excluded regexp', () => {
     const input = `
       import { useModal } from 'modal';
+      import { di } from 'react-magnetic-di';
 
       export function useMyModal() {
+        return useModal();
+      }
+      export function useMyModalForced() {
+        di();
         return useModal();
       }
     `;
     const options = { exclude: /noop\.js/ };
     expect(babel(input, { options })).toMatchInlineSnapshot(`
       "import { useModal } from 'modal';
+      import { di } from 'react-magnetic-di';
       export function useMyModal() {
         return useModal();
+      }
+      export function useMyModalForced() {
+        const [_useModal] = di([useModal], useMyModalForced);
+        return _useModal();
       }"
     `);
   });
@@ -281,6 +354,28 @@ describe('babel plugin', () => {
       "import { useModal } from 'modal';
       export function useMyModal() {
         return useModal();
+      }"
+    `);
+  });
+
+  it('should strip injection if not enabled environment', () => {
+    const input = `
+      import React, { Component } from 'react';
+      import { di } from 'react-magnetic-di';
+      import Modal from 'modal';
+
+      function MyComponent() {
+        di(myGlobal);
+        return <Modal />;
+      }
+    `;
+    const options = { enabledEnvs: ['development'] };
+    expect(babel(input, { options })).toMatchInlineSnapshot(`
+      "import React, { Component } from 'react';
+      import { di } from 'react-magnetic-di';
+      import Modal from 'modal';
+      function MyComponent() {
+        return __jsx(Modal, null);
       }"
     `);
   });
@@ -512,7 +607,8 @@ describe('babel plugin', () => {
       import Modal, { useModal, config } from 'modal';
 
       function MyComponent() {
-        di(config, myGlobal);
+        di(config);
+        di(myGlobal);
         useModal() 
         return <Modal />;
       }
@@ -549,6 +645,31 @@ describe('babel plugin', () => {
       function useMyModal() {
         const [_useModal] = (0, _reactMagneticDi.di)([_modal.useModal], useMyModal);
         return _useModal();
+      }"
+    `);
+  });
+
+  it('shold work with other plugin manipulating default arguments', () => {
+    const input = `
+      import { useModal } from 'modal';
+
+      function useMyModal({ hook = useModal }) {
+        return hook();
+      }
+    `;
+    expect(
+      babel(input, {
+        extraPlugins: ['@babel/plugin-transform-parameters'],
+      })
+    ).toMatchInlineSnapshot(`
+      "import { di as _di } from "react-magnetic-di";
+      import { useModal } from 'modal';
+      function useMyModal(_ref) {
+        let {
+          hook = useModal
+        } = _ref;
+        const [_useModal] = _di([useModal], useMyModal);
+        return hook();
       }"
     `);
   });

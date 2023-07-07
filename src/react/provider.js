@@ -26,7 +26,7 @@ export const DiProvider = ({ children, use, target }) => {
         // First we collect dependencies from parent provider(s) (if any)
         const dependencies = getDependencies(realDeps, targetChild);
         // If no target or target is in the array of targets, map use
-        if (!targetChild || !targets || targets.includes(targetChild)) {
+        if (!targets || targets.includes(targetChild)) {
           return dependencies.map((dep) => {
             // dep can be either the original or a replacement
             // if another provider at the top has already swapped it

@@ -1,7 +1,6 @@
 const { assert, getComponentDeclaration } = require('./utils');
 
-function processReference(t, path, state) {
-  const locationValue = state.getValueForPath(path);
+function processReference(t, path, locationValue, state) {
   const self = getComponentDeclaration(t, path.scope);
 
   // Build list of dependencies

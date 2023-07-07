@@ -63,10 +63,13 @@ describe('DiProvider', () => {
         </DiProvider>
       );
       const { getDependencies } = children.mock.calls[0][0];
+      // when di([...], MyComponent)
       expect(getDependencies([Text, Button], MyComponent)).toEqual([
         TextDi,
         Button,
       ]);
+      // when di([...], null)
+      expect(getDependencies([Text, Button], null)).toEqual([Text, Button]);
     });
 
     it('should pick last dependency if multiple passed of same type', () => {

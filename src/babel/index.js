@@ -21,8 +21,10 @@ class State {
   diIdentifier = null;
   programPath = null;
 
-  constructor(path) {
+  constructor(path, limit = Infinity, isExcluded = false) {
+    this.ascendLimit = limit;
     this.programPath = path;
+    this.isExcluded = isExcluded;
   }
 
   findDiIndentifier(t, body, scope) {
@@ -59,8 +61,14 @@ class State {
     return this.aliases.get(name);
   }
 
+  moveValueForPath(fnPath, newFnPath) {
+    if (newFnPath && newFnPath.isFunction()) {
+      this.paths.set(newFnPath, this.paths.get(fnPath));
+    }
+  }
+
   removeValueForPath(fnPath) {
-    return this.paths.delete(fnPath);
+    this.paths.delete(fnPath);
   }
 
   addDi(diRef) {
@@ -71,16 +79,19 @@ class State {
   }
 
   addDependency(depRef) {
-    const parentFnPath = depRef.findParent(
-      (p) =>
+    let ascend = 0;
+    depRef.findParent((p) => {
+      if (
         p.isFunction() &&
-        !p.getFunctionParent() &&
-        p.parentPath?.node?.callee?.name !== INJECT_FUNCTION
-    );
-    if (!parentFnPath) return;
-    const value = this.getValueOrInit(parentFnPath);
-    // store node instead of path as path might mutate!
-    value.dependencyRefs.add(depRef.node);
+        p.parentPath?.node?.callee?.name !== INJECT_FUNCTION &&
+        ascend < this.ascendLimit
+      ) {
+        // add ref for every function scope up to the root one
+        // store node instead of path as path might mutate!
+        this.getValueOrInit(p).dependencyRefs.add(depRef.node);
+        ascend += 1;
+      }
+    });
   }
 
   addDiImport(t) {
@@ -106,43 +117,53 @@ module.exports = function (babel) {
     visitor: {
       Program: {
         enter(path, { opts, file }) {
-          if (
-            isExcludedFile(opts.exclude, file.opts.filename) ||
-            !isEnabledEnv(opts.enabledEnvs)
-          )
-            return;
-
-          const state = new State(path);
-          stateCache.set(file, state);
+          const isEnabled = isEnabledEnv(opts.enabledEnvs);
+          const isExcluded = isExcludedFile(opts.exclude, file.opts.filename);
+          const state = new State(path, opts.closureAscendLimit, isExcluded);
 
           state.findDiIndentifier(t, path.node.body, path.scope);
 
           collectDiReferencePaths(t, state.diIdentifier, path.scope).forEach(
-            (p) => state.addDi(p)
+            (p, i, arr) => {
+              const hasMulti =
+                p.getFunctionParent() === arr[i + 1]?.getFunctionParent();
+              if (isEnabled && !hasMulti) state.addDi(p);
+              else p.parentPath.remove();
+            }
           );
+
+          if (!isEnabled) return;
 
           collectDepsReferencePaths(t, path.get('body')).forEach((p) =>
             state.addDependency(p)
           );
+
+          stateCache.set(file, state);
         },
       },
 
       Function(path, { file }) {
         const state = stateCache.get(file);
+        const locationValue = state?.getValueForPath(path);
+        const shouldDi = !state?.isExcluded || locationValue?.diRef;
 
         // process only if function is a candidate to host di
-        if (!state || !state.getValueForPath(path)) return;
+        if (!state || !locationValue || !shouldDi) return;
 
         // convert arrow function returns as di needs a block
         if (!t.isBlockStatement(path.node.body)) {
+          const bodyPath = path.get('body');
           // convert arrow function return to block
-          path
-            .get('body')
-            .replaceWith(t.blockStatement([t.returnStatement(path.node.body)]));
+          bodyPath.replaceWith(
+            t.blockStatement([t.returnStatement(path.node.body)])
+          );
+          // we make sure that if body was a function that needs di()
+          // we update the reference as new function path has been created
+          state.moveValueForPath(bodyPath, path.get('body.body.0.argument'));
         }
 
         // create di declaration
-        processDiDeclaration(t, path, state);
+        processDiDeclaration(t, path, locationValue, state);
         // once done, remove from cache so if babel calls function again we do not reprocess
         state.removeValueForPath(path);
       },
