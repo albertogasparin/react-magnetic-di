@@ -49,6 +49,8 @@ function collectDepsReferencePaths(t, bodyPaths) {
     references.push(...referencePaths);
   }
 
+  // we could use scope.bindings to get all top level bindings
+  // but it is hard to track local only vs later exported values
   bodyPaths.forEach((path) => {
     if (path.isImportDeclaration()) {
       if (path.node.importKind === 'type') return;
@@ -117,6 +119,13 @@ const isEnabledEnv = (enabledEnvs = ['development', 'test']) => {
   );
 };
 
+const hasDisableComment = (path) => {
+  return [
+    ...(path.node?.body?.leadingComments || []),
+    ...(path.node?.body?.body?.[0]?.leadingComments || []),
+  ].some((c) => c.value.includes('di-ignore'));
+};
+
 module.exports = {
   assert,
   createNamedImport,
@@ -125,4 +134,5 @@ module.exports = {
   getComponentDeclaration,
   isEnabledEnv,
   isExcludedFile,
+  hasDisableComment,
 };

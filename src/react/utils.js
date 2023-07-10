@@ -62,3 +62,6 @@ export function debug(fn) {
   const [, args] = source.match(/const \[[^\]]+\] = .*di.*\(\[([^\]]+)/) || [];
   return args;
 }
+
+/** @deprecated use injectable instead */
+export const mock = injectable;

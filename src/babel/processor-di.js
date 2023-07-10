@@ -2,14 +2,23 @@ const { assert, getComponentDeclaration } = require('./utils');
 
 function processReference(t, path, locationValue, state) {
   const self = getComponentDeclaration(t, path.scope);
+  const bodyPath = path.get('body');
 
   // Build list of dependencies
   // combining used imports/exports in this function block
   // with existing di expression (if any)
   const depNames = [];
   Array.from(locationValue.dependencyRefs).forEach((n) => {
-    if (!depNames.includes(n.name) && n.name !== self?.name)
-      depNames.push(n.name);
+    const name = n.node?.name;
+    // quick check that the path is not detached
+    if (!name || !n.parentPath) return;
+    // Some babel plugins might rename imports (eg emotion) and references break
+    // For now we skip, but ideally we would refresh the reference
+    if (!bodyPath.scope.getBinding(name)) return;
+    // Ensure we do not duplicate and di() self name
+    if (depNames.includes(name) || name === self?.name) return;
+
+    depNames.push(name);
   });
   locationValue.diRef?.container?.arguments?.forEach((n) => {
     assert.isValidArgument(t, n, locationValue.diRef, self);
@@ -28,7 +37,7 @@ function processReference(t, path, locationValue, state) {
       t.arrayPattern(elements),
       t.callExpression(state.diIdentifier, [
         t.arrayExpression(args),
-        self || t.nullLiteral(),
+        self ? t.identifier(self.name) : t.nullLiteral(),
       ])
     ),
   ]);
@@ -41,23 +50,25 @@ function processReference(t, path, locationValue, state) {
     declarationPath = locationValue.diRef.getStatementParent();
     declarationPath.replaceWith(declaration);
   } else {
-    path
-      .get('body.body.0')
-      .replaceWithMultiple([declaration, path.get('body.body.0').node]);
-    declarationPath = path.get('body.body.0');
+    bodyPath
+      .get('body.0')
+      .replaceWithMultiple([declaration, bodyPath.get('body.0').node]);
+    declarationPath = bodyPath.get('body.0');
   }
 
-  path.get('body').scope.registerDeclaration(declarationPath);
+  bodyPath.scope.registerDeclaration(declarationPath);
 
-  args.forEach((argIdentifier) => {
+  const argsPaths = declarationPath.get(
+    'declarations.0.init.arguments.0.elements'
+  );
+  argsPaths.forEach((argPath) => {
     // For each argument we get the dependency variable name
     // then we rename it locally so we get a new unique identifier.
     // Then we manually revert just the argument identifier name back,
     // so it still points to the original dependency identifier name
-    const name = argIdentifier.name;
-    const { scope } = path.get('body');
-    scope.rename(name, state.getAlias(name, scope));
-    argIdentifier.name = name;
+    const name = argPath.node.name;
+    bodyPath.scope.rename(name, state.getAlias(name, bodyPath.scope));
+    argPath.replaceWith(t.identifier(name));
   });
 
   // ensure we add di import

@@ -2,11 +2,11 @@
 import { transform } from '@babel/core';
 import plugin from '../index';
 
-const babel = (code, { options, extraPlugins = [] } = {}) =>
+const babel = (code, { options, prePlugins = [], postPlugins = [] } = {}) =>
   transform(code, {
     filename: 'noop.js',
     presets: [['@babel/preset-react', { development: false, pragma: '__jsx' }]],
-    plugins: [[plugin, options], ...extraPlugins],
+    plugins: [...prePlugins, [plugin, options], ...postPlugins],
     babelrc: false,
     configFile: false,
     sourceType: 'module',
@@ -600,6 +600,40 @@ describe('babel plugin', () => {
     `);
   });
 
+  it('should not di if di-ignore comment is found', () => {
+    const input = `
+      import { useState } from 'react';
+      
+      const useModalStatus = () => {
+        // di-ignore
+        return useState();
+      };
+
+      const useModalStatus2 = () =>
+        // di-ignore
+        useState();
+
+      function useM3 () {
+        /* di-ignore */
+        useState()
+      }
+    `;
+    expect(babel(input)).toMatchInlineSnapshot(`
+      "import { useState } from 'react';
+      const useModalStatus = () => {
+        // di-ignore
+        return useState();
+      };
+      const useModalStatus2 = () =>
+      // di-ignore
+      useState();
+      function useM3() {
+        /* di-ignore */
+        useState();
+      }"
+    `);
+  });
+
   it('should merge with provided dependencies', () => {
     const input = `
       import React from 'react';
@@ -609,7 +643,7 @@ describe('babel plugin', () => {
       function MyComponent() {
         di(config);
         di(myGlobal);
-        useModal() 
+        useModal(config, myGlobal);
         return <Modal />;
       }
     `;
@@ -619,7 +653,7 @@ describe('babel plugin', () => {
       import Modal, { useModal, config } from 'modal';
       function MyComponent() {
         const [_Modal, _config, _myGlobal, _useModal] = di([Modal, config, myGlobal, useModal], MyComponent);
-        _useModal();
+        _useModal(_config, _myGlobal);
         return __jsx(_Modal, null);
       }"
     `);
@@ -635,7 +669,7 @@ describe('babel plugin', () => {
     `;
     expect(
       babel(input, {
-        extraPlugins: ['@babel/plugin-transform-modules-commonjs'],
+        postPlugins: ['@babel/plugin-transform-modules-commonjs'],
       })
     ).toMatchInlineSnapshot(`
       ""use strict";
@@ -659,7 +693,7 @@ describe('babel plugin', () => {
     `;
     expect(
       babel(input, {
-        extraPlugins: ['@babel/plugin-transform-parameters'],
+        postPlugins: ['@babel/plugin-transform-parameters'],
       })
     ).toMatchInlineSnapshot(`
       "import { di as _di } from "react-magnetic-di";

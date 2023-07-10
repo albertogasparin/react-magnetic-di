@@ -13,6 +13,7 @@ const {
   collectDepsReferencePaths,
   isExcludedFile,
   isEnabledEnv,
+  hasDisableComment,
 } = require('./utils');
 
 class State {
@@ -87,8 +88,7 @@ class State {
         ascend < this.ascendLimit
       ) {
         // add ref for every function scope up to the root one
-        // store node instead of path as path might mutate!
-        this.getValueOrInit(p).dependencyRefs.add(depRef.node);
+        this.getValueOrInit(p).dependencyRefs.add(depRef);
         ascend += 1;
       }
     });
@@ -114,38 +114,42 @@ module.exports = function (babel) {
   let stateCache = new WeakMap();
 
   return {
+    name: PACKAGE_NAME,
     visitor: {
-      Program: {
-        enter(path, { opts, file }) {
-          const isEnabled = isEnabledEnv(opts.enabledEnvs);
-          const isExcluded = isExcludedFile(opts.exclude, file.opts.filename);
-          const state = new State(path, opts.closureAscendLimit, isExcluded);
+      Program(path, { opts, file }) {
+        const isEnabled = isEnabledEnv(opts.enabledEnvs);
+        const isExcluded = isExcludedFile(opts.exclude, file.opts.filename);
+        const state = new State(path, opts.closureAscendLimit, isExcluded);
 
-          state.findDiIndentifier(t, path.node.body, path.scope);
+        state.findDiIndentifier(t, path.node.body, path.scope);
 
-          collectDiReferencePaths(t, state.diIdentifier, path.scope).forEach(
-            (p, i, arr) => {
-              const hasMulti =
-                p.getFunctionParent() === arr[i + 1]?.getFunctionParent();
-              if (isEnabled && !hasMulti) state.addDi(p);
-              else p.parentPath.remove();
-            }
-          );
+        collectDiReferencePaths(t, state.diIdentifier, path.scope).forEach(
+          (p, i, arr) => {
+            const hasMulti =
+              p.getFunctionParent() === arr[i + 1]?.getFunctionParent();
+            if (isEnabled && !hasMulti) state.addDi(p);
+            else p.parentPath.remove();
+          }
+        );
 
-          if (!isEnabled) return;
+        if (!isEnabled) return;
 
-          collectDepsReferencePaths(t, path.get('body')).forEach((p) =>
-            state.addDependency(p)
-          );
+        collectDepsReferencePaths(t, path.get('body')).forEach((p) =>
+          state.addDependency(p)
+        );
 
-          stateCache.set(file, state);
-        },
+        // TODO
+        // Should we add collection of globals to di via path.scope.globals?
+
+        stateCache.set(file, state);
       },
 
       Function(path, { file }) {
         const state = stateCache.get(file);
         const locationValue = state?.getValueForPath(path);
-        const shouldDi = !state?.isExcluded || locationValue?.diRef;
+        const shouldDi =
+          (!state?.isExcluded && !hasDisableComment(path)) ||
+          locationValue?.diRef;
 
         // process only if function is a candidate to host di
         if (!state || !locationValue || !shouldDi) return;
