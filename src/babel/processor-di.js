@@ -50,9 +50,7 @@ function processReference(t, path, locationValue, state) {
     declarationPath = locationValue.diRef.getStatementParent();
     declarationPath.replaceWith(declaration);
   } else {
-    bodyPath
-      .get('body.0')
-      .replaceWithMultiple([declaration, bodyPath.get('body.0').node]);
+    bodyPath.unshiftContainer('body', declaration);
     declarationPath = bodyPath.get('body.0');
   }
 

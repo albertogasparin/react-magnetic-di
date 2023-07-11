@@ -2,11 +2,15 @@
 import { transform } from '@babel/core';
 import plugin from '../index';
 
-const babel = (code, { options, prePlugins = [], postPlugins = [] } = {}) =>
+const babel = (
+  code,
+  { options, assumptions, prePlugins = [], postPlugins = [] } = {}
+) =>
   transform(code, {
     filename: 'noop.js',
     presets: [['@babel/preset-react', { development: false, pragma: '__jsx' }]],
     plugins: [...prePlugins, [plugin, options], ...postPlugins],
+    assumptions,
     babelrc: false,
     configFile: false,
     sourceType: 'module',
@@ -704,6 +708,47 @@ describe('babel plugin', () => {
         } = _ref;
         const [_useModal] = _di([useModal], useMyModal);
         return hook();
+      }"
+    `);
+  });
+
+  it('shold work with other plugin manipulating classes', () => {
+    const input = `
+    import Modal, { config } from 'modal';
+
+    function createClass() {
+      class MyModal extends Modal {
+        static displayName = 'MyModal';
+        getConfig() {
+          return config;
+        }
+      }
+      return MyModal;
+    }
+    `;
+    const options = { closureAscendLimit: 1 };
+    expect(
+      babel(input, {
+        options,
+        assumptions: { setPublicClassFields: true },
+        prePlugins: [
+          ['@babel/plugin-proposal-decorators', { legacy: true }],
+          ['@babel/plugin-proposal-class-properties'],
+        ],
+      })
+    ).toMatchInlineSnapshot(`
+      "import { di as _di } from "react-magnetic-di";
+      import Modal, { config } from 'modal';
+      function createClass() {
+        const [_Modal] = _di([Modal], createClass);
+        class MyModal extends _Modal {
+          getConfig() {
+            const [_config] = _di([config], MyModal);
+            return _config;
+          }
+        }
+        MyModal.displayName = 'MyModal';
+        return MyModal;
       }"
     `);
   });
