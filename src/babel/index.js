@@ -17,7 +17,7 @@ const {
 } = require('./utils');
 
 class State {
-  paths = new WeakMap();
+  locations = new WeakMap();
   aliases = new Map();
   diIdentifier = null;
   programPath = null;
@@ -41,18 +41,32 @@ class State {
       diImportSpecifier?.local || scope.generateUidIdentifier(PACKAGE_FUNCTION);
   }
 
-  getValueOrInit(fnPath) {
-    if (!this.paths.has(fnPath)) {
-      this.paths.set(fnPath, {
-        diRef: null,
-        dependencyRefs: new Set(),
-      });
-    }
-    return this.paths.get(fnPath);
+  getValueForPath(fnPath) {
+    return this.locations.get(fnPath) || this.locations.get(fnPath.node);
   }
 
-  getValueForPath(fnPath) {
-    return this.paths.get(fnPath);
+  setValueForPath(fnPath, value) {
+    this.locations.set(fnPath, value);
+    this.locations.set(fnPath.node, value);
+  }
+
+  getValueOrInit(fnPath) {
+    // we need both node and path as either might get replaced
+    if (!this.locations.has(fnPath) && !this.locations.has(fnPath.node)) {
+      this.setValueForPath(fnPath, { diRef: null, dependencyRefs: new Set() });
+    }
+    return this.getValueForPath(fnPath);
+  }
+
+  moveValueForPath(fnPath, newFnPath) {
+    if (newFnPath && newFnPath.isFunction()) {
+      this.setValueForPath(newFnPath, this.getValueForPath(fnPath));
+    }
+  }
+
+  removeValueForPath(fnPath) {
+    this.locations.delete(fnPath);
+    this.locations.delete(fnPath.node);
   }
 
   getAlias(name, scope) {
@@ -60,16 +74,6 @@ class State {
       this.aliases.set(name, scope.generateUid(name));
     }
     return this.aliases.get(name);
-  }
-
-  moveValueForPath(fnPath, newFnPath) {
-    if (newFnPath && newFnPath.isFunction()) {
-      this.paths.set(newFnPath, this.paths.get(fnPath));
-    }
-  }
-
-  removeValueForPath(fnPath) {
-    this.paths.delete(fnPath);
   }
 
   addDi(diRef) {

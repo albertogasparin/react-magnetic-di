@@ -4,11 +4,14 @@ import plugin from '../index';
 
 const babel = (
   code,
-  { options, assumptions, prePlugins = [], postPlugins = [] } = {}
+  { options, assumptions, prePlugins = [], postPlugins = [], presets = [] } = {}
 ) =>
   transform(code, {
     filename: 'noop.js',
-    presets: [['@babel/preset-react', { development: false, pragma: '__jsx' }]],
+    presets: [
+      ['@babel/preset-react', { development: false, pragma: '__jsx' }],
+      ...presets,
+    ],
     plugins: [...prePlugins, [plugin, options], ...postPlugins],
     assumptions,
     babelrc: false,
@@ -318,9 +321,9 @@ describe('babel plugin', () => {
     `);
   });
 
-  it('should skip audo injection if file excluded regexp', () => {
+  it('should skip auto injection if file excluded regexp', () => {
     const input = `
-      import { useModal } from 'modal';
+      import { useModal, config } from 'modal';
       import { di } from 'react-magnetic-di';
 
       export function useMyModal() {
@@ -328,18 +331,24 @@ describe('babel plugin', () => {
       }
       export function useMyModalForced() {
         di();
+        useEffect(() => {
+          if (config) return;
+        })
         return useModal();
       }
     `;
     const options = { exclude: /noop\.js/ };
     expect(babel(input, { options })).toMatchInlineSnapshot(`
-      "import { useModal } from 'modal';
+      "import { useModal, config } from 'modal';
       import { di } from 'react-magnetic-di';
       export function useMyModal() {
         return useModal();
       }
       export function useMyModalForced() {
-        const [_useModal] = di([useModal], useMyModalForced);
+        const [_config, _useModal] = di([config, useModal], useMyModalForced);
+        useEffect(() => {
+          if (_config) return;
+        });
         return _useModal();
       }"
     `);
@@ -750,6 +759,39 @@ describe('babel plugin', () => {
         MyModal.displayName = 'MyModal';
         return MyModal;
       }"
+    `);
+  });
+
+  it('shold work with typescript preset', () => {
+    const input = `
+    import { di } from 'react-magnetic-di';
+    import { useModal } from 'modal';
+
+    export const withModal = (Comp) => {
+      return (() => {
+        di(Comp);
+        useModal();
+        return <Comp />;
+      }) as any
+    }
+    `;
+    expect(
+      babel(input, {
+        presets: [
+          ['@babel/preset-typescript', { allExtensions: true, isTSX: true }],
+        ],
+      })
+    ).toMatchInlineSnapshot(`
+      "import { di } from 'react-magnetic-di';
+      import { useModal } from 'modal';
+      export const withModal = Comp => {
+        const [_useModal] = di([useModal], withModal);
+        return () => {
+          const [_Comp, _useModal2] = di([Comp, _useModal], null);
+          _useModal2();
+          return __jsx(_Comp, null);
+        };
+      };"
     `);
   });
 });
