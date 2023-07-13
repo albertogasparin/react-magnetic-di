@@ -76,7 +76,3 @@ declare module 'react-magnetic-di' {
     reset(): void;
   };
 }
-
-declare module 'react-magnetic-di/macro' {
-  export * from 'react-magnetic-di';
-}
