@@ -1,5 +1,6 @@
 const PACKAGE_NAME = 'react-magnetic-di';
 const PACKAGE_FUNCTION = 'di';
+const INJECT_FUNCTION = 'injectable';
 
 const isDiStatement = (stm, spec) =>
   stm.type === 'ExpressionStatement' &&
@@ -25,15 +26,21 @@ const isLocalVariable = (node, scope) => {
   return false;
 };
 
-const getDiIdentifier = (node) => {
+const getImportIdentifiers = (node, pkgName, impNames) => {
   const importSource = node.source.value;
-  const importSpecifier = node.specifiers.find(
-    (s) => s.imported && s.imported.name === PACKAGE_FUNCTION
+  const importSpecifiers = node.specifiers.filter(
+    (s) => s.imported && (!impNames || impNames.includes(s.imported.name))
   );
-  if (importSource.startsWith(PACKAGE_NAME) && importSpecifier) {
-    return importSpecifier.local;
+  if (importSource.startsWith(pkgName) && importSpecifiers.length) {
+    return importSpecifiers.map((s) => s.local);
   }
+  return null;
 };
+
+const getDiIdentifier = (n) =>
+  getImportIdentifiers(n, PACKAGE_NAME, [PACKAGE_FUNCTION])?.[0];
+const getInjectIdentifier = (n) =>
+  getImportIdentifiers(n, PACKAGE_NAME, [INJECT_FUNCTION])?.[0];
 
 const getDiStatements = (node, diIdentifier) =>
   (node.body || []).reduce(
@@ -67,6 +74,8 @@ module.exports = {
   isComponentName,
   isLocalVariable,
   getDiIdentifier,
+  getImportIdentifiers,
+  getInjectIdentifier,
   getDiStatements,
   getParentDiBlock,
   getParentDiStatements,
