@@ -4,7 +4,7 @@ module.exports = {
   meta: {
     type: 'problem',
     docs: {
-      description: 'Enforce injectable definition at the top of the block',
+      description: 'Enforce di() call expression at the top of the block',
       category: 'Possible Errors',
       recommended: true,
     },
@@ -12,7 +12,7 @@ module.exports = {
     schema: [],
     messages: {
       wrongOrder:
-        'Injectables should be defined at the top of their scope ' +
+        'di() calls should be defined at the top of their scope ' +
         'to avoid partial replacements and variables clashing',
     },
   },
