@@ -4,6 +4,15 @@ const processReference = (t, ref) => {
 
   const containerID = container.id;
 
+  // check if display name already set by someone else right after def
+  const nextSibling = ref.getStatementParent().getNextSibling();
+  if (
+    nextSibling.isExpressionStatement() &&
+    nextSibling.node.expression?.left?.property?.name == 'displayName'
+  ) {
+    return;
+  }
+
   ref
     .getStatementParent()
     .insertAfter(

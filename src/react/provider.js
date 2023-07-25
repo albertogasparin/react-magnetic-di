@@ -1,7 +1,7 @@
 import React, { useContext, useMemo, forwardRef } from 'react';
 import PropTypes from 'prop-types';
 
-import { KEY } from './constants';
+import { diRegistry } from './constants';
 import { Context } from './context';
 import { stats } from './stats';
 import { assertValidInjectable, getDisplayName } from './utils';
@@ -12,10 +12,11 @@ export const DiProvider = ({ children, use, target }) => {
   // memo provider value so gets computed only once
   const value = useMemo(() => {
     // create a map of dependency real -> replacement for fast lookup
-    const replacementMap = use.reduce((m, d) => {
-      assertValidInjectable(d);
-      if (d[KEY].track) stats.set(d);
-      return m.set(d[KEY].from, d);
+    const replacementMap = use.reduce((m, inj) => {
+      assertValidInjectable(inj);
+      const injObj = diRegistry.get(inj);
+      if (injObj.track) stats.set(injObj);
+      return m.set(injObj.from, injObj);
     }, new Map());
     // support single or multiple targets
     const targets = target && (Array.isArray(target) ? target : [target]);
@@ -25,17 +26,17 @@ export const DiProvider = ({ children, use, target }) => {
         // First we collect dependencies from parent provider(s) (if any)
         const dependencies = getDependencies(realDeps, targetChild);
         // If no target or target is in the array of targets, map use
-        if (!targetChild || !targets || targets.includes(targetChild)) {
+        if (!targets || targets.includes(targetChild)) {
           return dependencies.map((dep) => {
             // dep can be either the original or a replacement
             // if another provider at the top has already swapped it
             // so we check if here we need to inject a different one
             // or return the original / parent replacement
-            const real = dep[KEY]?.from || dep;
-            const replacedDep = replacementMap.get(real);
-            stats.track(replacedDep, dep);
+            const real = diRegistry.has(dep) ? diRegistry.get(dep).from : dep;
+            const replacedInj = replacementMap.get(real);
+            stats.track(replacedInj, dep);
 
-            return replacedDep || dep;
+            return replacedInj ? replacedInj.value : dep;
           });
         }
         return dependencies;

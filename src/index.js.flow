@@ -3,7 +3,7 @@
 
 import type { Node, AbstractComponent } from 'react';
 
-export type Dependency = Function;
+export type Dependency = any;
 
 declare export class DiProvider
   extends
@@ -50,8 +50,6 @@ declare export var stats: {
   reset: () => void,
 };
 
-function di(...dependencies: Dependency[]) {
-  /** @deprecated use injectable instead */
-  di.mock = mock;
-}
-declare export { di };
+declare export function di(...dependencies: Dependency[]): void;
+
+declare export function debug(fn: Function): string;

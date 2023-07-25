@@ -1,3 +1,5 @@
+const { PACKAGE_NAME } = require('./constants');
+
 const getComponentDeclaration = (t, scope) => {
   // function declarations
   if (scope.parentBlock.declaration) return scope.parentBlock.declaration.id;
@@ -6,37 +8,26 @@ const getComponentDeclaration = (t, scope) => {
   if (scope.parentBlock.id) return scope.parentBlock.id;
   // class declarations
   if (scope.parentBlock.type.includes('Class')) return scope.parent.block.id;
+  return null;
 };
 
 const assert = {
-  isValidBlock(t, ref) {
-    const { block } = ref.scope;
-    if (
-      !t.isFunctionDeclaration(block) &&
-      !t.isFunctionExpression(block) &&
-      !t.isArrowFunctionExpression(block) &&
-      !t.isClassMethod(block)
-    ) {
-      throw ref.buildCodeFrameError(
-        'Invalid di(...) call: must be inside a render function of a component. '
-      );
-    }
-  },
-  isValidCall(t, ref) {
-    if (!ref.container.arguments.length) {
-      throw ref.buildCodeFrameError(
-        'Invalid di(...) arguments: must be called with at least one argument. '
-      );
-    }
-    if (!ref.container.arguments.every((node) => t.isIdentifier(node))) {
+  isValidArgument(t, node, ref, self) {
+    if (!t.isIdentifier(node)) {
       throw ref.buildCodeFrameError(
         'Invalid di(...) arguments: must be called with plain identifiers. '
       );
     }
-    const decl = getComponentDeclaration(t, ref.scope);
-    if (decl && ref.container.arguments.some((v) => v.name === decl.name)) {
+    if (node.name === self?.name) {
       throw ref.buildCodeFrameError(
         'Invalid di(...) call: cannot inject self.'
+      );
+    }
+  },
+  isValidLocation(path, ref) {
+    if (!path) {
+      throw ref.buildCodeFrameError(
+        'Invalid di(...) call: must be inside a render function of a component. '
       );
     }
   },
@@ -50,17 +41,98 @@ const createNamedImport = (t, pkgName, pkgFns, localNames) => {
   return statement;
 };
 
-const isEnabledEnv = () => {
+function collectDepsReferencePaths(t, bodyPaths) {
+  const references = [];
+
+  function addRef(path) {
+    const { referencePaths = [] } = path.scope.getBinding(path) || {};
+    references.push(...referencePaths);
+  }
+
+  // we could use scope.bindings to get all top level bindings
+  // but it is hard to track local only vs later exported values
+  bodyPaths.forEach((path) => {
+    if (path.isImportDeclaration()) {
+      if (path.node.importKind === 'type') return;
+      if (path.node.source.value === PACKAGE_NAME) return;
+      path.get('specifiers').forEach((sp) => {
+        if (sp.node.importKind === 'type') return;
+        if (sp.isImportDefaultSpecifier() || sp.isImportSpecifier()) {
+          addRef(sp.get('local'));
+        }
+      });
+    }
+    if (path.isExportNamedDeclaration()) {
+      if (path.node.exportKind === 'type') return;
+      if (path.node.declaration) {
+        if (path.get('declaration.id').isIdentifier()) {
+          addRef(path.get('declaration.id'));
+        } else {
+          path.get('declaration.declarations').forEach((dp) => {
+            if (dp.get('id').isIdentifier()) {
+              addRef(dp.get('id'));
+            }
+          });
+        }
+      } else {
+        path.get('specifiers').forEach((sp) => {
+          if (sp.node.exportKind === 'type') return;
+          if (sp.get('local').isIdentifier()) {
+            addRef(sp.get('local'));
+          }
+        });
+      }
+    }
+    if (path.isExportDefaultDeclaration()) {
+      if (path.node.exportKind === 'type') return;
+      const ref = path.get('declaration').isIdentifier()
+        ? path.get('declaration')
+        : path.get('declaration.id');
+      addRef(ref);
+    }
+  });
+  return references;
+}
+
+function collectDiReferencePaths(t, identifier, scope) {
+  // we locate all usages of the method
+  const { referencePaths = [] } = scope.getBinding(identifier.name) || {};
+
+  return referencePaths.filter((ref) => t.isCallExpression(ref.container));
+}
+
+const isExcludedFile = (exclude = [], filename) => {
+  const excludes = []
+    .concat(exclude)
+    .map((v) =>
+      v instanceof RegExp
+        ? v
+        : new RegExp(v.replace(/[/\-\\^$*+?.()|[\]{}]/g, '\\$&'))
+    );
+  return excludes.some((rx) => rx.test(filename));
+};
+
+const isEnabledEnv = (enabledEnvs = ['development', 'test']) => {
   return (
-    ['development', 'test'].includes(process.env.BABEL_ENV) ||
-    ['development', 'test'].includes(process.env.NODE_ENV) ||
-    (!process.env.BABEL_ENV && !process.env.NODE_ENV)
+    enabledEnvs.includes(process.env.BABEL_ENV) ||
+    enabledEnvs.includes(process.env.NODE_ENV)
   );
 };
 
+const hasDisableComment = (path) => {
+  return [
+    ...(path.node?.body?.leadingComments || []),
+    ...(path.node?.body?.body?.[0]?.leadingComments || []),
+  ].some((c) => c.value.includes('di-ignore'));
+};
+
 module.exports = {
-  getComponentDeclaration,
   assert,
   createNamedImport,
+  collectDiReferencePaths,
+  collectDepsReferencePaths,
+  getComponentDeclaration,
   isEnabledEnv,
+  isExcludedFile,
+  hasDisableComment,
 };

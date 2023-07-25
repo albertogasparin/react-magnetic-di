@@ -1,5 +1,3 @@
-import { KEY } from './constants';
-
 const createState = () => ({
   unused: new Map(),
   used: new Set(),
@@ -9,25 +7,24 @@ const createState = () => ({
 export const stats = {
   state: createState(),
 
-  set(replacedDep) {
+  set(injObj) {
     // allow injectable override without flagging as unused
-    for (let injectable of this.state.unused.keys())
-      if (injectable[KEY].from === replacedDep[KEY].from)
-        this.state.unused.delete(injectable);
+    for (let unusedInj of this.state.unused.keys())
+      if (unusedInj.from === injObj.from) this.state.unused.delete(unusedInj);
 
     this.state.unused.set(
-      replacedDep,
+      injObj,
       new Error(
-        `Unused "di" injectable: ${replacedDep.displayName || replacedDep}.`,
-        { cause: replacedDep[KEY].cause }
+        `Unused "di" injectable: ${injObj.value?.displayName || injObj.value}.`,
+        { cause: injObj.cause }
       )
     );
   },
 
-  track(replacedDep, dep) {
-    if (replacedDep) {
-      this.state.unused.delete(replacedDep);
-      this.state.used.add(replacedDep);
+  track(replacedInj, dep) {
+    if (replacedInj) {
+      this.state.unused.delete(replacedInj);
+      this.state.used.add(replacedInj);
       this.state.provided.add(dep);
     }
   },
@@ -37,11 +34,9 @@ export const stats = {
   },
 
   unused() {
-    return Array.from(this.state.unused.entries()).map(
-      ([injectable, error]) => ({
-        get: () => injectable,
-        error: () => error,
-      })
-    );
+    return Array.from(this.state.unused.entries()).map(([inj, error]) => ({
+      get: () => inj.value,
+      error: () => error,
+    }));
   },
 };
