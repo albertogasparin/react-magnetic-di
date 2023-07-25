@@ -22,8 +22,7 @@ class State {
   diIdentifier = null;
   programPath = null;
 
-  constructor(path, limit = Infinity, isExcluded = false) {
-    this.ascendLimit = limit;
+  constructor(path, isExcluded = false) {
     this.programPath = path;
     this.isExcluded = isExcluded;
   }
@@ -84,16 +83,13 @@ class State {
   }
 
   addDependency(depRef) {
-    let ascend = 0;
     depRef.findParent((p) => {
       if (
         p.isFunction() &&
-        p.parentPath?.node?.callee?.name !== INJECT_FUNCTION &&
-        ascend < this.ascendLimit
+        p.parentPath?.node?.callee?.name !== INJECT_FUNCTION
       ) {
         // add ref for every function scope up to the root one
         this.getValueOrInit(p).dependencyRefs.add(depRef);
-        ascend += 1;
       }
     });
   }
@@ -123,7 +119,7 @@ module.exports = function (babel) {
       Program(path, { opts, file }) {
         const isEnabled = isEnabledEnv(opts.enabledEnvs);
         const isExcluded = isExcludedFile(opts.exclude, file.opts.filename);
-        const state = new State(path, opts.closureAscendLimit, isExcluded);
+        const state = new State(path, isExcluded);
 
         state.findDiIndentifier(t, path.node.body, path.scope);
 

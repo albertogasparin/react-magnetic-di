@@ -11,8 +11,7 @@
     "typeRoots": ["./node_modules/@types", "types"],
     "baseUrl": ".",
     "paths": {
-      "react-magnetic-di": ["types"],
-      "react-magnetic-di/macro": ["macro/types"]
+      "react-magnetic-di": ["types"]
     }
   },
   "include": ["examples/**/*"]

@@ -14,15 +14,16 @@ A new take for dependency injection / dependency replacement for your tests, sto
 
 - Close-to-zero performance overhead on dev/testing
 - **Zero** performance overhead on production (code gets stripped unless told otherwise)
-- Works with any kind of functions/classes (not only React components) and in both class and functional React components
-- Replaces dependencies at any depth of the React tree / call chain
-- Allows selective injection (React only)
+- Promotes type safety for mocks
+- Works with any kind of value (funcitons, objects, strings) and in all closures / React components
+- Replaces dependencies at any depth of the call chain / React tree
+- Allows selective injection
 - Enforces separation of concerns, keeps your component API clean
-- Just uses smart variable assignments, it does not mess up with React internals or modules/require
+- Proper ES Modules support, as it does not mess up with modules/require or React internals
 
 ## Philosophy
 
-Dependency injection and component injection is not a new topic. Especially the ability to provide a custom implementation of a component/hook while testing or writing storybooks and examples it is extremely valuable. `react-magnetic-di` takes inspiration from decorators, and with a touch of Babel magic and React Context / globals allows you to optionally override "marked" dependencies inside your components so you can swap implementations only when needed.
+Dependency injection and component injection is not a new topic. Especially the ability to provide a custom implementation of a component/hook while testing or writing storybooks and examples it is extremely valuable. `magnetic-di` takes inspiration from decorators, and with a touch of Babel magic and React Context / globals allows you to optionally override imported/exported values in your code so you can swap implementations only when needed.
 
 ## Usage
 
@@ -32,7 +33,7 @@ npm i react-magnetic-di
 yarn add react-magnetic-di
 ```
 
-### Adding babel plugin (or using macro)
+### Adding babel plugin
 
 Edit your Babel config file (`.babelrc` / `babel.config.js` / ...) and add:
 
@@ -44,50 +45,44 @@ Edit your Babel config file (`.babelrc` / `babel.config.js` / ...) and add:
   ],
 ```
 
-If you are using Create React App or babel macros, you don't need the babel plugin: just import the methods from `react-magnetic-di/macro` (see next example).
+This is where the magic happens: we safely rewrite the code to prepend `di(...)` in every function scope, so that the dependency value can be swapped. We recommend to only add the plugin in development/test enviroments to avoid useless const assignment in production. You can either do that via multiple babel environment configs or by using `enabledEnvs` option.
 
-### Using injection replacement in your components
+### Using dependency replacement
 
-Given a component with complex UI interaction or data dependencies, like a Modal or an Apollo Query, we want to easily be able to integration test it. To achieve that, we "mark" such dependencies in the `render` function of the class component:
+Once babel is configured, in your tests you can create type safe replacements via `injectable` and then use `runWithDi` , which will setup and clear the replacements for you after function execution is terminated. Such util also handles async code, but might require you to wrap the entire test to work effectively with scheduled code paths, or event driven implementations.
 
-```jsx
-import React, { Component } from 'react';
-import { di } from 'react-magnetic-di';
-// or
-import { di } from 'react-magnetic-di/macro';
+Assuming your source is:
 
-import { Modal } from 'material-ui';
-import { Query } from 'react-apollo';
+```js
+import { fetchApi } from './fetch';
 
-class MyComponent extends Component {
-  render() {
-    // that's all is needed to "mark" these variables as injectable
-    di(Modal, Query);
-
-    return (
-      <Modal>
-        <Query>{({ data }) => data && 'Done!'}</Query>
-      </Modal>
-    );
-  }
+export async function myApiFetcher() {
+  const { data } = await fetchApi();
+  return data;
 }
 ```
 
-Or on our functional component with hooks:
+Then in the test you can write:
 
-```jsx
-function MyComponent() {
-  // "mark" any type of function/class as injectable
-  di(Modal, useQuery);
+```js
+import { injectable, runWithDi } from 'react-magnetic-di';
+import { myApiFetcher, fetchApi } from '.';
 
-  const { data } = useQuery();
-  return <Modal>{data && 'Done!'}</Modal>;
-}
+it('should call the API', async () => {
+  // injectable() needs the original implementation as first argument
+  // and the replacement implementation as second
+  const fetchApiDi = injectable(fetchApi, jest.fn().mockResolvedValue('mock'));
+
+  const result = await runWithDi(() => myApiFetcher(), [fetchApiDi]);
+
+  expect(fetchApiDi).toHaveBeenCalled();
+  expect(result).toEqual('mock');
+});
 ```
 
-### Leveraging dependency replacement in tests and storybooks
+### Usin dependency replacement in React tests and storybooks
 
-In the unit/integration tests or storybooks we can create a new `injectable` implementation and wrap the component with `DiProvider` to override such dependency:
+For React, we provide a specific `DiProvider` to enable replacements across the entire tree. Given a component with complex UI interaction or data dependencies, like a Modal or an Apollo Query, we want to easily be able to integration test it:
 
 ```jsx
 import React from 'react';
@@ -99,15 +94,6 @@ import { useQuery } from 'react-apollo-hooks';
 // and the replacement implementation as second
 const ModalOpenDi = injectable(Modal, () => <div />);
 const useQueryDi = injectable(useQuery, () => ({ data: null }));
-
-// test-enzyme.js
-it('should render with enzyme', () => {
-  const container = mount(<MyComponent />, {
-    wrappingComponent: DiProvider,
-    wrappingComponentProps: { use: [ModalOpenDi, useQueryDi] },
-  });
-  expect(container.html()).toMatchSnapshot();
-});
 
 // test-testing-library.js
 it('should render with react-testing-library', () => {
@@ -140,7 +126,7 @@ storiesOf('Modal content', module).add('with text', () => (
 ));
 ```
 
-In the example above `MyComponent` will have both `ModalOpen` and `useQuery` replaced while `MyOtherComponent` only `ModalOpen`. Be aware that `target` needs an **actual component** declaration to work, so will not work in cases where the component is fully anonymous (eg: `export default () => ...` or `forwardRef(() => ...)`).
+Here `MyComponent` will have both `ModalOpen` and `useQuery` replaced while `MyOtherComponent` only `ModalOpen`. Be aware that `target` needs an **actual component** declaration to work, so will not work in cases where the component is fully anonymous (eg: `export default () => ...` or `forwardRef(() => ...)`).
 
 The library also provides a `withDi` HOC in case you want to export components with dependencies already injected:
 
@@ -162,51 +148,49 @@ When you have the same dependency replaced multiple times, there are two behavio
 - the one defined on the closest `DiProvider` wins. So you can declare more specific replacements by wrapping components with `DiProvider` or `withDi` and those will win over same type injectables on other top level `DiProvider`s
 - the injectable defined last in the `use` array wins. So you can define common injectables but still override each type case by case (eg: `<DiProvider use={[...commonDeps, specificInjectable]}>`
 
-### Using injection replacement outside of React
+### Other replacement patterns
 
-The usage outside React is not much different, aside from the different way of clearing the replacements.
+#### Allowing globals replacement
+
+Currently the library does not enable automatic replacement of globals. To do that, you need to manually "tag" a global for replacement with `di(myGlobal)` in the function scope. For instance:
 
 ```js
-import { fetchApi } from './fetch';
+import { di } from 'react-magnetic-di';
 
 export async function myApiFetcher() {
-  // "mark" any type of function/class as injectable
-  di(fetchApi);
+  // explicitly allow fetch global to be injected
+  di(fetch);
+  const { data } = await fetch();
+  return data;
+}
+```
 
+Alternatively, you can create a "getter" so that the library will pick it up:
+
+```js
+export const fetchApi = (...args) => fetch(...args);
+
+export async function myApiFetcher() {
+  // now injection will automatically work
   const { data } = await fetchApi();
   return data;
 }
 ```
 
-In the tests, you can use `runWithDi`, which will setup and clear the replacements for you after function execution is terminated. Such util also handles async code, but might require you to wrap the entire test to work effectively with scheduled code paths, or event driven implementations.
+#### Ignoring a function scope
+
+Other times, there might be places in code where auto injection is problematic and might cause infine loops. It might be the case if you are creating an injectable that then imports the replacement source itself.
+
+For those scenarios, you can add a comment at the top of the function scope to tell the Babel plugin to skip that scope:
 
 ```js
-import { injectable, runWithDi } from 'react-magnetic-di';
-import { myApiFetcher, fetchApi } from '.';
+import { fetchApi } from './fetch';
 
-it('should call the API', async () => {
-  const fetchApiDi = injectable(fetchApi, jest.fn().mockResolvedValue('mock'));
-
-  const result = await runWithDi(() => myApiFetcher(), [fetchApiDi]);
-
-  expect(fetchApiDi).toHaveBeenCalled();
-  expect(result).toEqual('mock');
-});
-```
-
-### injectables configuration
-
-When creating injectables you can provide a configuration object to customise some of its behaviour.
-For instance, you can provide a custom `displayName` to make debugging easier:
-
-```js
-const fetchApiDi = injectable(fetchApi, jest.fn(), { displayName: 'fetchApi' });
-```
-
-Or you can skip reporting it in `stats.unused()` (handy if you provide default injectables across tests):
-
-```js
-const fetchApiDi = injectable(fetchApi, jest.fn(), { track: false });
+export async function myApiFetcher() {
+  // di-ignore
+  const { data } = await fetchApi();
+  return data;
+}
 ```
 
 ### Tracking unused injectables
@@ -234,61 +218,62 @@ afterEach(() => {
 
 ### Configuration Options
 
-#### Enable dependency replacement on production (or custom env)
+#### Babel plugin options
 
-By default dependency replacement is enabled on `development` and `test` environments only, which means `di(...)` is removed on production builds. If you want to allow injection on production too (or on a custom env) you can use the `forceEnable` option:
+The plugin provides a couple of options to explicitly disable auto injection for certain paths, and overall enable/disable replacements on specific environments:
 
 ```js
-// In your .babelrc / babel.config.js
+  // In your .babelrc / babel.config.js
   // ... other stuff like presets
   plugins: [
     // ... other plugins
-    ['react-magnetic-di/babel-plugin', { forceEnable: true }],
+    ['react-magnetic-di/babel-plugin', {
+      // List of paths to ignore for auto injection. Recommended for mocks/tests
+      exclude: ['mocks', /test\.tsx?/],
+      // List of Babel or Node environment names where the plugin should be enabled
+      enabledEnvs: ['development', 'test'],
+
+    }],
   ],
 ```
 
-In case of babel macro (eg for use with CRA), the `configName` key is `reactMagneticDi`.
+#### injectables options
+
+When creating injectables you can provide a configuration object to customise some of its behaviour.
+• You can provide a custom `displayName` to make debugging easier:
+
+```js
+const fetchApiDi = injectable(fetchApi, jest.fn(), { displayName: 'fetchApi' });
+```
+
+• You can skip reporting it in `stats.unused()` (handy if you provide default injectables across tests):
+
+```js
+const fetchApiDi = injectable(fetchApi, jest.fn(), { track: false });
+```
 
 ## ESLint plugin and rules
 
 In order to enforce better practices, this package exports some ESLint rules:
 
-| rule                | description                                                                              | options                  |
-| ------------------- | ---------------------------------------------------------------------------------------- | ------------------------ |
-| `order`             | enforces `di(...)` to be the top of the block, to reduce chances of partial replacements | -                        |
-| `exhaustive-inject` | enforces all external components/hooks being used to be marked as injectable.            | `ignore`: array of names |
-| `no-duplicate`      | prohibits marking the same dependency as injectable more than once in the same block     | -                        |
-| `no-extraneous`     | enforces dependencies to be consumed in the scope, to prevent unused variables           | -                        |
-| `sort-dependencies` | require injectable dependencies to be sorted                                             | -                        |
+| rule                       | description                                                                                                          |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `order`                    | enforces `di(...)` to be the top of the block, to reduce chances of partial replacements                             |
+| `no-duplicate`             | prohibits marking the same dependency as injectable more than once in the same scope                                 |
+| `no-extraneous`            | enforces dependencies to be consumed in the scope, to prevent unused variables                                       |
+| `no-restricted-injectable` | prohibits certains values from being injected: `paths: [{ name: string, importNames?: string[], message?: string }]` |
+| `sort-dependencies`        | require injectable dependencies to be sorted                                                                         |
 
 The rules are exported from `react-magnetic-di/eslint-plugin`. Unfortunately ESLint does not allow plugins that are not npm packages, so rules needs to be imported via other means for now.
 
 ## Current limitations
 
-- Does not support Enzyme shallow ([due to shallow not fully supporting context](https://github.com/enzymejs/enzyme/issues/2176)). If you wish to shallow anyway, you could mock `di` and manually return the array of mocked dependencies, but it is not recommended.
-- Does not support dynamic `use` and `target` props (changes are ignored)
-- Officially supports injecting only functions/classes. If you need to inject some other data types, create a simple getter and use that as dependency.
+- `DiProvider` does not support dynamic `use` and `target` props (changes are ignored)
 - Does not replace default props (or default parameters in general): so dependencies provided as default parameters (eg `function MyComponent ({ modal = Modal }) { ... }`) will be ignored. If you accept the dependency as prop/argument you should inject it via prop/argument, as having a double injection strategy is just confusing.
 
 ## FAQ
 
-#### Can it be used without Babel plugin?
-
-Yes, but you will have to handle variable assignment yourself, which is a bit verbose. In this mode `di` needs an array of dependencies as first argument and the component, or `null`, as second (to make `target` behaviour work). Moreover, `di` won't be removed on prod builds and ESLint rules are not currently compatible with this mode.
-
-```js
-import React, { Component } from 'react';
-import { di } from 'react-magnetic-di';
-import { Modal as ModalInj } from 'material-ui';
-import { useQuery as useQueryInj } from 'react-apollo';
-
-function MyComponent() {
-  const [Modal, useQuery] = di([ModalInj, useQueryInj], MyComponent);
-
-  const { data } = useQuery();
-  return <Modal>{data && 'Done!'}</Modal>;
-}
-```
+Please raise an issue if you think more clarification is needed.
 
 ## Contributing
 

@@ -4,7 +4,8 @@
   "description": "Context driven dependency injection",
   "keywords": [
     "React",
-    "Dependency injection"
+    "Dependency injection",
+    "Dependency replacement"
   ],
   "main": "lib/cjs/index.js",
   "module": "lib/esm/index.js",
@@ -38,9 +39,6 @@
     "react": "^16.9.0 || ^17.0.0 || ^18.0.0"
   },
   "peerDependenciesMeta": {
-    "babel-plugin-macros": {
-      "optional": true
-    },
     "eslint": {
       "optional": true
     }
@@ -64,7 +62,6 @@
     "@types/react-dom": "^18.2.1",
     "babel-jest": "^29.5.0",
     "babel-loader": "^9.1.2",
-    "babel-plugin-macros": "^3.1.0",
     "babel-plugin-module-resolver": "^5.0.0",
     "dtslint": "^4.2.1",
     "eslint": "^8.39.0",
