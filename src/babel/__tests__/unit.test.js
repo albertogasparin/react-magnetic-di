@@ -285,8 +285,7 @@ describe('babel plugin', () => {
         });
       }
     `;
-    const options = { closureAscendLimit: 3 };
-    expect(babel(input, { options })).toMatchInlineSnapshot(`
+    expect(babel(input)).toMatchInlineSnapshot(`
       "import { di as _di } from "react-magnetic-di";
       import { useEffect } from 'react';
       import { loadModal } from 'modal';
@@ -305,14 +304,16 @@ describe('babel plugin', () => {
         };
       };
       const withAfter = () => {
+        const [_loadModal] = _di([loadModal], withAfter);
         requestAnimationFrame(() => {
+          const [_loadModal2] = _di([_loadModal], null);
           requestAnimationFrame(() => {
-            const [_loadModal] = _di([loadModal], null);
+            const [_loadModal3] = _di([_loadModal2], null);
             requestAnimationFrame(() => {
-              const [_loadModal2] = _di([_loadModal], null);
+              const [_loadModal4] = _di([_loadModal3], null);
               requestAnimationFrame(() => {
-                const [_loadModal3] = _di([_loadModal2], null);
-                _loadModal3();
+                const [_loadModal5] = _di([_loadModal4], null);
+                _loadModal5();
               });
             });
           });
@@ -726,7 +727,7 @@ describe('babel plugin', () => {
     import Modal, { config } from 'modal';
 
     function createClass() {
-      class MyModal extends Modal {
+      return class MyModal extends Modal {
         static displayName = 'MyModal';
         getConfig() {
           return config;
@@ -735,10 +736,8 @@ describe('babel plugin', () => {
       return MyModal;
     }
     `;
-    const options = { closureAscendLimit: 1 };
     expect(
       babel(input, {
-        options,
         assumptions: { setPublicClassFields: true },
         prePlugins: [
           ['@babel/plugin-proposal-decorators', { legacy: true }],
@@ -749,14 +748,14 @@ describe('babel plugin', () => {
       "import { di as _di } from "react-magnetic-di";
       import Modal, { config } from 'modal';
       function createClass() {
-        const [_Modal] = _di([Modal], createClass);
-        class MyModal extends _Modal {
+        var _class;
+        const [_Modal, _config] = _di([Modal, config], createClass);
+        return _class = class MyModal extends _Modal {
           getConfig() {
-            const [_config] = _di([config], MyModal);
-            return _config;
+            const [_config2] = _di([_config], MyModal);
+            return _config2;
           }
-        }
-        MyModal.displayName = 'MyModal';
+        }, _class.displayName = 'MyModal', _class;
         return MyModal;
       }"
     `);
