@@ -27,9 +27,6 @@ declare export function withDi<T: AbstractComponent<any>>(
   target?: AbstractComponent<any> | AbstractComponent<any>[]
 ): T;
 
-/** @deprecated use injectable instead */
-declare export function mock<T: Dependency>(original: T, mock: T): T;
-
 declare export function injectable<T: Dependency>(
   from: T,
   implementation: T,
