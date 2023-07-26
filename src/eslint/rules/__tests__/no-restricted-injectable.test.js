@@ -33,6 +33,18 @@ ruleTester.run('no-restricted-injectable', rule, {
       `,
       options: [{ paths: [{ name: 'react', importNames: ['useState'] }] }],
     },
+    {
+      // should pass if package is not the same
+      code: `
+        import { Component } from 'react-sweet-state';
+        import { useState } from '@di/react';
+        import { injectable } from 'react-magnetic-di';
+
+        injectable(Component, () => null);
+        injectable(useState, () => null);
+      `,
+      options: [{ paths: [{ name: 'react' }] }],
+    },
   ],
 
   invalid: [

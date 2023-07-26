@@ -19,6 +19,9 @@ import { injectable, runWithDi, stats } from 'react-magnetic-di';
 const useHookPrim1 = () => 'foo';
 // @ts-expect-error - wrong return type
 injectable(useHookPrim1, () => true);
+// @ts-expect-error - wrong value type
+injectable({ v: 1 }, true);
+
 // correct
 injectable(useHookPrim1, () => 'bar');
 injectable(useHookPrim1, () => 'bar', { track: false });
