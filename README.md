@@ -23,7 +23,7 @@ A new take for dependency injection / dependency replacement for your tests, sto
 
 ## Philosophy
 
-Dependency injection and component injection is not a new topic. Especially the ability to provide a custom implementation of a component/hook while testing or writing storybooks and examples it is extremely valuable. `magnetic-di` takes inspiration from decorators, and with a touch of Babel magic and React Context / globals allows you to optionally override imported/exported values in your code so you can swap implementations only when needed.
+Dependency injection and component injection is not a new topic. Especially the ability to provide a custom implementation of a component/hook while testing or writing storybooks and examples it is extremely valuable. `magnetic-di` takes inspiration from decorators, and with a touch of Babel magic allows you to optionally override imported/exported values in your code so you can swap implementations only when needed.
 
 ## Usage
 
@@ -66,7 +66,8 @@ Then in the test you can write:
 
 ```js
 import { injectable, runWithDi } from 'react-magnetic-di';
-import { myApiFetcher, fetchApi } from '.';
+import { fetchApi } from './fetch';
+import { myApiFetcher } from '.';
 
 it('should call the API', async () => {
   // injectable() needs the original implementation as first argument
@@ -240,13 +241,13 @@ The plugin provides a couple of options to explicitly disable auto injection for
 #### injectables options
 
 When creating injectables you can provide a configuration object to customise some of its behaviour.
-• You can provide a custom `displayName` to make debugging easier:
+• `displayName`: provide a custom name to make debugging easier:
 
 ```js
 const fetchApiDi = injectable(fetchApi, jest.fn(), { displayName: 'fetchApi' });
 ```
 
-• You can skip reporting it in `stats.unused()` (handy if you provide default injectables across tests):
+• `track`: skip reporting it in `stats.unused()` (handy if you provide default injectables across tests):
 
 ```js
 const fetchApiDi = injectable(fetchApi, jest.fn(), { track: false });
@@ -270,10 +271,20 @@ The rules are exported from `react-magnetic-di/eslint-plugin`. Unfortunately ESL
 
 - `DiProvider` does not support dynamic `use` and `target` props (changes are ignored)
 - Does not replace default props (or default parameters in general): so dependencies provided as default parameters (eg `function MyComponent ({ modal = Modal }) { ... }`) will be ignored. If you accept the dependency as prop/argument you should inject it via prop/argument, as having a double injection strategy is just confusing.
+- Injecting primitive values (strings, booleans, numbers, ...) can be unreliable as we only have the actual value as reference, and so the library might not exactly know what to replace. In cases where multiple values might be replaced, a warning will be logged and we recommend you declare an inject a getter instead of the value itself.
 
 ## FAQ
 
-Please raise an issue if you think more clarification is needed.
+#### Cannot seem to make injectable work
+
+A way to check if some dependency has been tagged for injection is to use the `debug` util, as it will print all values that are available for injection:
+
+```js
+import { debug } from 'react-magnetic-di';
+// ...
+console.log(debug(myApiFetcher));
+// It will print ['fetchApi']
+```
 
 ## Contributing
 
