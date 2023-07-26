@@ -1,7 +1,7 @@
 import { Context } from './context';
 import { globalDi } from './global';
 
-function di(deps, target) {
+export function di(deps, target) {
   // check if babel plugin has been added othrewise this is a noop
   if (Array.isArray(deps)) {
     // Read context and grab all the dependencies override Providers in the tree
@@ -14,5 +14,3 @@ function di(deps, target) {
     return getDependencies(deps, target);
   }
 }
-
-export { di };

@@ -10,7 +10,6 @@
 
 [options]
 module.name_mapper='^react-magnetic-di' ->'<PROJECT_ROOT>/src'
-module.name_mapper='^react-magnetic-di/macro' ->'<PROJECT_ROOT>/src/babel/macro'
 include_warnings=true
 
 [strict]
