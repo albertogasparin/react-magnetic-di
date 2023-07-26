@@ -4,7 +4,7 @@
 import React, { Fragment } from 'react';
 import { render } from '@testing-library/react';
 import { DiProvider, withDi, injectable } from '../../index';
-import { Label, Input, Text, TextDi, WrapperDi } from './common';
+import { Label, Input, Text, TextDi, Wrapper, WrapperDi } from './common';
 
 describe('Integration: testing-library', () => {
   it('should return real dependencies if provider-less', () => {
@@ -82,6 +82,35 @@ describe('Integration: testing-library', () => {
           <Label />
           <Input />
         </DiProvider>
+      </DiProvider>
+    );
+
+    expect(container).toMatchInlineSnapshot(`
+      <div>
+        <label-og>
+          <wrapper-og>
+            <text-di />
+          </wrapper-og>
+        </label-og>
+        <input-og>
+          <text-og />
+        </input-og>
+      </div>
+    `);
+  });
+
+  it('should only override dependencies of specified injectable target', () => {
+    const deps = [
+      injectable(Text, () => <text-di />, { target: Label }),
+      injectable(Wrapper, (p) => <wrapper-di>{p.children}</wrapper-di>, {
+        target: Input,
+      }),
+    ];
+
+    const { container } = render(
+      <DiProvider use={deps}>
+        <Label />
+        <Input />
       </DiProvider>
     );
 

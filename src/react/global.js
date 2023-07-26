@@ -1,15 +1,18 @@
 import { PACKAGE_NAME, diRegistry } from './constants';
 import { stats } from './stats';
-import { assertValidInjectable } from './utils';
+import { assertValidInjectable, isTargeted } from './utils';
 
 const replacementMap = new Map();
 
 export const globalDi = {
-  getDependencies(realDeps) {
+  getDependencies(realDeps, targetChild) {
     return realDeps.map((dep) => {
       const replacedInj = replacementMap.get(dep);
-      stats.track(replacedInj, dep);
-      return replacedInj ? replacedInj.value : dep;
+      if (isTargeted(replacedInj, targetChild)) {
+        stats.track(replacedInj, dep);
+        return replacedInj.value;
+      }
+      return dep;
     });
   },
 

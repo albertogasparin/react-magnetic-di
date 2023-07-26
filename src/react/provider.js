@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { diRegistry } from './constants';
 import { Context } from './context';
 import { stats } from './stats';
-import { assertValidInjectable, getDisplayName } from './utils';
+import { assertValidInjectable, getDisplayName, isTargeted } from './utils';
 
 export const DiProvider = ({ children, use, target }) => {
   const { getDependencies } = useContext(Context);
@@ -34,9 +34,11 @@ export const DiProvider = ({ children, use, target }) => {
             // or return the original / parent replacement
             const real = diRegistry.has(dep) ? diRegistry.get(dep).from : dep;
             const replacedInj = replacementMap.get(real);
-            stats.track(replacedInj, dep);
-
-            return replacedInj ? replacedInj.value : dep;
+            if (isTargeted(replacedInj, targetChild)) {
+              stats.track(replacedInj, dep);
+              return replacedInj.value;
+            }
+            return dep;
           });
         }
         return dependencies;
