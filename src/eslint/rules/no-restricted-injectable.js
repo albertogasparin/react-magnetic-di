@@ -52,10 +52,10 @@ module.exports = {
         }
       },
       CallExpression(node) {
-        if (node.callee.name !== injectIdentifier.name) return;
+        if (node.callee.name !== injectIdentifier?.name) return;
 
         const [firstArg] = node.arguments || [];
-        const restrictedValue = restrictedVars.get(firstArg.name);
+        const restrictedValue = restrictedVars.get(firstArg?.name);
         if (restrictedValue) {
           context.report({
             node,
@@ -64,23 +64,6 @@ module.exports = {
           });
         }
       },
-
-      // BlockStatement(node) {
-      //   if (!diIdentifier) return;
-
-      //   (node.body || []).forEach((statement, i) => {
-      //     if (!isDiStatement(statement, diIdentifier) || i === 0) return;
-
-      //     const prev = node.body[i - 1];
-      //     if (!isDiStatement(prev, diIdentifier)) {
-      //       context.report({
-      //         node: statement,
-      //         messageId: 'restricted',
-      //         data: { message },
-      //       });
-      //     }
-      //   });
-      // },
     };
   },
 };
