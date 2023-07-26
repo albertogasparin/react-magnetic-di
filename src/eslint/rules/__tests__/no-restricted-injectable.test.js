@@ -1,5 +1,6 @@
 import { RuleTester } from 'eslint';
 import rule from '../no-restricted-injectable';
+import { genericCases } from './utils';
 
 RuleTester.setDefaultConfig({
   parserOptions: {
@@ -12,6 +13,9 @@ RuleTester.setDefaultConfig({
 var ruleTester = new RuleTester();
 ruleTester.run('no-restricted-injectable', rule, {
   valid: [
+    // it should pass generic cases
+    ...genericCases,
+
     // should pass if import is not restricted
     `
       import { useModal } from 'modal';
