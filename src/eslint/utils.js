@@ -8,30 +8,18 @@ const isDiStatement = (stm, spec) =>
   stm.expression.callee &&
   stm.expression.callee.name === spec.name;
 
-const isHookName = (node) => /^use[A-Z0-9].*$/.test(node.name);
-
-const isComponentName = (node) => !/^[a-z]/.test(node.name);
-
-const isLocalVariable = (node, scope) => {
-  do {
-    // if we reach module/global scope then is not local
-    if (scope.type === 'module' || scope.type === 'global') return false;
-
-    const isLocal = scope?.variables.some((v) => v.name === node.name);
-    if (isLocal) return true;
-
-    // eslint-disable-next-line no-cond-assign
-  } while ((scope = scope.upper));
-
-  return false;
+const calcImportSource = (src) => {
+  const [ns, value = ''] = src.split('/');
+  return ns.startsWith('@') ? ns + '/' + value : ns;
 };
 
 const getImportIdentifiers = (node, pkgName, impNames) => {
-  const importSource = node.source.value;
+  const importSource = calcImportSource(node.source.value);
   const importSpecifiers = node.specifiers.filter(
     (s) => s.imported && (!impNames || impNames.includes(s.imported.name))
   );
-  if (importSource.startsWith(pkgName) && importSpecifiers.length) {
+
+  if (importSource === pkgName && importSpecifiers.length) {
     return importSpecifiers.map((s) => s.local);
   }
   return null;
@@ -59,25 +47,15 @@ const getParentDiBlock = (node, diIdentifier) => {
   return null;
 };
 
-const getParentDiStatements = (node, diIdentifier) => {
-  const parentBlock = getParentDiBlock(node, diIdentifier);
-  if (parentBlock) return getDiStatements(parentBlock, diIdentifier);
-  return [];
-};
-
 const getDiVars = (statements) =>
   statements.reduce((acc, s) => acc.concat(s.expression.arguments), []);
 
 module.exports = {
   isDiStatement,
-  isHookName,
-  isComponentName,
-  isLocalVariable,
   getDiIdentifier,
   getImportIdentifiers,
   getInjectIdentifier,
   getDiStatements,
   getParentDiBlock,
-  getParentDiStatements,
   getDiVars,
 };
