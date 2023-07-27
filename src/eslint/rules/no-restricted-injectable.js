@@ -51,7 +51,7 @@ module.exports = {
           }
         }
       },
-      CallExpression(node) {
+      'CallExpression[callee.type="Identifier"]'(node) {
         if (node.callee.name !== injectIdentifier?.name) return;
 
         const [firstArg] = node.arguments || [];
