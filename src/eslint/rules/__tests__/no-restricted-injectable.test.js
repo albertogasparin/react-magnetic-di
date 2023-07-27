@@ -26,10 +26,11 @@ ruleTester.run('no-restricted-injectable', rule, {
     {
       // should pass if import name is not restricted
       code: `
-        import { Suspense } from 'react';
+        import { Suspense, useState } from 'react';
         import { injectable } from 'react-magnetic-di';
 
-        injectable(Suspense, () => null)
+        injectable(Suspense, () => null);
+        expect(render(useState)).toBe(useState);
       `,
       options: [{ paths: [{ name: 'react', importNames: ['useState'] }] }],
     },
@@ -42,6 +43,15 @@ ruleTester.run('no-restricted-injectable', rule, {
 
         injectable(Component, () => null);
         injectable(useState, () => null);
+      `,
+      options: [{ paths: [{ name: 'react' }] }],
+    },
+    {
+      // should pass if not injectable
+      code: `
+        import { useState } from 'react';
+        
+        expect(useState).toBe(useState);
       `,
       options: [{ paths: [{ name: 'react' }] }],
     },
