@@ -1,18 +1,13 @@
-import { PACKAGE_NAME, diRegistry } from './constants';
-import { stats } from './stats';
-import { assertValidInjectable, isTargeted } from './utils';
+import { PACKAGE_NAME } from './constants';
+import { addInjectableToMap, findInjectable } from './utils';
 
 const replacementMap = new Map();
 
 export const globalDi = {
   getDependencies(realDeps, targetChild) {
     return realDeps.map((dep) => {
-      const replacedInj = replacementMap.get(dep);
-      if (isTargeted(replacedInj, targetChild)) {
-        stats.track(replacedInj, dep);
-        return replacedInj.value;
-      }
-      return dep;
+      const replacedInj = findInjectable(replacementMap, dep, targetChild);
+      return replacedInj ? replacedInj.value : dep;
     });
   },
 
@@ -24,12 +19,7 @@ export const globalDi = {
           `If this is not expected, please file a bug report`
       );
     }
-    injs.forEach((inj) => {
-      assertValidInjectable(inj);
-      const injObj = diRegistry.get(inj);
-      if (injObj.track) stats.set(injObj);
-      replacementMap.set(injObj.from, injObj);
-    });
+    injs.forEach((inj) => addInjectableToMap(replacementMap, inj));
   },
 
   clear() {

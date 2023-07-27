@@ -21,12 +21,11 @@ export const stats = {
     );
   },
 
-  track(replacedInj, dep) {
-    if (replacedInj) {
-      this.state.unused.delete(replacedInj);
-      this.state.used.add(replacedInj);
-      this.state.provided.add(dep);
-    }
+  track(inj) {
+    if (!inj) return;
+    this.state.unused.delete(inj);
+    this.state.used.add(inj);
+    this.state.provided.add(inj.from);
   },
 
   reset() {

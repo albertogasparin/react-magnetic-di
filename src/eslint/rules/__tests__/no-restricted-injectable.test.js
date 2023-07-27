@@ -50,10 +50,20 @@ ruleTester.run('no-restricted-injectable', rule, {
       // should pass if not injectable
       code: `
         import { useState } from 'react';
-        
+
         expect(useState).toBe(useState);
       `,
       options: [{ paths: [{ name: 'react' }] }],
+    },
+    {
+      // should pass if allowed when targeted
+      code: `
+        import { useState } from 'react';
+        import { injectable } from 'react-magnetic-di';
+        
+        injectable(useState, () => [], { target: [Foo] });
+      `,
+      options: [{ paths: [{ name: 'react', allowTargeted: true }] }],
     },
   ],
 
@@ -64,13 +74,20 @@ ruleTester.run('no-restricted-injectable', rule, {
         import { Suspense } from 'react';
         import { injectable } from 'react-magnetic-di';
 
-        injectable(Suspense, () => null)
+        injectable(Suspense, () => null);
       `,
-      options: [
-        {
-          paths: [{ name: 'react' }],
-        },
-      ],
+      options: [{ paths: [{ name: 'react' }] }],
+      errors: [{ type: 'CallExpression', messageId: 'restricted' }],
+    },
+    {
+      // should fail if whole module is not allowed targeted
+      code: `
+        import { Suspense } from 'react';
+        import { injectable } from 'react-magnetic-di';
+
+        injectable(Suspense, () => null, { target: Foo });
+      `,
+      options: [{ paths: [{ name: 'react' }] }],
       errors: [{ type: 'CallExpression', messageId: 'restricted' }],
     },
     {

@@ -128,6 +128,113 @@ describe('Integration: testing-library', () => {
     `);
   });
 
+  it('should only override dependencies of specified injectable targets array', () => {
+    const deps = [
+      injectable(Text, () => <text-di />, { target: [Label, Input] }),
+    ];
+
+    const { container } = render(
+      <DiProvider use={deps}>
+        <Label />
+        <Input />
+      </DiProvider>
+    );
+
+    expect(container).toMatchInlineSnapshot(`
+      <div>
+        <label-og>
+          <wrapper-og>
+            <text-di />
+          </wrapper-og>
+        </label-og>
+        <input-og>
+          <text-di />
+        </input-og>
+      </div>
+    `);
+  });
+
+  it('should allow override of same dependency with different targets', () => {
+    const deps = [
+      injectable(Text, () => <text-di-label />, { target: Label }),
+      injectable(Text, () => <text-di-input />, { target: Input }),
+    ];
+
+    const { container } = render(
+      <DiProvider use={deps}>
+        <Label />
+        <Input />
+      </DiProvider>
+    );
+
+    expect(container).toMatchInlineSnapshot(`
+      <div>
+        <label-og>
+          <wrapper-og>
+            <text-di-label />
+          </wrapper-og>
+        </label-og>
+        <input-og>
+          <text-di-input />
+        </input-og>
+      </div>
+    `);
+  });
+
+  it('should override with target version even when first if dependency has multiple injectables', () => {
+    const deps = [
+      injectable(Text, () => <text-di-target />, { target: Input }),
+      injectable(Text, () => <text-di />),
+    ];
+
+    const { container } = render(
+      <DiProvider use={deps}>
+        <Label />
+        <Input />
+      </DiProvider>
+    );
+
+    expect(container).toMatchInlineSnapshot(`
+      <div>
+        <label-og>
+          <wrapper-og>
+            <text-di />
+          </wrapper-og>
+        </label-og>
+        <input-og>
+          <text-di-target />
+        </input-og>
+      </div>
+    `);
+  });
+
+  it('should override with target version even when last if dependency has multiple injectables', () => {
+    const deps = [
+      injectable(Text, () => <text-di />),
+      injectable(Text, () => <text-di-target />, { target: Input }),
+    ];
+
+    const { container } = render(
+      <DiProvider use={deps}>
+        <Label />
+        <Input />
+      </DiProvider>
+    );
+
+    expect(container).toMatchInlineSnapshot(`
+      <div>
+        <label-og>
+          <wrapper-og>
+            <text-di />
+          </wrapper-og>
+        </label-og>
+        <input-og>
+          <text-di-target />
+        </input-og>
+      </div>
+    `);
+  });
+
   it('should get closest dependency if multiple providers using same type', () => {
     const TextDi2 = injectable(Text, () => <text-di2 />);
     TextDi2.displayName = 'di(Text2)';

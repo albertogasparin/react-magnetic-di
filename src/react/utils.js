@@ -1,4 +1,5 @@
 import { diRegistry } from './constants';
+import { stats } from './stats';
 
 let hasWarned = false;
 export function warnOnce(message) {
@@ -9,11 +10,21 @@ export function warnOnce(message) {
   }
 }
 
-export function assertValidInjectable(dep) {
-  if (!diRegistry.has(dep))
+export function addInjectableToMap(replacementMap, inj) {
+  const injObj = diRegistry.get(inj);
+  if (!injObj) {
     throw new Error(
-      `Seems like you are trying to use "${dep}" as injectable, but magnetic-di needs the return value of "injectable()"`
+      `Seems like you are trying to use "${inj}" as injectable, but magnetic-di needs the return value of "injectable()"`
     );
+  }
+
+  if (injObj.track) stats.set(injObj);
+  if (replacementMap.has(injObj.from)) {
+    replacementMap.get(injObj.from).unshift(injObj);
+  } else {
+    replacementMap.set(injObj.from, [injObj]);
+  }
+  return replacementMap;
 }
 
 export function getDisplayName(Comp, wrapper = '') {
@@ -27,6 +38,14 @@ export function debug(fn) {
   return args;
 }
 
-export function isTargeted(inj, subject) {
-  return inj && (!inj.targets || inj.targets.includes(subject));
+export function findInjectable(replacementMap, dep, targetChild) {
+  const injectables = replacementMap.get(dep) || [];
+  const candidates = [];
+  // loop all injectables for the dep, ranking targeted ones higher
+  for (const inj of injectables) {
+    if (!inj.targets) candidates.push(inj);
+    if (inj.targets?.includes(targetChild)) candidates.unshift(inj);
+  }
+  stats.track(candidates[0]);
+  return candidates[0] || null;
 }
