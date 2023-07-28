@@ -5,9 +5,9 @@ module.exports = {
   plugins: ['local'],
   rules: {
     'local/order': ['error'],
-    'local/exhaustive-inject': ['error'],
     'local/no-duplicate': ['error'],
     'local/no-extraneous': ['error'],
+    'local/no-restricted-injectable': ['error', { paths: [{ name: 'react' }] }],
     'local/sort-dependencies': ['error'],
   },
 };
