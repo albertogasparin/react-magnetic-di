@@ -3,21 +3,15 @@ import PropTypes from 'prop-types';
 
 import { diRegistry } from './constants';
 import { Context } from './context';
-import { stats } from './stats';
-import { assertValidInjectable, getDisplayName } from './utils';
+import { addInjectableToMap, getDisplayName, findInjectable } from './utils';
 
 export const DiProvider = ({ children, use, target }) => {
   const { getDependencies } = useContext(Context);
 
   // memo provider value so gets computed only once
   const value = useMemo(() => {
-    // create a map of dependency real -> replacement for fast lookup
-    const replacementMap = use.reduce((m, inj) => {
-      assertValidInjectable(inj);
-      const injObj = diRegistry.get(inj);
-      if (injObj.track) stats.set(injObj);
-      return m.set(injObj.from, injObj);
-    }, new Map());
+    // create a map of dependency real -> replacements for fast lookup
+    const replacementMap = use.reduce(addInjectableToMap, new Map());
     // support single or multiple targets
     const targets = target && (Array.isArray(target) ? target : [target]);
 
@@ -33,9 +27,11 @@ export const DiProvider = ({ children, use, target }) => {
             // so we check if here we need to inject a different one
             // or return the original / parent replacement
             const real = diRegistry.has(dep) ? diRegistry.get(dep).from : dep;
-            const replacedInj = replacementMap.get(real);
-            stats.track(replacedInj, dep);
-
+            const replacedInj = findInjectable(
+              replacementMap,
+              real,
+              targetChild
+            );
             return replacedInj ? replacedInj.value : dep;
           });
         }

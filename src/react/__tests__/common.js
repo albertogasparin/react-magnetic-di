@@ -33,16 +33,16 @@ export const WrapperDi = injectable(Wrapper, ({ children }) => (
   <wrapper-di>{children}</wrapper-di>
 ));
 
-export const fetchApi = async () => 'fetch';
-export const processApiData = (v) => v + ' process';
+export const fetchApi = async () => 'fetch-og';
+export const processApiData = (v) => v + ' process-og';
 
 export function transformer(data) {
-  const [_processApiData] = di([processApiData]);
+  const [_processApiData] = di([processApiData], transformer);
   return _processApiData(data);
 }
 
 export async function apiHandler() {
-  const [_fetchApi, _transformer] = di([fetchApi, transformer]);
+  const [_fetchApi, _transformer] = di([fetchApi, transformer], apiHandler);
   const data = await _fetchApi();
   return _transformer(data);
 }

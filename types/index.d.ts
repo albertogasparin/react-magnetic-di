@@ -32,7 +32,7 @@ declare module 'react-magnetic-di' {
   class DiProvider extends Component<
     {
       use: Injectable[];
-      target?: ComponentType<any> | ComponentType<any>[];
+      target?: Function | Function[];
       children?: ReactNode;
     },
     { getDependencies: (deps: Dependency[]) => Dependency[] }
@@ -41,18 +41,24 @@ declare module 'react-magnetic-di' {
   function withDi<T extends ComponentType<any>>(
     component: T,
     dependencies: Injectable[],
-    target?: ComponentType<any> | ComponentType<any>[]
+    target?: Function | Function[]
   ): T;
+
+  type InjectableOptions = {
+    displayName?: string;
+    target?: Function | Function[];
+    track?: boolean;
+  };
 
   function injectable<T extends Dependency>(
     from: T,
     implementation: ComponentOrFunction<T>,
-    options?: { displayName?: string; track?: boolean }
+    options?: InjectableOptions
   ): Injectable<T>;
   function injectable<T extends Dependency>(
     from: T,
     implementation: T,
-    options?: { displayName?: string; track?: boolean }
+    options?: InjectableOptions
   ): Injectable<T>;
 
   function di(...dependencies: Dependency[]): void;

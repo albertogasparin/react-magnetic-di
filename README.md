@@ -247,6 +247,12 @@ When creating injectables you can provide a configuration object to customise so
 const fetchApiDi = injectable(fetchApi, jest.fn(), { displayName: 'fetchApi' });
 ```
 
+• `target`: allows a replacement to only apply to specific function(s):
+
+```js
+const fetchApiDi = injectable(fetchApi, jest.fn(), { target: fetchProjects });
+```
+
 • `track`: skip reporting it in `stats.unused()` (handy if you provide default injectables across tests):
 
 ```js
@@ -272,6 +278,7 @@ The rules are exported from `react-magnetic-di/eslint-plugin`. Unfortunately ESL
 - `DiProvider` does not support dynamic `use` and `target` props (changes are ignored)
 - Does not replace default props (or default parameters in general): so dependencies provided as default parameters (eg `function MyComponent ({ modal = Modal }) { ... }`) will be ignored. If you accept the dependency as prop/argument you should inject it via prop/argument, as having a double injection strategy is just confusing.
 - Injecting primitive values (strings, booleans, numbers, ...) can be unreliable as we only have the actual value as reference, and so the library might not exactly know what to replace. In cases where multiple values might be replaced, a warning will be logged and we recommend you declare an inject a getter instead of the value itself.
+- Targeting only works on named functions/classes, so it won't work on anonymous scopes (eg `export default () => { ... }` or `memo(() => { ... })`)
 
 ## FAQ
 

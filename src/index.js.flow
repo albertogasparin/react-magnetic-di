@@ -30,7 +30,7 @@ declare export function withDi<T: AbstractComponent<any>>(
 declare export function injectable<T: Dependency>(
   from: T,
   implementation: T,
-  options?: {| displayName?: string, track?: boolean |}
+  options?: {| displayName?: string, target?: Function, track?: boolean |}
 ): T;
 
 type ExtractReturn<Fn> = $Call<<T>((...Iterable<any>) => T) => T, Fn>;

@@ -9,7 +9,7 @@ import { render } from '@testing-library/react';
 import { Context } from '../context';
 import { di } from '../consumer';
 import { DiProvider, withDi } from '../provider';
-import { injectable } from '../utils';
+import { injectable } from '../injectable';
 
 describe('DiProvider', () => {
   it('should expose state to consumers', () => {

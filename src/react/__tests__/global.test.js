@@ -1,12 +1,13 @@
 /* eslint-env jest */
 import { globalDi, runWithDi } from '../global';
 import { di } from '../consumer';
-import { injectable } from '../utils';
+import { injectable } from '../injectable';
 import {
   apiHandler,
-  transformer,
-  processApiDataDi,
+  fetchApi,
   fetchApiDi,
+  processApiDataDi,
+  transformer,
 } from './common';
 
 describe('globalDi', () => {
@@ -15,7 +16,7 @@ describe('globalDi', () => {
   });
 
   it('should return real dependencies if not set', () => {
-    expect(transformer('data')).toEqual('data process');
+    expect(transformer('data')).toEqual('data process-og');
   });
 
   it('should override all dependencies of same type', () => {
@@ -23,10 +24,18 @@ describe('globalDi', () => {
     expect(transformer('data')).toEqual('data process-di');
   });
 
+  it('should override dependencies based on target', async () => {
+    globalDi.use([
+      injectable(fetchApi, () => 'fetch-di', { target: apiHandler }),
+      injectable(transformer, () => 'transf-di', { target: fetchApi }),
+    ]);
+    expect(await apiHandler()).toEqual('fetch-di process-og');
+  });
+
   it('should clear injectables when told', () => {
     globalDi.use([processApiDataDi]);
     globalDi.clear();
-    expect(transformer('data')).toEqual('data process');
+    expect(transformer('data')).toEqual('data process-og');
   });
 
   it('should error when trying to use without having cleared first', () => {
@@ -42,6 +51,7 @@ describe('globalDi', () => {
 
   describe('with various replacement types', () => {
     const cases = [1, 'string', null, Symbol('test'), function () {}];
+
     test.each(cases)('should hanlde dependency value %p', (value) => {
       globalDi.use([injectable(value, 'replaced')]);
       const result = di([value]);

@@ -1,4 +1,5 @@
 import { diRegistry } from './constants';
+import { stats } from './stats';
 
 let hasWarned = false;
 export function warnOnce(message) {
@@ -9,11 +10,21 @@ export function warnOnce(message) {
   }
 }
 
-export function assertValidInjectable(dep) {
-  if (!diRegistry.has(dep))
+export function addInjectableToMap(replacementMap, inj) {
+  const injObj = diRegistry.get(inj);
+  if (!injObj) {
     throw new Error(
-      `Seems like you are trying to use "${dep}" as injectable, but magnetic-di needs the return value of "injectable()"`
+      `Seems like you are trying to use "${inj}" as injectable, but magnetic-di needs the return value of "injectable()"`
     );
+  }
+
+  if (injObj.track) stats.set(injObj);
+  if (replacementMap.has(injObj.from)) {
+    replacementMap.get(injObj.from).unshift(injObj);
+  } else {
+    replacementMap.set(injObj.from, [injObj]);
+  }
+  return replacementMap;
 }
 
 export function getDisplayName(Comp, wrapper = '') {
@@ -21,44 +32,20 @@ export function getDisplayName(Comp, wrapper = '') {
   return !name || !wrapper ? name : `${wrapper}(${name})`;
 }
 
-export function injectable(
-  from,
-  implementation,
-  { displayName, track = true } = {}
-) {
-  let impl = implementation;
-  if (typeof impl === 'function') {
-    impl.displayName =
-      displayName || getDisplayName(impl) || getDisplayName(from, 'di');
-  } else if (typeof impl !== 'object') {
-    impl = {
-      [Symbol.toPrimitive]() {
-        return implementation;
-      },
-    };
-  }
-
-  if (diRegistry.has(impl) && diRegistry.get(impl).from !== from) {
-    warnOnce(
-      `You are trying to use replacement "${
-        displayName || impl.displayName
-      }" on multiple injectables. ` +
-        `That will override only the last dependency, as each replacement is uniquely linked.`
-    );
-  }
-  diRegistry.set(impl, {
-    value: implementation,
-    from,
-    track,
-    cause: new Error(
-      'Injectable created but not used. If this is on purpose, add "{track: false}"'
-    ),
-  });
-  return impl;
-}
-
 export function debug(fn) {
   const source = fn.toString();
   const [, args] = source.match(/const \[[^\]]+\] = .*di.*\(\[([^\]]+)/) || [];
   return args;
+}
+
+export function findInjectable(replacementMap, dep, targetChild) {
+  const injectables = replacementMap.get(dep) || [];
+  const candidates = [];
+  // loop all injectables for the dep, ranking targeted ones higher
+  for (const inj of injectables) {
+    if (!inj.targets) candidates.push(inj);
+    if (inj.targets?.includes(targetChild)) candidates.unshift(inj);
+  }
+  stats.track(candidates[0]);
+  return candidates[0] || null;
 }

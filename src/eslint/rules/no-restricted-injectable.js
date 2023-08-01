@@ -21,6 +21,7 @@ module.exports = {
                 name: { type: 'string' },
                 importNames: { type: 'array' },
                 message: { type: 'string' },
+                allowTargeted: { type: 'boolean' },
               },
             },
           },
@@ -30,9 +31,8 @@ module.exports = {
     ],
     messages: {
       restricted:
-        'This dependency should not be injected because too generic ' +
-        'or not needing a mock. If you want/need to mock it anyway, ' +
-        'please extract it into its own getter. {{message}}',
+        'This dependency should not be injected because too generic, ' +
+        'not needing mocking or already mocked. {{message}}',
     },
   },
   create: function (context) {
@@ -47,16 +47,23 @@ module.exports = {
         for (let p of userOptions.paths) {
           const ids = getImportIdentifiers(node, p.name, p.importNames) || [];
           for (let id of ids) {
-            restrictedVars.set(id.name, { message: p.message || '' });
+            restrictedVars.set(id.name, {
+              message: p.message || '',
+              allowTargeted: p.allowTargeted,
+            });
           }
         }
       },
       'CallExpression[callee.type="Identifier"]'(node) {
         if (node.callee.name !== injectIdentifier?.name) return;
 
-        const [firstArg] = node.arguments || [];
+        const [firstArg, , thirdArg] = node.arguments || [];
         const restrictedValue = restrictedVars.get(firstArg?.name);
-        if (restrictedValue) {
+        const enabledTarget =
+          restrictedValue?.allowTargeted &&
+          thirdArg?.properties?.some((n) => n?.key?.name === 'target');
+
+        if (restrictedValue && !enabledTarget) {
           context.report({
             node,
             messageId: 'restricted',
