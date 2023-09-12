@@ -678,7 +678,9 @@ describe('babel plugin', () => {
       import { useModal } from 'modal';
 
       function useMyModal() {
-        return useModal();
+        return (() => {
+          return useModal();
+        })
       }
     `;
     expect(
@@ -692,7 +694,10 @@ describe('babel plugin', () => {
       var _modal = require("modal");
       function useMyModal() {
         const [_useModal] = (0, _reactMagneticDi.di)([_modal.useModal], useMyModal);
-        return _useModal();
+        return () => {
+          const [_useModal2] = (0, _reactMagneticDi.di)([_useModal], null);
+          return _useModal2();
+        };
       }"
     `);
   });

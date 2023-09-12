@@ -35,7 +35,7 @@ function processReference(t, path, locationValue, state) {
   const declaration = t.variableDeclaration('const', [
     t.variableDeclarator(
       t.arrayPattern(elements),
-      t.callExpression(state.diIdentifier, [
+      t.callExpression(t.identifier(state.diIdentifier.name), [
         t.arrayExpression(args),
         self ? t.identifier(self.name) : t.nullLiteral(),
       ])
