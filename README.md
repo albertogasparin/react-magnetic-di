@@ -15,7 +15,7 @@ A new take for dependency injection / dependency replacement for your tests, sto
 - Close-to-zero performance overhead on dev/testing
 - **Zero** performance overhead on production (code gets stripped unless told otherwise)
 - Promotes type safety for mocks
-- Works with any kind of value (funcitons, objects, strings) and in all closures / React components
+- Works with any kind of value (functions, objects, strings) and in all closures / React components
 - Replaces dependencies at any depth of the call chain / React tree
 - Allows selective injection
 - Enforces separation of concerns, keeps your component API clean
@@ -45,7 +45,7 @@ Edit your Babel config file (`.babelrc` / `babel.config.js` / ...) and add:
   ],
 ```
 
-This is where the magic happens: we safely rewrite the code to prepend `di(...)` in every function scope, so that the dependency value can be swapped. We recommend to only add the plugin in development/test enviroments to avoid useless const assignment in production. You can either do that via multiple babel environment configs or by using `enabledEnvs` option.
+This is where the magic happens: we safely rewrite the code to prepend `di(...)` in every function scope, so that the dependency value can be swapped. We recommend to only add the plugin in development/test environments to avoid useless const assignment in production. You can either do that via multiple babel environment configs or by using `enabledEnvs` option.
 
 ### Using dependency replacement
 
@@ -81,7 +81,7 @@ it('should call the API', async () => {
 });
 ```
 
-### Usin dependency replacement in React tests and storybooks
+### Using dependency replacement in React tests and storybooks
 
 For React, we provide a specific `DiProvider` to enable replacements across the entire tree. Given a component with complex UI interaction or data dependencies, like a Modal or an Apollo Query, we want to easily be able to integration test it:
 
@@ -180,7 +180,7 @@ export async function myApiFetcher() {
 
 #### Ignoring a function scope
 
-Other times, there might be places in code where auto injection is problematic and might cause infine loops. It might be the case if you are creating an injectable that then imports the replacement source itself.
+Other times, there might be places in code where auto injection is problematic and might cause infinite loops. It might be the case if you are creating an injectable that then imports the replacement source itself.
 
 For those scenarios, you can add a comment at the top of the function scope to tell the Babel plugin to skip that scope:
 
@@ -268,7 +268,7 @@ In order to enforce better practices, this package exports some ESLint rules:
 | `order`                    | enforces `di(...)` to be the top of the block, to reduce chances of partial replacements                             |
 | `no-duplicate`             | prohibits marking the same dependency as injectable more than once in the same scope                                 |
 | `no-extraneous`            | enforces dependencies to be consumed in the scope, to prevent unused variables                                       |
-| `no-restricted-injectable` | prohibits certains values from being injected: `paths: [{ name: string, importNames?: string[], message?: string }]` |
+| `no-restricted-injectable` | prohibits certain values from being injected: `paths: [{ name: string, importNames?: string[], message?: string }]` |
 | `sort-dependencies`        | require injectable dependencies to be sorted                                                                         |
 
 The rules are exported from `react-magnetic-di/eslint-plugin`. Unfortunately ESLint does not allow plugins that are not npm packages, so rules needs to be imported via other means for now.
