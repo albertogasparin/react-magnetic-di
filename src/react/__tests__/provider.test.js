@@ -10,6 +10,7 @@ import { Context } from '../context';
 import { di } from '../consumer';
 import { DiProvider, withDi } from '../provider';
 import { injectable } from '../injectable';
+import { globalDi } from '../global';
 
 describe('DiProvider', () => {
   it('should expose state to consumers', () => {
@@ -103,6 +104,61 @@ describe('DiProvider', () => {
       const { getDependencies } = children.mock.calls[0][0];
       expect(getDependencies([Text])).toEqual([TextDi2]);
     });
+  });
+
+  it('should set global injection if prop is set', () => {
+    jest.spyOn(globalDi, '_fromProvider');
+
+    const children = jest.fn();
+    const TextDi = injectable(Text, () => '');
+
+    render(
+      <DiProvider use={[TextDi]} global>
+        <Context.Consumer>{children}</Context.Consumer>
+      </DiProvider>
+    );
+
+    expect(globalDi._fromProvider).toHaveBeenCalledWith([TextDi], {
+      global: true,
+    });
+  });
+
+  it('should set global injection if injectable global is set', () => {
+    jest.spyOn(globalDi, '_fromProvider');
+
+    const children = jest.fn();
+    const TextDi = injectable(Text, () => '', { global: true });
+
+    render(
+      <DiProvider use={[TextDi]}>
+        <Context.Consumer>{children}</Context.Consumer>
+      </DiProvider>
+    );
+
+    expect(globalDi._fromProvider).toHaveBeenCalledWith([TextDi], {
+      global: undefined,
+    });
+  });
+
+  it('should remove global injection on unmount', () => {
+    jest.spyOn(globalDi, '_remove');
+
+    const children = jest.fn();
+    const TextDi = injectable(Text, () => '', { global: true });
+    const TextDi2 = injectable(Text, () => '');
+
+    const { unmount } = render(
+      <DiProvider use={[TextDi]}>
+        <DiProvider use={[TextDi2]} global>
+          <Context.Consumer>{children}</Context.Consumer>
+        </DiProvider>
+      </DiProvider>
+    );
+
+    unmount();
+
+    expect(globalDi._remove).toHaveBeenCalledWith([TextDi]);
+    expect(globalDi._remove).toHaveBeenCalledWith([TextDi2]);
   });
 
   it('should error when a non injectable is used', () => {

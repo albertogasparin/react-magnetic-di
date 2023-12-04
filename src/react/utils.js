@@ -19,12 +19,26 @@ export function addInjectableToMap(replacementMap, inj) {
   }
 
   if (injObj.track) stats.set(injObj);
-  if (replacementMap.has(injObj.from)) {
+  if (
+    replacementMap.has(injObj.from) &&
+    !replacementMap.get(injObj.from).includes(injObj)
+  ) {
     replacementMap.get(injObj.from).unshift(injObj);
   } else {
     replacementMap.set(injObj.from, [injObj]);
   }
   return replacementMap;
+}
+
+export function removeInjectableFromMap(replacementMap, inj) {
+  const injObj = diRegistry.get(inj);
+  const injectables = replacementMap.get(injObj.from) || [];
+  if (injectables.length === 1) {
+    replacementMap.delete(injObj.from);
+  } else {
+    const idx = injectables.indexOf(injObj);
+    injectables.splice(idx, 1);
+  }
 }
 
 export function getDisplayName(Comp, wrapper = '') {

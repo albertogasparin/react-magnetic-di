@@ -151,7 +151,7 @@ When you have the same dependency replaced multiple times, there are two behavio
 
 ### Other replacement patterns
 
-#### Allowing globals replacement
+#### Allowing globals (variables) replacement
 
 Currently the library does not enable automatic replacement of globals. To do that, you need to manually "tag" a global for replacement with `di(myGlobal)` in the function scope. For instance:
 
@@ -259,17 +259,31 @@ const fetchApiDi = injectable(fetchApi, jest.fn(), { target: fetchProjects });
 const fetchApiDi = injectable(fetchApi, jest.fn(), { track: false });
 ```
 
+• `global`: allows a replacement to be available evewhere, at any point, until `DiProvider` unmounts (alternatively use `global` prop on `DiProvider` to make all `use` replacements act globally):
+
+```js
+const fetchApiDi = injectable(fetchApi, jest.fn(), { global: true });
+```
+
+#### DiProvider props
+
+• `use`: required prop, it is an array of replacements
+• `target`: allows a replacement to only apply to specific components(s)
+• `global`: boolean, allows replacements to be available outside the render phase
+
+````
+
 ## ESLint plugin and rules
 
 In order to enforce better practices, this package exports some ESLint rules:
 
-| rule                       | description                                                                                                          |
-| -------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `order`                    | enforces `di(...)` to be the top of the block, to reduce chances of partial replacements                             |
-| `no-duplicate`             | prohibits marking the same dependency as injectable more than once in the same scope                                 |
-| `no-extraneous`            | enforces dependencies to be consumed in the scope, to prevent unused variables                                       |
+| rule                       | description                                                                                                         |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `order`                    | enforces `di(...)` to be the top of the block, to reduce chances of partial replacements                            |
+| `no-duplicate`             | prohibits marking the same dependency as injectable more than once in the same scope                                |
+| `no-extraneous`            | enforces dependencies to be consumed in the scope, to prevent unused variables                                      |
 | `no-restricted-injectable` | prohibits certain values from being injected: `paths: [{ name: string, importNames?: string[], message?: string }]` |
-| `sort-dependencies`        | require injectable dependencies to be sorted                                                                         |
+| `sort-dependencies`        | require injectable dependencies to be sorted                                                                        |
 
 The rules are exported from `react-magnetic-di/eslint-plugin`. Unfortunately ESLint does not allow plugins that are not npm packages, so rules needs to be imported via other means for now.
 
@@ -291,7 +305,10 @@ import { debug } from 'react-magnetic-di';
 // ...
 console.log(debug(myApiFetcher));
 // It will print ['fetchApi']
-```
+````
+
+One possible reason for it to happen is that the context has been lost. Typical occurrences are async or deeply nested functions (especially in React).
+The solution is setting the prop `global` on `DiProvider` (or the same injectable config) to better handle those scenarios (but refrain from abusing it).
 
 ## Contributing
 

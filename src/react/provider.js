@@ -1,17 +1,23 @@
-import React, { useContext, useMemo, forwardRef } from 'react';
+import React, { useContext, useMemo, forwardRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 
 import { diRegistry } from './constants';
 import { Context } from './context';
 import { addInjectableToMap, getDisplayName, findInjectable } from './utils';
+import { globalDi } from './global';
 
-export const DiProvider = ({ children, use, target }) => {
+export const DiProvider = ({ children, use, target, global }) => {
   const { getDependencies } = useContext(Context);
 
   // memo provider value so gets computed only once
   const value = useMemo(() => {
     // create a map of dependency real -> replacements for fast lookup
-    const replacementMap = use.reduce(addInjectableToMap, new Map());
+    const replacementMap = use.reduce((acc, inj) => {
+      addInjectableToMap(acc, inj);
+      return acc;
+    }, new Map());
+    // supports global di if needed
+    globalDi._fromProvider(use, { global });
     // support single or multiple targets
     const targets = target && (Array.isArray(target) ? target : [target]);
 
@@ -40,11 +46,15 @@ export const DiProvider = ({ children, use, target }) => {
     };
   }, [getDependencies]); // ignore use & target props
 
+  // on unmount
+  useEffect(() => () => globalDi._remove(use), []); // ignore use prop
+
   return <Context.Provider value={value}>{children}</Context.Provider>;
 };
 
 DiProvider.propTypes = {
   children: PropTypes.oneOfType([PropTypes.func, PropTypes.node]),
+  global: PropTypes.bool,
   target: PropTypes.oneOfType([
     PropTypes.func,
     PropTypes.arrayOf(PropTypes.func),

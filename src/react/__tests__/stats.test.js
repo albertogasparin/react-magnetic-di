@@ -31,15 +31,15 @@ describe('stats', () => {
     });
 
     it('should track unused injectables', () => {
-      const deps = [TextDi, WrapperDi, fetchApiDi, processApiDataDi];
+      const deps = [TextDi, WrapperDi, processApiDataDi, fetchApiDi];
       render(
         <DiProvider use={deps}>
           <Label />
         </DiProvider>
       );
       expect(stats.unused()).toHaveLength(2);
-      expect(stats.unused()[0].get()).toEqual(fetchApiDi);
-      expect(stats.unused()[1].get()).toEqual(processApiDataDi);
+      expect(stats.unused()[0].get()).toEqual(processApiDataDi);
+      expect(stats.unused()[1].get()).toEqual(fetchApiDi);
     });
 
     it('should not track injectables with tracking false', () => {
