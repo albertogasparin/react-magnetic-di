@@ -18,10 +18,16 @@ export class Label extends Component {
 }
 
 export class Input extends Component {
+  state = { value: '' };
+  componentDidMount() {
+    const [_apiHandler] = di([apiHandler], Input);
+    _apiHandler().then((value) => this.setState({ value }));
+  }
+
   render() {
     const [_Text] = di([Text], Input);
     return (
-      <input-og>
+      <input-og value={this.state.value}>
         <_Text />
       </input-og>
     );
@@ -47,7 +53,9 @@ export async function apiHandler() {
   return _transformer(data);
 }
 
-export const fetchApiDi = injectable(fetchApi, async () => 'fetch-di');
+export const fetchApiDi = injectable(fetchApi, async () => 'fetch-di', {
+  global: true,
+});
 export const processApiDataDi = injectable(
   processApiData,
   (v) => v + ' process-di'

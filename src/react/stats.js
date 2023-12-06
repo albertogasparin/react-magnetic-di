@@ -19,6 +19,8 @@ export const stats = {
         { cause: injObj.cause }
       )
     );
+    // reset to avoid potential memory leaks via stack traces
+    injObj.cause = null;
   },
 
   track(inj) {

@@ -4,7 +4,7 @@ import { getDisplayName, warnOnce } from './utils';
 export function injectable(
   from,
   implementation,
-  { displayName, target, track = true } = {}
+  { displayName, target, track = true, global = false } = {}
 ) {
   let impl = implementation;
   if (typeof impl === 'function') {
@@ -31,9 +31,12 @@ export function injectable(
     from,
     targets: target && (Array.isArray(target) ? target : [target]),
     track,
-    cause: new Error(
-      'Injectable created but not used. If this is on purpose, add "{track: false}"'
-    ),
+    global,
+    cause: track
+      ? new Error(
+          'Injectable created but not used. If this is on purpose, add "{track: false}"'
+        )
+      : null,
   });
   return impl;
 }

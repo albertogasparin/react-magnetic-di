@@ -6,6 +6,7 @@ import {
   apiHandler,
   fetchApi,
   fetchApiDi,
+  processApiData,
   processApiDataDi,
   transformer,
 } from './common';
@@ -38,6 +39,12 @@ describe('globalDi', () => {
     expect(transformer('data')).toEqual('data process-og');
   });
 
+  it('should remove injectables when told', () => {
+    globalDi.use([processApiDataDi, fetchApiDi]);
+    globalDi._remove([processApiDataDi]);
+    expect(transformer('data')).toEqual('data process-og');
+  });
+
   it('should error when trying to use without having cleared first', () => {
     globalDi.use([processApiDataDi]);
     expect(() => globalDi.use([])).toThrow();
@@ -47,6 +54,22 @@ describe('globalDi', () => {
     expect(() => {
       globalDi.use([jest.fn()]);
     }).toThrowError();
+  });
+
+  describe('_fromProvider', () => {
+    it('should add all injectables with global prop', () => {
+      globalDi._fromProvider([injectable(processApiData, () => 'process-di')], {
+        global: true,
+      });
+      expect(transformer('data')).toEqual('process-di');
+    });
+
+    it('should add injectables with global config', () => {
+      globalDi._fromProvider([
+        injectable(processApiData, () => 'process-di', { global: true }),
+      ]);
+      expect(transformer('data')).toEqual('process-di');
+    });
   });
 
   describe('with various replacement types', () => {

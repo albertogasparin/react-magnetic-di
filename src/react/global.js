@@ -1,5 +1,9 @@
-import { PACKAGE_NAME } from './constants';
-import { addInjectableToMap, findInjectable } from './utils';
+import { PACKAGE_NAME, diRegistry } from './constants';
+import {
+  addInjectableToMap,
+  removeInjectableFromMap,
+  findInjectable,
+} from './utils';
 
 const replacementMap = new Map();
 
@@ -24,6 +28,17 @@ export const globalDi = {
 
   clear() {
     replacementMap.clear();
+  },
+
+  _fromProvider(injs, props = {}) {
+    injs.forEach((inj) => {
+      if (props.global || diRegistry.get(inj).global)
+        addInjectableToMap(replacementMap, inj);
+    });
+  },
+
+  _remove(injs) {
+    injs.forEach((inj) => removeInjectableFromMap(replacementMap, inj));
   },
 };
 
