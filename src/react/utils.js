@@ -19,25 +19,22 @@ export function addInjectableToMap(replacementMap, inj) {
   }
 
   if (injObj.track) stats.set(injObj);
-  if (
-    replacementMap.has(injObj.from) &&
-    !replacementMap.get(injObj.from).includes(injObj)
-  ) {
-    replacementMap.get(injObj.from).unshift(injObj);
+
+  if (replacementMap.has(injObj.from)) {
+    replacementMap.get(injObj.from).add(injObj);
   } else {
-    replacementMap.set(injObj.from, [injObj]);
+    replacementMap.set(injObj.from, new Set([injObj]));
   }
   return replacementMap;
 }
 
 export function removeInjectableFromMap(replacementMap, inj) {
   const injObj = diRegistry.get(inj);
-  const injectables = replacementMap.get(injObj.from) || [];
-  if (injectables.length === 1) {
+  const injectables = replacementMap.get(injObj.from) || new Set();
+  if (injectables.size === 1) {
     replacementMap.delete(injObj.from);
   } else {
-    const idx = injectables.indexOf(injObj);
-    injectables.splice(idx, 1);
+    injectables.delete(injObj);
   }
 }
 
@@ -53,13 +50,15 @@ export function debug(fn) {
 }
 
 export function findInjectable(replacementMap, dep, targetChild) {
-  const injectables = replacementMap.get(dep) || [];
-  const candidates = [];
-  // loop all injectables for the dep, ranking targeted ones higher
+  const injectables = replacementMap.get(dep) || new Set();
+  // loop all injectables for the dep, with targeted ones preferred
+  let anyCandidate = null;
+  let targetCandidate = null;
   for (const inj of injectables) {
-    if (!inj.targets) candidates.push(inj);
-    if (inj.targets?.includes(targetChild)) candidates.unshift(inj);
+    if (!inj.targets) anyCandidate = inj;
+    if (inj.targets?.includes(targetChild)) targetCandidate = inj;
   }
-  stats.track(candidates[0]);
-  return candidates[0] || null;
+  const candidate = targetCandidate || anyCandidate;
+  stats.track(candidate);
+  return candidate;
 }

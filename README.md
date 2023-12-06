@@ -259,7 +259,7 @@ const fetchApiDi = injectable(fetchApi, jest.fn(), { target: fetchProjects });
 const fetchApiDi = injectable(fetchApi, jest.fn(), { track: false });
 ```
 
-• `global`: allows a replacement to be available evewhere, at any point, until `DiProvider` unmounts (alternatively use `global` prop on `DiProvider` to make all `use` replacements act globally):
+• `global`: allows a replacement to be available everywhere, at any point, until `DiProvider` unmounts (alternatively use `global` prop on `DiProvider` to make all `use` replacements act globally):
 
 ```js
 const fetchApiDi = injectable(fetchApi, jest.fn(), { global: true });
