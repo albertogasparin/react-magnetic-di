@@ -19,7 +19,7 @@ module.exports = {
   },
   settings: {
     react: {
-      version: 'latest',
+      version: 'detect',
     },
   },
   plugins: ['react', 'flowtype', 'import'],
