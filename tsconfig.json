@@ -10,6 +10,7 @@
     "noEmit": true,
     "typeRoots": ["./node_modules/@types", "types"],
     "baseUrl": ".",
+    "skipLibCheck": true,
     "paths": {
       "react-magnetic-di": ["types"]
     }
