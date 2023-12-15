@@ -72,7 +72,7 @@ import { myApiFetcher } from '.';
 it('should call the API', async () => {
   // injectable() needs the original implementation as first argument
   // and the replacement implementation as second
-  const fetchApiDi = injectable(fetchApi, jest.fn().mockResolvedValue('mock'));
+  const fetchApiDi = injectable(fetchApi, jest.fn().mockResolvedValue({ data: 'mock' }));
 
   const result = await runWithDi(() => myApiFetcher(), [fetchApiDi]);
 
