@@ -271,8 +271,6 @@ const fetchApiDi = injectable(fetchApi, jest.fn(), { global: true });
 • `target`: allows a replacement to only apply to specific components(s)
 • `global`: boolean, allows replacements to be available outside the render phase
 
-````
-
 ## ESLint plugin and rules
 
 In order to enforce better practices, this package exports some ESLint rules:
