@@ -72,7 +72,10 @@ import { myApiFetcher } from '.';
 it('should call the API', async () => {
   // injectable() needs the original implementation as first argument
   // and the replacement implementation as second
-  const fetchApiDi = injectable(fetchApi, jest.fn().mockResolvedValue({ data: 'mock' }));
+  const fetchApiDi = injectable(
+    fetchApi,
+    jest.fn().mockResolvedValue({ data: 'mock' })
+  );
 
   const result = await runWithDi(() => myApiFetcher(), [fetchApiDi]);
 
@@ -291,6 +294,7 @@ The rules are exported from `react-magnetic-di/eslint-plugin`. Unfortunately ESL
 - Does not replace default props (or default parameters in general): so dependencies provided as default parameters (eg `function MyComponent ({ modal = Modal }) { ... }`) will be ignored. If you accept the dependency as prop/argument you should inject it via prop/argument, as having a double injection strategy is just confusing.
 - Injecting primitive values (strings, booleans, numbers, ...) can be unreliable as we only have the actual value as reference, and so the library might not exactly know what to replace. In cases where multiple values might be replaced, a warning will be logged and we recommend you declare an inject a getter instead of the value itself.
 - Targeting only works on named functions/classes, so it won't work on anonymous scopes (eg `export default () => { ... }` or `memo(() => { ... })`)
+- If you define an injectable as `global` then you lose the ability to "scope" that injectable to a section of the tree, so the override will apply "globally". As a result, when defining multiple global replacements for the same dependency, only the last one evaluated will apply. So be mindful when using it in a multi DiProvider setting.
 
 ## FAQ
 
@@ -303,7 +307,7 @@ import { debug } from 'react-magnetic-di';
 // ...
 console.log(debug(myApiFetcher));
 // It will print ['fetchApi']
-````
+```
 
 One possible reason for it to happen is that the context has been lost. Typical occurrences are async or deeply nested functions (especially in React).
 The solution is setting the prop `global` on `DiProvider` (or the same injectable config) to better handle those scenarios (but refrain from abusing it).
