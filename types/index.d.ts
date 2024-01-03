@@ -10,14 +10,14 @@ declare module 'react-magnetic-di' {
   type DeepPartial<Type> = Type extends (...args: any) => any
     ? (...args: Parameters<Type>) => DeepPartial<ReturnType<Type>>
     : Type extends ReadonlyArray<infer InferredArrayMember>
-    ? InferredArrayMember[] extends Type
-      ? readonly InferredArrayMember[] extends Type
-        ? ReadonlyArray<DeepPartial<InferredArrayMember>> // readonly list
-        : Array<DeepPartial<InferredArrayMember>> // mutable list
-      : DeepPartialObject<Type> // tuple
-    : Type extends object
-    ? DeepPartialObject<Type>
-    : Type | undefined;
+      ? InferredArrayMember[] extends Type
+        ? readonly InferredArrayMember[] extends Type
+          ? ReadonlyArray<DeepPartial<InferredArrayMember>> // readonly list
+          : Array<DeepPartial<InferredArrayMember>> // mutable list
+        : DeepPartialObject<Type> // tuple
+      : Type extends object
+        ? DeepPartialObject<Type>
+        : Type | undefined;
 
   type DeepPartialObject<Type> = {
     [Key in keyof Type]?: DeepPartial<Type[Key]>;
@@ -32,8 +32,9 @@ declare module 'react-magnetic-di' {
   class DiProvider extends Component<
     {
       use: Injectable[];
-      target?: Function | Function[];
       children?: ReactNode;
+      global?: boolean;
+      target?: Function | Function[];
     },
     { getDependencies: (deps: Dependency[]) => Dependency[] }
   > {}
@@ -46,6 +47,7 @@ declare module 'react-magnetic-di' {
 
   type InjectableOptions = {
     displayName?: string;
+    global?: boolean;
     target?: Function | Function[];
     track?: boolean;
   };

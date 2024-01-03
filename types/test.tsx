@@ -8,7 +8,7 @@ import React, {
   ReactNode,
 } from 'react';
 
-import { injectable, runWithDi, stats } from 'react-magnetic-di';
+import { injectable, runWithDi, stats, DiProvider } from 'react-magnetic-di';
 
 /**
  * injectable types tests
@@ -26,6 +26,7 @@ injectable({ v: 1 }, true);
 injectable(useHookPrim1, () => 'bar');
 injectable(useHookPrim1, () => 'bar', { track: false });
 injectable(useHookPrim1, () => 'bar', { displayName: 'useHookPrim1' });
+injectable(useHookPrim1, () => 'bar', { global: true });
 injectable({ v: 1 }, { v: 2 });
 injectable('foo', 'bar');
 injectable(true, false);
@@ -147,6 +148,21 @@ injectable(FuncTwoProps, FuncOneProp);
 // @ts-expect-error - this should be fine with React18 types
 injectable(FuncTwoProps, ClassNoProp);
 injectable(FuncTwoProps, FuncNoProp);
+
+/**
+ * DiProvider types tests
+ */
+// @ts-expect-error - use prop is required
+<DiProvider></DiProvider>;
+// @ts-expect-error - use must be an injectable
+<DiProvider use={[() => {}]}></DiProvider>;
+// @ts-expect-error - target must be an function
+<DiProvider use={[injectable('foo', 'bar')]} target={''}></DiProvider>;
+
+// correct
+<DiProvider use={[injectable('foo', 'bar')]} />;
+<DiProvider use={[injectable('foo', 'bar')]} target={FuncNoProp} />;
+<DiProvider use={[injectable('foo', 'bar')]} global />;
 
 /**
  * runWithDi types tests

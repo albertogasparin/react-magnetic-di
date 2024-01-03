@@ -10,6 +10,7 @@ declare export class DiProvider
     React$Component<
       {
         children?: Node,
+        global?: boolean,
         target?: AbstractComponent<any> | AbstractComponent<any>[],
         use: Dependency[],
       },
@@ -18,7 +19,7 @@ declare export class DiProvider
           deps: Dependency[],
           target: AbstractComponent<any> | AbstractComponent<any>[]
         ) => Dependency[],
-      }
+      },
     > {}
 
 declare export function withDi<T: AbstractComponent<any>>(
@@ -30,7 +31,12 @@ declare export function withDi<T: AbstractComponent<any>>(
 declare export function injectable<T: Dependency>(
   from: T,
   implementation: T,
-  options?: {| displayName?: string, target?: Function, track?: boolean |}
+  options?: {|
+    displayName?: string,
+    target?: Function,
+    global?: boolean,
+    track?: boolean,
+  |}
 ): T;
 
 type ExtractReturn<Fn> = $Call<<T>((...Iterable<any>) => T) => T, Fn>;
