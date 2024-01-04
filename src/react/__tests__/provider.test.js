@@ -27,7 +27,7 @@ describe('DiProvider', () => {
     });
   });
 
-  it.only('should expose stable context', () => {
+  it('should expose stable context', () => {
     const children = jest.fn();
     const App = () => (
       <DiProvider use={[]}>
