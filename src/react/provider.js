@@ -1,4 +1,4 @@
-import React, { useContext, useMemo, forwardRef, useEffect } from 'react';
+import React, { forwardRef, Component } from 'react';
 import PropTypes from 'prop-types';
 
 import { diRegistry } from './constants';
@@ -6,11 +6,37 @@ import { Context } from './context';
 import { addInjectableToMap, getDisplayName, findInjectable } from './utils';
 import { globalDi } from './global';
 
-export const DiProvider = ({ children, use, target, global }) => {
-  const { getDependencies } = useContext(Context);
+export class DiProvider extends Component {
+  static contextType = Context;
 
-  // memo provider value so gets computed only once
-  const value = useMemo(() => {
+  static propTypes = {
+    children: PropTypes.oneOfType([PropTypes.func, PropTypes.node]),
+    global: PropTypes.bool,
+    target: PropTypes.oneOfType([
+      PropTypes.func,
+      PropTypes.arrayOf(PropTypes.func),
+    ]),
+    use: PropTypes.arrayOf(
+      PropTypes.oneOfType([PropTypes.func, PropTypes.object])
+    ).isRequired,
+  };
+
+  componentDidCatch(err) {
+    globalDi._remove(this.props.use);
+    throw err;
+  }
+
+  componentWillUnmount() {
+    globalDi._remove(this.props.use);
+  }
+
+  value = undefined;
+  getValue() {
+    if (this.value) return this.value;
+
+    const { use, target, global } = this.props;
+    const { getDependencies } = this.context;
+
     // create a map of dependency real -> replacements for fast lookup
     const replacementMap = use.reduce((acc, inj) => {
       addInjectableToMap(acc, inj);
@@ -21,7 +47,7 @@ export const DiProvider = ({ children, use, target, global }) => {
     // support single or multiple targets
     const targets = target && (Array.isArray(target) ? target : [target]);
 
-    return {
+    this.value = {
       getDependencies(realDeps, targetChild) {
         // First we collect dependencies from parent provider(s) (if any)
         const dependencies = getDependencies(realDeps, targetChild);
@@ -44,25 +70,17 @@ export const DiProvider = ({ children, use, target, global }) => {
         return dependencies;
       },
     };
-  }, [getDependencies]); // ignore use & target props
+    return this.value;
+  }
 
-  // on unmount
-  useEffect(() => () => globalDi._remove(use), []); // ignore use prop
-
-  return <Context.Provider value={value}>{children}</Context.Provider>;
-};
-
-DiProvider.propTypes = {
-  children: PropTypes.oneOfType([PropTypes.func, PropTypes.node]),
-  global: PropTypes.bool,
-  target: PropTypes.oneOfType([
-    PropTypes.func,
-    PropTypes.arrayOf(PropTypes.func),
-  ]),
-  use: PropTypes.arrayOf(
-    PropTypes.oneOfType([PropTypes.func, PropTypes.object])
-  ).isRequired,
-};
+  render() {
+    return (
+      <Context.Provider value={this.getValue()}>
+        {this.props.children}
+      </Context.Provider>
+    );
+  }
+}
 
 export function withDi(Comp, deps, target = null) {
   const WrappedComponent = forwardRef((props, ref) => (

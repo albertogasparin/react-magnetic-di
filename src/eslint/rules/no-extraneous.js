@@ -62,7 +62,9 @@ module.exports = {
 
         blockReferences.set(node, {
           di: diVars,
-          through: context.getScope().through.map((v) => v.identifier),
+          through: context.sourceCode
+            .getScope(node)
+            .through.map((v) => v.identifier),
         });
       },
 

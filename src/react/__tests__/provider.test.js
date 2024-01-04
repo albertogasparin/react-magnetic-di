@@ -3,7 +3,7 @@
  */
 /* eslint-env jest */
 
-import React, { forwardRef } from 'react';
+import React, { Component, forwardRef } from 'react';
 import { render } from '@testing-library/react';
 
 import { Context } from '../context';
@@ -25,6 +25,20 @@ describe('DiProvider', () => {
     expect(children).toHaveBeenCalledWith({
       getDependencies: expect.any(Function),
     });
+  });
+
+  it.only('should expose stable context', () => {
+    const children = jest.fn();
+    const App = () => (
+      <DiProvider use={[]}>
+        <Context.Consumer>{children}</Context.Consumer>
+      </DiProvider>
+    );
+
+    const { rerender } = render(<App />);
+    rerender(<App />);
+
+    expect(children.mock.calls[0][0]).toBe(children.mock.calls[1][0]);
   });
 
   describe('getDependencies()', () => {
@@ -156,6 +170,38 @@ describe('DiProvider', () => {
     );
 
     unmount();
+
+    expect(globalDi._remove).toHaveBeenCalledWith([TextDi]);
+    expect(globalDi._remove).toHaveBeenCalledWith([TextDi2]);
+  });
+
+  it('should remove global injection on error', () => {
+    jest.spyOn(globalDi, '_remove');
+    const cSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    const children = jest.fn().mockImplementation(() => {
+      throw new Error('Oops!');
+    });
+    const TextDi = injectable(Text, () => '', { global: true });
+    const TextDi2 = injectable(Text, () => '');
+    class ErrorBoundary extends Component {
+      componentDidCatch() {
+        cSpy.mockRestore();
+      }
+      render() {
+        return this.props.children;
+      }
+    }
+
+    render(
+      <ErrorBoundary>
+        <DiProvider use={[TextDi]}>
+          <DiProvider use={[TextDi2]} global>
+            <Context.Consumer>{children}</Context.Consumer>
+          </DiProvider>
+        </DiProvider>
+      </ErrorBoundary>
+    );
 
     expect(globalDi._remove).toHaveBeenCalledWith([TextDi]);
     expect(globalDi._remove).toHaveBeenCalledWith([TextDi2]);
