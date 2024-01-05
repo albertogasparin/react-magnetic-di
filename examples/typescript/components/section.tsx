@@ -1,6 +1,4 @@
-// @flow
 import React, { Component } from 'react';
-import { di } from 'react-magnetic-di';
 
 import { Label } from './label';
 import { Input } from './input';
@@ -11,8 +9,6 @@ type Props = {
 
 export class Section extends Component<Props> {
   render() {
-    di(Input, Label);
-
     const { title } = this.props;
     return (
       <div>
