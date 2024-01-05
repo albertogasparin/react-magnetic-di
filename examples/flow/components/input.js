@@ -1,6 +1,5 @@
 // @flow
 import React, { useState, type Node } from 'react';
-import { di } from 'react-magnetic-di';
 
 type UseThemeState = { color: string };
 export function useTheme(): $Call<typeof useState, UseThemeState> {
@@ -12,7 +11,6 @@ export type InputProps = {|
 |};
 
 export function Input(props: InputProps): Node {
-  di(useTheme);
   const [style] = useTheme();
 
   return (

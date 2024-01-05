@@ -1,5 +1,5 @@
 export { di } from './react/consumer';
-export { runWithDi } from './react/global';
+export { runWithDi, globalDi as unstable_globalDi } from './react/global';
 export { DiProvider, withDi } from './react/provider';
 export { injectable } from './react/injectable';
 export { debug } from './react/utils';
