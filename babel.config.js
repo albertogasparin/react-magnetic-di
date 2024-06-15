@@ -9,7 +9,7 @@ module.exports = {
     '@babel/preset-react',
     '@babel/preset-flow',
   ],
-  plugins: ['@babel/plugin-proposal-class-properties'],
+  plugins: [['@babel/plugin-proposal-class-properties', { loose: true }]],
   env: {
     test: {
       presets: [['@babel/preset-env', { targets: { node: 'current' } }]],

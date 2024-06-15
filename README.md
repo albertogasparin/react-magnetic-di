@@ -224,7 +224,7 @@ afterEach(() => {
 
 #### Babel plugin options
 
-The plugin provides a couple of options to explicitly disable auto injection for certain paths, and overall enable/disable replacements on specific environments:
+The plugin provides a couple of options to explicitly disable auto injection for certain paths, automatically mock modules in tests and overall enable/disable replacements on specific environments:
 
 ```js
   // In your .babelrc / babel.config.js
@@ -232,11 +232,16 @@ The plugin provides a couple of options to explicitly disable auto injection for
   plugins: [
     // ... other plugins
     ['react-magnetic-di/babel-plugin', {
-      // List of paths to ignore for auto injection. Recommended for mocks/tests
+      // List of paths to ignore for auto injection. Recommended for mocks/tests/storybooks
       exclude: ['mocks', /test\.tsx?/],
       // List of Babel or Node environment names where the plugin should be enabled
       enabledEnvs: ['development', 'test'],
-
+      // Mock injectables imports to improve test performance
+      // Currently supports only jest
+      mockModules: 'jest',
+      // Automatically mock injectables imports (needs mockModules set)
+      // For instance mock all injectables imports that are 1st party @app/foo
+      defaultMockedModules: ['@app/'],
     }],
   ],
 ```
@@ -268,6 +273,12 @@ const fetchApiDi = injectable(fetchApi, jest.fn(), { track: false });
 const fetchApiDi = injectable(fetchApi, jest.fn(), { global: true });
 ```
 
+• `module`: explicitly mocks the module (eg adding `jest.mock('...')`) to improve test performance when dealing with large import trees. It requires the `babel-plugin` `mockModules` option set to `jest`. In case `defaultMockedModules` is also set, setting it to `false` allows to opt out a module even if it should be mocked by default (otherwise defaults to `false`).
+
+```js
+const fetchApiDi = injectable(fetchApi, jest.fn(), { module: true });
+```
+
 #### DiProvider props
 
 • `use`: required prop, it is an array of replacements
@@ -294,7 +305,8 @@ The rules are exported from `react-magnetic-di/eslint-plugin`. Unfortunately ESL
 - Does not replace default props (or default parameters in general): so dependencies provided as default parameters (eg `function MyComponent ({ modal = Modal }) { ... }`) will be ignored. If you accept the dependency as prop/argument you should inject it via prop/argument, as having a double injection strategy is just confusing.
 - Injecting primitive values (strings, booleans, numbers, ...) can be unreliable as we only have the actual value as reference, and so the library might not exactly know what to replace. In cases where multiple values might be replaced, a warning will be logged and we recommend you declare an inject a getter instead of the value itself.
 - Targeting only works on named functions/classes, so it won't work on anonymous scopes (eg `export default () => { ... }` or `memo(() => { ... })`)
-- If you define an injectable as `global` then you lose the ability to "scope" that injectable to a section of the tree, so the override will apply "globally". As a result, when defining multiple global replacements for the same dependency, only the last one evaluated will apply. So be mindful when using it in a multi DiProvider setting.
+- If you define an injectable as `global` then you lose the ability to "scope" that injectable to a section of the tree, so the override will apply "globally". As a result, when defining multiple global replacements for the same dependency, only the last one evaluated will apply. So be careful when using it in a multi `DiProvider` tree.
+- `module: true` is is a per-module setting that affects the entire test file. It leverages `jest.mock` and so it will mock all exports from the same module (even if you inject only one of them) and you cannot toggle it between tests in the same file. We recommend to set it on injectables defined outside individual tests to make it easier to discover.
 
 ## FAQ
 
@@ -311,6 +323,14 @@ console.log(debug(myApiFetcher));
 
 One possible reason for it to happen is that the context has been lost. Typical occurrences are async or deeply nested functions (especially in React).
 The solution is setting the prop `global` on `DiProvider` (or the same injectable config) to better handle those scenarios (but refrain from abusing it).
+
+#### How do I provide a custom mock module implementation when using mockModules?
+
+There are two ways: either via having an external definition in `__mocks__` (see Jest docs) or by not using `magnetic-di` module mocking (setting `module: false` on the injectable) and defining your own `jest.mock(...)` implementation.
+
+#### I get strange errors (specially TypeError ones) when using mockModules
+
+`module: true` (or when `defaultMockedModules` matches) uses `jest.mock` internally, so it will replace the entire module exports with mocks for the entire test file. It means you might get errors when accessing exported members that are not injected or their mock implementation in not specified.
 
 ## Contributing
 

@@ -25,9 +25,10 @@ declare module 'react-magnetic-di' {
 
   type Optional<T> = { [P in keyof T]-?: T[P] };
 
-  type ComponentOrFunction<Type> = Type extends ComponentType<any>
-    ? ComponentType<ComponentProps<Type>>
-    : DeepPartial<Type>;
+  type ComponentOrFunction<Type> =
+    Type extends ComponentType<any>
+      ? ComponentType<ComponentProps<Type>>
+      : DeepPartial<Type>;
 
   class DiProvider extends Component<
     {
@@ -50,6 +51,7 @@ declare module 'react-magnetic-di' {
     global?: boolean;
     target?: Function | Function[];
     track?: boolean;
+    module?: boolean;
   };
 
   function injectable<T extends Dependency>(

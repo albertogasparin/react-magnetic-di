@@ -338,7 +338,7 @@ describe('babel plugin', () => {
         return useModal();
       }
     `;
-    const options = { exclude: /noop\.js/ };
+    const options = { exclude: [/noop\.js/] };
     expect(babel(input, { options })).toMatchInlineSnapshot(`
       "import { useModal, config } from 'modal';
       import { di } from 'react-magnetic-di';
@@ -753,14 +753,14 @@ describe('babel plugin', () => {
       "import { di as _di } from "react-magnetic-di";
       import Modal, { config } from 'modal';
       function createClass() {
-        var _class;
+        var _MyModal;
         const [_Modal, _config] = _di([Modal, config], createClass);
-        return _class = class MyModal extends _Modal {
+        return _MyModal = class MyModal extends _Modal {
           getConfig() {
             const [_config2] = _di([_config], MyModal);
             return _config2;
           }
-        }, _class.displayName = 'MyModal', _class;
+        }, _MyModal.displayName = 'MyModal', _MyModal;
         return MyModal;
       }"
     `);
@@ -796,6 +796,145 @@ describe('babel plugin', () => {
           return __jsx(_Comp, null);
         };
       };"
+    `);
+  });
+
+  it('should add jest.mock if matching any defaultMockedModules pattern', () => {
+    const input = `
+    import { injectable } from 'react-magnetic-di';
+    import Modal from 'modal';
+    const ModalDi = injectable(Modal, () => '');
+    `;
+    const options = {
+      mockModules: 'jest',
+      defaultMockedModules: ['modal'],
+    };
+    expect(babel(input, { options, presets: ['jest'] })).toMatchInlineSnapshot(`
+      "_getJestObj().mock("modal");
+      function _getJestObj() {
+        const {
+          jest
+        } = require("@jest/globals");
+        _getJestObj = () => jest;
+        return jest;
+      }
+      import { injectable } from 'react-magnetic-di';
+      import Modal from 'modal';
+      const ModalDi = injectable(Modal, () => '');"
+    `);
+  });
+
+  it('should add jest.mock if explicit module flag', () => {
+    const input = `
+    import { injectable } from 'react-magnetic-di';
+    import Modal from 'modal';
+    const ModalDi = injectable(Modal, () => '', {
+      module: true
+    });
+    `;
+    const options = { mockModules: 'jest' };
+    expect(babel(input, { options, presets: ['jest'] })).toMatchInlineSnapshot(`
+      "_getJestObj().mock("modal");
+      function _getJestObj() {
+        const {
+          jest
+        } = require("@jest/globals");
+        _getJestObj = () => jest;
+        return jest;
+      }
+      import { injectable } from 'react-magnetic-di';
+      import Modal from 'modal';
+      const ModalDi = injectable(Modal, () => '', {
+        module: true
+      });"
+    `);
+  });
+
+  it('should add one jest.mock if multiple injectables are defined for the same source', () => {
+    const input = `
+    import { injectable } from 'react-magnetic-di';
+    import Modal, { useModal } from 'modal';
+    const ModalDi = injectable(Modal, () => '');
+    const useModalDi = injectable(useModal, () => '');
+    `;
+    const options = {
+      mockModules: 'jest',
+      defaultMockedModules: { include: [/modal/] },
+    };
+    expect(babel(input, { options, presets: ['jest'] })).toMatchInlineSnapshot(`
+      "_getJestObj().mock("modal");
+      function _getJestObj() {
+        const {
+          jest
+        } = require("@jest/globals");
+        _getJestObj = () => jest;
+        return jest;
+      }
+      import { injectable } from 'react-magnetic-di';
+      import Modal, { useModal } from 'modal';
+      const ModalDi = injectable(Modal, () => '');
+      const useModalDi = injectable(useModal, () => '');"
+    `);
+  });
+
+  it('should not add jest.mock if multiple imports not all injected', () => {
+    const input = `
+    import { injectable } from 'react-magnetic-di';
+    import Modal, { useModal } from 'modal';
+    const ModalDi = injectable(Modal, () => '');
+    const ModalDi2 = injectable(Modal, () => '');
+    `;
+    const options = {
+      mockModules: 'jest',
+      defaultMockedModules: { include: [/modal/] },
+    };
+    expect(babel(input, { options })).toMatchInlineSnapshot(`
+      "import { injectable } from 'react-magnetic-di';
+      import Modal, { useModal } from 'modal';
+      const ModalDi = injectable(Modal, () => '');
+      const ModalDi2 = injectable(Modal, () => '');"
+    `);
+  });
+
+  it('should add jest.mock when module flag is true even if multiple imports not all injected ', () => {
+    const input = `
+    import { injectable } from 'react-magnetic-di';
+    import Modal, { useModal } from 'modal';
+    const ModalDi = injectable(Modal, () => '', { module: true });
+    const useModalDi = injectable(useModal, () => '');
+    `;
+    const options = { mockModules: 'jest' };
+    expect(babel(input, { options })).toMatchInlineSnapshot(`
+      "import { injectable } from 'react-magnetic-di';
+      import Modal, { useModal } from 'modal';
+      jest.mock("modal");
+      const ModalDi = injectable(Modal, () => '', {
+        module: true
+      });
+      const useModalDi = injectable(useModal, () => '');"
+    `);
+  });
+
+  it('should not add jest.mock if module flag is false', () => {
+    const input = `
+    import { injectable } from 'react-magnetic-di';
+    import Modal, { useModal } from 'modal';
+    const ModalDi = injectable(Modal, () => '', { 
+      module: false
+    });
+    const useModalDi = injectable(useModal, () => '');
+    `;
+    const options = {
+      mockModules: 'jest',
+      defaultMockedModules: { include: [/modal/] },
+    };
+    expect(babel(input, { options })).toMatchInlineSnapshot(`
+      "import { injectable } from 'react-magnetic-di';
+      import Modal, { useModal } from 'modal';
+      const ModalDi = injectable(Modal, () => '', {
+        module: false
+      });
+      const useModalDi = injectable(useModal, () => '');"
     `);
   });
 });

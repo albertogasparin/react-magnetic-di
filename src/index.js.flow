@@ -36,6 +36,7 @@ declare export function injectable<T: Dependency>(
     target?: Function,
     global?: boolean,
     track?: boolean,
+    module?: boolean,
   |}
 ): T;
 

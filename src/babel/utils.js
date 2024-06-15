@@ -43,10 +43,18 @@ const createNamedImport = (t, pkgName, pkgFns, localNames) => {
 
 function collectDepsReferencePaths(t, bodyPaths) {
   const references = [];
+  const imports = { sources: new Map(), specifiers: new Map() };
 
-  function addRef(path) {
+  function addRef(path, importSource = null) {
     const { referencePaths = [] } = path.scope.getBinding(path) || {};
     references.push(...referencePaths);
+    if (importSource) {
+      imports.specifiers.set(path.node.name, importSource);
+      imports.sources.set(
+        importSource,
+        (imports.sources.get(importSource) || []).concat(path.node.name)
+      );
+    }
   }
 
   // we could use scope.bindings to get all top level bindings
@@ -58,7 +66,7 @@ function collectDepsReferencePaths(t, bodyPaths) {
       path.get('specifiers').forEach((sp) => {
         if (sp.node.importKind === 'type') return;
         if (sp.isImportDefaultSpecifier() || sp.isImportSpecifier()) {
-          addRef(sp.get('local'));
+          addRef(sp.get('local'), path.node.source.value);
         }
       });
     }
@@ -91,26 +99,38 @@ function collectDepsReferencePaths(t, bodyPaths) {
       addRef(ref);
     }
   });
-  return references;
+  return { references, imports };
 }
 
-function collectDiReferencePaths(t, identifier, scope) {
+function collectReferencePaths(t, identifier, scope) {
   // we locate all usages of the method
   const { referencePaths = [] } = scope.getBinding(identifier.name) || {};
 
   return referencePaths.filter((ref) => t.isCallExpression(ref.container));
 }
 
-const isExcludedFile = (exclude = [], filename) => {
-  const excludes = []
-    .concat(exclude)
-    .map((v) =>
-      v instanceof RegExp
-        ? v
-        : new RegExp(v.replace(/[/\-\\^$*+?.()|[\]{}]/g, '\\$&'))
-    );
-  return excludes.some((rx) => rx.test(filename));
+const parsePathsToRegexp = (paths = []) => {
+  return paths.map((v) =>
+    v instanceof RegExp
+      ? v
+      : new RegExp(v.replace(/[/\-\\^$*+?.()|[\]{}]/g, '\\$&'))
+  );
 };
+
+const parseOptions = (opts) => ({
+  ...opts,
+  exclude: parsePathsToRegexp(opts.exclude),
+  defaultMockedModules: {
+    include: parsePathsToRegexp(
+      Array.isArray(opts.defaultMockedModules)
+        ? opts.defaultMockedModules
+        : opts.defaultMockedModules?.include
+    ),
+    exclude: parsePathsToRegexp(opts.defaultMockedModules?.exclude),
+  },
+});
+
+const isMatchingAny = (regexes, value) => regexes.some((rx) => rx.test(value));
 
 const isEnabledEnv = (enabledEnvs = ['development', 'test']) => {
   return (
@@ -129,10 +149,11 @@ const hasDisableComment = (path) => {
 module.exports = {
   assert,
   createNamedImport,
-  collectDiReferencePaths,
+  collectReferencePaths,
   collectDepsReferencePaths,
   getComponentDeclaration,
   isEnabledEnv,
-  isExcludedFile,
+  isMatchingAny,
   hasDisableComment,
+  parseOptions,
 };

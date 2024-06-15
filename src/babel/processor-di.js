@@ -70,7 +70,7 @@ function processReference(t, path, locationValue, state) {
   });
 
   // ensure we add di import
-  state.addDiImport(t);
+  state.prependDiImport(t);
 }
 
 module.exports = processReference;
