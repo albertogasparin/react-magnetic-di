@@ -103,6 +103,25 @@ describe('babel plugin', () => {
     `);
   });
 
+  it('should work with shadowed variables', () => {
+    const input = `            
+      import LinkifyIt from 'linkify-it';
+      const linkify = (state) => {
+        // cannot refer to the function location ^ as there is a local variable shadowing it
+        const linkify = new LinkifyIt();
+      }
+    `;
+    expect(babel(input)).toMatchInlineSnapshot(`
+      "import { di as _di } from "react-magnetic-di";
+      import LinkifyIt from 'linkify-it';
+      const linkify = state => {
+        const [_LinkifyIt] = _di([LinkifyIt], null);
+        // cannot refer to the function location ^ as there is a local variable shadowing it
+        const linkify = new _LinkifyIt();
+      };"
+    `);
+  });
+
   it('should work and maintain location if manually declared', () => {
     const input = `
       import React from 'react';
