@@ -6,15 +6,10 @@ function processReference(t, path, locationValue, state) {
 
   let shadowsOwnName = false;
   if(self) {
-    bodyPath.traverse({
-      VariableDeclaration(innerPath) {
-        innerPath.node.declarations.forEach((declaration) => {
-          if (t.isIdentifier(declaration.id) && declaration.id.name === self.name) {
-            shadowsOwnName = true;
-          }
-        });
-      },
-    });
+    const selfShadow = bodyPath.scope.getBinding(self.name);
+    if(selfShadow && selfShadow.scope===bodyPath.scope){
+      shadowsOwnName = true;
+    }
   }
   // Build list of dependencies
   // combining used imports/exports in this function block
