@@ -7,8 +7,8 @@ function processReference(t, path, locationValue, state) {
   let shadowsOwnName = false;
   if(self) {
     const selfShadow = bodyPath.scope.getBinding(self.name);
-    if(selfShadow && selfShadow.scope===bodyPath.scope){
-      shadowsOwnName = true;
+    if(selfShadow && selfShadow.scope===bodyPath.scope && selfShadow.path.node.id!==self){
+       shadowsOwnName = true;
     }
   }
   // Build list of dependencies
