@@ -842,14 +842,14 @@ describe('babel plugin', () => {
       "import { di as _di } from "react-magnetic-di";
       import Modal, { config } from 'modal';
       function createClass() {
-        var _MyModal;
+        var _class;
         const [_Modal, _config] = _di([Modal, config], createClass);
-        return _MyModal = class MyModal extends _Modal {
+        return _class = class MyModal extends _Modal {
           getConfig() {
             const [_config2] = _di([_config], MyModal);
             return _config2;
           }
-        }, _MyModal.displayName = 'MyModal', _MyModal;
+        }, _class.displayName = 'MyModal', _class;
         return MyModal;
       }"
     `);
