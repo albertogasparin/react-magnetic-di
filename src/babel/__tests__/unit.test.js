@@ -103,6 +103,95 @@ describe('babel plugin', () => {
     `);
   });
 
+  describe('shadowed variables', () => {
+    it('simple case: should remove', () => {
+      const input = `            
+      import LinkifyIt from 'linkify-it';
+      const linkify = (state) => {
+        // cannot refer to the function location ^ as there is a local variable shadowing it
+        const linkify = new LinkifyIt();
+      }
+    `;
+      expect(babel(input)).toMatchInlineSnapshot(`
+              "import { di as _di } from "react-magnetic-di";
+              import LinkifyIt from 'linkify-it';
+              const linkify = state => {
+                const [_LinkifyIt] = _di([LinkifyIt], null);
+                // cannot refer to the function location ^ as there is a local variable shadowing it
+                const linkify = new _LinkifyIt();
+              };"
+          `);
+    });
+
+    it('nested function case: should keep', () => {
+      const input = `            
+      import LinkifyIt from 'linkify-it';
+      const linkify = (state) => {
+        useEffect(() => {        
+          const linkify = new LinkifyIt();
+        });
+      }
+    `;
+      expect(babel(input)).toMatchInlineSnapshot(`
+        "import { di as _di } from "react-magnetic-di";
+        import LinkifyIt from 'linkify-it';
+        const linkify = state => {
+          const [_LinkifyIt] = _di([LinkifyIt], linkify);
+          useEffect(() => {
+            const [_LinkifyIt2] = _di([_LinkifyIt], null);
+            const linkify = new _LinkifyIt2();
+          });
+        };"
+      `);
+    });
+
+    it('block case: should keep', () => {
+      const input = `            
+      import LinkifyIt from 'linkify-it';
+      const linkify = (state) => {
+        if (ff('xx')) {   
+           const linkify = new LinkifyIt();
+        }
+      }
+    `;
+      expect(babel(input)).toMatchInlineSnapshot(`
+        "import { di as _di } from "react-magnetic-di";
+        import LinkifyIt from 'linkify-it';
+        const linkify = state => {
+          const [_LinkifyIt] = _di([LinkifyIt], linkify);
+          if (ff('xx')) {
+            const linkify = new _LinkifyIt();
+          }
+        };"
+      `);
+    });
+
+    it('mixed case: should keep', () => {
+      const input = `            
+      import LinkifyIt from 'linkify-it';
+      import LinkifyThat from 'linkify-it';
+      const linkify = (state) => {
+        const linkify = new LinkifyIt();
+        if (ff('xx')) {   
+           const linkify = new LinkifyThat();        
+        }
+      }
+    `;
+      expect(babel(input)).toMatchInlineSnapshot(`
+        "import { di as _di } from "react-magnetic-di";
+        import LinkifyIt from 'linkify-it';
+        import LinkifyThat from 'linkify-it';
+        const linkify = state => {
+          const [_LinkifyIt, _LinkifyThat] = _di([LinkifyIt, LinkifyThat], null);
+          const linkify = new _LinkifyIt();
+          if (ff('xx')) {
+            const linkify = new _LinkifyThat();
+          }
+        };"
+      `);
+    });
+  });
+
   it('should work and maintain location if manually declared', () => {
     const input = `
       import React from 'react';

@@ -4,10 +4,18 @@ function processReference(t, path, locationValue, state) {
   const self = getComponentDeclaration(t, path.scope);
   const bodyPath = path.get('body');
 
+  let shadowsOwnName = false;
+  if(self) {
+    const selfShadow = bodyPath.scope.getBinding(self.name);
+    if(selfShadow && selfShadow.scope===bodyPath.scope && selfShadow.path.node.id!==self){
+       shadowsOwnName = true;
+    }
+  }
   // Build list of dependencies
   // combining used imports/exports in this function block
   // with existing di expression (if any)
   const depNames = [];
+
   Array.from(locationValue.dependencyRefs).forEach((n) => {
     const name = n.node?.name;
     // quick check that the path is not detached
@@ -15,8 +23,13 @@ function processReference(t, path, locationValue, state) {
     // Some babel plugins might rename imports (eg emotion) and references break
     // For now we skip, but ideally we would refresh the reference
     if (!bodyPath.scope.getBinding(name)) return;
-    // Ensure we do not duplicate and di() self name
-    if (depNames.includes(name) || name === self?.name) return;
+    // Ensure we do not di() self name
+    if (name === self?.name) {
+      shadowsOwnName = true;
+      return;
+    }
+    // Ensure we do not duplicate
+    if (depNames.includes(name)) return;
 
     depNames.push(name);
   });
@@ -37,7 +50,7 @@ function processReference(t, path, locationValue, state) {
       t.arrayPattern(elements),
       t.callExpression(t.identifier(state.diIdentifier.name), [
         t.arrayExpression(args),
-        self ? t.identifier(self.name) : t.nullLiteral(),
+        self && !shadowsOwnName ? t.identifier(self.name) : t.nullLiteral(),
       ])
     ),
   ]);
