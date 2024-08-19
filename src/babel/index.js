@@ -84,9 +84,15 @@ class State {
 
   addDependency(depRef) {
     depRef.findParent((p) => {
+      // avoid dynamyc object getters/setters `get [dep]() {}` to be marked as dependencies
+      // on their created scope (odd behaviour of scope.getBinding)
+      const isComputedSelfPath =
+        p.node?.computed &&
+        (depRef.parentPath === p || depRef.parentPath?.parentPath === p);
       if (
         p.isFunction() &&
-        p.parentPath?.node?.callee?.name !== INJECT_FUNCTION
+        p.parentPath?.node?.callee?.name !== INJECT_FUNCTION &&
+        !isComputedSelfPath
       ) {
         // add ref for every function scope up to the root one
         this.getValueOrInit(p).dependencyRefs.add(depRef);

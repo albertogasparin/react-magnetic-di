@@ -685,6 +685,56 @@ describe('babel plugin', () => {
     `);
   });
 
+  it('should not di computed properties keys', () => {
+    const input = `
+      import { FOO, BAR, moo } from 'foo';
+      const baz = {
+        [FOO.A]: 1,
+        get [FOO.B]() {},
+        get [FOO.C]() {
+          return {
+            get [FOO.C]() {}
+          };
+        },
+        get [BAR]() {
+          return FOO.C;
+        },
+        set [BAR](v) {
+          return BAR(v);
+        },
+        set [moo()](v) {
+          return moo(v);
+        }
+      };
+    `;
+    expect(babel(input)).toMatchInlineSnapshot(`
+      "import { di as _di } from "react-magnetic-di";
+      import { FOO, BAR, moo } from 'foo';
+      const baz = {
+        [FOO.A]: 1,
+        get [FOO.B]() {},
+        get [FOO.C]() {
+          const [_FOO] = _di([FOO], null);
+          return {
+            get [_FOO.C]() {}
+          };
+        },
+        get [BAR]() {
+          const [_FOO] = _di([FOO], null);
+          return _FOO.C;
+        },
+        set [BAR](v) {
+          const [_BAR] = _di([BAR], null);
+          return _BAR(v);
+        },
+        set [moo()](v) {
+          const [_moo] = _di([moo], null);
+          return _moo(v);
+        }
+      };"
+    `);
+  });
+
   it('should not di injectables', () => {
     const input = `
       import { useState } from 'react';
