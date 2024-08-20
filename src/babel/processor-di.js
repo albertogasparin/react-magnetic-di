@@ -5,10 +5,14 @@ function processReference(t, path, locationValue, state) {
   const bodyPath = path.get('body');
 
   let shadowsOwnName = false;
-  if(self) {
+  if (self) {
     const selfShadow = bodyPath.scope.getBinding(self.name);
-    if(selfShadow && selfShadow.scope===bodyPath.scope && selfShadow.path.node.id!==self){
-       shadowsOwnName = true;
+    if (
+      selfShadow &&
+      selfShadow.scope === bodyPath.scope &&
+      selfShadow.path.node.id !== self
+    ) {
+      shadowsOwnName = true;
     }
   }
   // Build list of dependencies
@@ -16,7 +20,7 @@ function processReference(t, path, locationValue, state) {
   // with existing di expression (if any)
   const depNames = [];
 
-  Array.from(locationValue.dependencyRefs).forEach((n) => {
+  locationValue.dependencyRefs.forEach((n) => {
     const name = n.node?.name;
     // quick check that the path is not detached
     if (!name || !n.parentPath) return;
@@ -78,8 +82,28 @@ function processReference(t, path, locationValue, state) {
     // Then we manually revert just the argument identifier name back,
     // so it still points to the original dependency identifier name
     const name = argPath.node.name;
-    bodyPath.scope.rename(name, state.getAlias(name, bodyPath.scope));
+    const newName = state.getAlias(name, bodyPath.scope);
+    bodyPath.scope.rename(name, newName);
     argPath.replaceWith(t.identifier(name));
+
+    // this is ugly but scope also renames dynamic object computed props
+    // so we revert that change too
+    if (bodyPath.parentPath?.node?.computed) {
+      const key = bodyPath.parentPath.get('key');
+      if (key.isIdentifier() && key.node.name === newName) {
+        // get [foo] ()
+        key.replaceWith(t.identifier(name));
+      } else {
+        // get [foo()] {} / get [foo.bar] {} / ...
+        key.traverse({
+          Identifier(keyPath) {
+            if (keyPath.node.name === newName) {
+              keyPath.replaceWith(t.identifier(name));
+            }
+          },
+        });
+      }
+    }
   });
 
   // ensure we add di import
