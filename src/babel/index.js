@@ -129,16 +129,22 @@ module.exports = function (babel) {
 
         state.findDiIndentifier(t, path.node.body, path.scope);
 
-        collectDiReferencePaths(t, state.diIdentifier, path.scope).forEach(
-          (p, i, arr) => {
-            const hasMulti =
-              p.getFunctionParent() === arr[i + 1]?.getFunctionParent();
-            if (isEnabled && !hasMulti) state.addDi(p);
-            else p.parentPath.remove();
-          }
+        const diRefPaths = collectDiReferencePaths(
+          t,
+          state.diIdentifier,
+          path.scope
         );
+        diRefPaths.forEach((p, i, arr) => {
+          const hasMulti =
+            p.getFunctionParent() === arr[i + 1]?.getFunctionParent();
+          if (isEnabled && !hasMulti) state.addDi(p);
+          else p.parentPath.remove();
+        });
 
-        if (!isEnabled) return;
+        const alreadyProcessed = diRefPaths.some((p) =>
+          p.parentPath?.parentPath?.isVariableDeclarator()
+        );
+        if (!isEnabled || alreadyProcessed) return;
 
         collectDepsReferencePaths(t, path.get('body')).forEach((p) =>
           state.addDependency(p)
