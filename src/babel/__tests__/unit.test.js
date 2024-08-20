@@ -546,6 +546,28 @@ describe('babel plugin', () => {
     );
   });
 
+  it('should skip processing the file if di() already processed', () => {
+    const input = `
+      import { di as _di } from "react-magnetic-di";
+      import React from 'react';
+      import Modal from 'modal';
+
+      function MyComponent() {
+        const [_Modal] = _di([Modal], MyComponent);
+        return <_Modal />;
+      }
+    `;
+    expect(babel(input)).toMatchInlineSnapshot(`
+      "import { di as _di } from "react-magnetic-di";
+      import React from 'react';
+      import Modal from 'modal';
+      function MyComponent() {
+        const [_Modal] = _di([Modal], MyComponent);
+        return __jsx(_Modal, null);
+      }"
+    `);
+  });
+
   it('should add di to all top level functions', () => {
     const input = `
       import React, { memo, forwardRef } from 'react';
