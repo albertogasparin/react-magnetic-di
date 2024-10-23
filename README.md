@@ -156,7 +156,20 @@ When you have the same dependency replaced multiple times, there are two behavio
 
 #### Allowing globals (variables) replacement
 
-Currently the library does not enable automatic replacement of globals. To do that, you need to manually "tag" a global for replacement with `di(myGlobal)` in the function scope. For instance:
+The library does not enable automatic replacement of all globals. To do that, you either need to need add a `globals` whitelist in babel config:
+
+```js
+// In your .babelrc / babel.config.js
+// ... other stuff like presets
+  plugins: [
+    // ... other plugins
+    ['react-magnetic-di/babel-plugin', {
+      globals: ['window', 'document', 'fetch'],
+    }],
+  ],
+```
+
+Or manually "tag" a global for replacement with `di(myGlobal)` in the function scope. For instance:
 
 ```js
 import { di } from 'react-magnetic-di';
@@ -169,7 +182,7 @@ export async function myApiFetcher() {
 }
 ```
 
-Alternatively, you can create a "getter" so that the library will pick it up:
+Alternatively, the recommended approach is to create a "getter" so it becomes explicit:
 
 ```js
 export const fetchApi = (...args) => fetch(...args);
@@ -236,7 +249,8 @@ The plugin provides a couple of options to explicitly disable auto injection for
       exclude: ['mocks', /test\.tsx?/],
       // List of Babel or Node environment names where the plugin should be enabled
       enabledEnvs: ['development', 'test'],
-
+      // Allow auto injection of some globals by default
+      globals: ['window', 'document', 'fetch'],
     }],
   ],
 ```

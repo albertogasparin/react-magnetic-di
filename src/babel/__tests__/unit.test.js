@@ -655,6 +655,36 @@ describe('babel plugin', () => {
     `);
   });
 
+  it('should di globals defined in Babel settings', () => {
+    const input = `
+      const useDocument = () => {
+        return window.document;
+      };
+      const useBody = () => {
+        const window = {};
+        return () => {
+          window && document.body;
+        };
+      }
+    `;
+    const options = { globals: ['window', 'document'] };
+    expect(babel(input, { options })).toMatchInlineSnapshot(`
+      "import { di as _di } from "react-magnetic-di";
+      const useDocument = () => {
+        const [_window] = _di([window], useDocument);
+        return _window.document;
+      };
+      const useBody = () => {
+        const [_document] = _di([document], useBody);
+        const window = {};
+        return () => {
+          const [_document2] = _di([_document], null);
+          window && _document2.body;
+        };
+      };"
+    `);
+  });
+
   it('should not di component itself class', () => {
     const input = `
       export default class MyComponent {

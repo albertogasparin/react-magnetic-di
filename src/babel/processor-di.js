@@ -26,7 +26,8 @@ function processReference(t, path, locationValue, state) {
     if (!name || !n.parentPath) return;
     // Some babel plugins might rename imports (eg emotion) and references break
     // For now we skip, but ideally we would refresh the reference
-    if (!bodyPath.scope.getBinding(name)) return;
+    if (!bodyPath.scope.getBinding(name) && !bodyPath.scope.hasGlobal(name))
+      return;
     // Ensure we do not di() self name
     if (name === self?.name) {
       shadowsOwnName = true;

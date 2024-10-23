@@ -144,8 +144,20 @@ module.exports = function (babel) {
           state.addDependency(p)
         );
 
-        // TODO
-        // Should we add collection of globals to di via path.scope.globals?
+        // Collect globals reference paths
+        if (opts.globals) {
+          path.traverse({
+            ReferencedIdentifier(idnt) {
+              if (
+                path.scope.globals[idnt.node.name] &&
+                opts.globals.includes(idnt.node.name) &&
+                !idnt.scope.hasBinding(idnt)
+              ) {
+                state.addDependency(idnt);
+              }
+            },
+          });
+        }
 
         stateCache.set(file, state);
       },
