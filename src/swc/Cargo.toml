@@ -1,0 +1,14 @@
+[package]
+name = "swc"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[profile.release]
+lto = true
+
+[dependencies]
+serde = "1"
+swc_core = { version = "0.101.*", features = ["ecma_plugin_transform"] }
