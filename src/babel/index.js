@@ -6,20 +6,24 @@ const {
 } = require('./constants');
 const processDiDeclaration = require('./processor-di');
 const processHOCReference = require('./processor-hoc');
+const processInjectable = require('./processor-inj');
 const {
   assert,
   createNamedImport,
-  collectDiReferencePaths,
+  collectReferencePaths,
   collectDepsReferencePaths,
-  isExcludedFile,
+  isMatchingAny,
   isEnabledEnv,
   hasDisableComment,
+  parseOptions,
 } = require('./utils');
 
 class State {
   locations = new WeakMap();
+  imports = null;
   aliases = new Map();
   diIdentifier = null;
+  injectIdentifier = null;
   programPath = null;
 
   constructor(path, isExcluded = false) {
@@ -27,7 +31,7 @@ class State {
     this.isExcluded = isExcluded;
   }
 
-  findDiIndentifier(t, body, scope) {
+  findPkgIndentifiers(t, body, scope) {
     const diImportNode = body.find(
       (n) => t.isImportDeclaration(n) && n.source.value === PACKAGE_NAME
     );
@@ -35,9 +39,13 @@ class State {
     const diImportSpecifier = diImportNode?.specifiers.find(
       (s) => s.imported && s.imported.name === PACKAGE_FUNCTION
     );
-
     this.diIdentifier =
       diImportSpecifier?.local || scope.generateUidIdentifier(PACKAGE_FUNCTION);
+
+    const injectImportSpecifier = diImportNode?.specifiers.find(
+      (s) => s.imported && s.imported.name === INJECT_FUNCTION
+    );
+    this.injectIdentifier = injectImportSpecifier?.local;
   }
 
   getValueForPath(fnPath) {
@@ -100,7 +108,11 @@ class State {
     });
   }
 
-  addDiImport(t) {
+  addImports(imports) {
+    this.imports = imports;
+  }
+
+  prependDiImport(t) {
     if (this.diIdentifier.loc) return;
 
     const statement = createNamedImport(
@@ -111,25 +123,39 @@ class State {
     );
     this.programPath.unshiftContainer('body', statement);
     // after adding, make this function a noop
-    this.addDiImport = () => {};
+    this.prependDiImport = () => {};
   }
 }
 
 module.exports = function (babel) {
   const { types: t } = babel;
   let stateCache = new WeakMap();
+  let parsedOpts;
 
   return {
     name: PACKAGE_NAME,
+    pre({ opts }) {
+      if (!parsedOpts) {
+        const pluginOpts = opts.plugins.find(
+          (p) => p.key === PACKAGE_NAME
+        ).options;
+        parsedOpts = parseOptions(pluginOpts);
+      }
+    },
     visitor: {
-      Program(path, { opts, file }) {
-        const isEnabled = isEnabledEnv(opts.enabledEnvs);
-        const isExcluded = isExcludedFile(opts.exclude, file.opts.filename);
+      Program(path, { file }) {
+        const isEnabled = isEnabledEnv(parsedOpts.enabledEnvs);
+        const isExcluded = isMatchingAny(
+          parsedOpts.exclude,
+          file.opts.filename
+        );
         const state = new State(path, isExcluded);
 
-        state.findDiIndentifier(t, path.node.body, path.scope);
+        state.findPkgIndentifiers(t, path.node.body, path.scope);
 
-        const diRefPaths = collectDiReferencePaths(
+        // Find all di() calls and store the arguments (to allow di custom vars)
+        // and then remove the di call as it's quicker than trying to manipilate
+        const diRefPaths = collectReferencePaths(
           t,
           state.diIdentifier,
           path.scope
@@ -146,12 +172,23 @@ module.exports = function (babel) {
         );
         if (!isEnabled || alreadyProcessed) return;
 
-        collectDepsReferencePaths(t, path.get('body')).forEach((p) =>
-          state.addDependency(p)
+        const { references, imports } = collectDepsReferencePaths(
+          t,
+          path.get('body')
         );
+        references.forEach((p) => state.addDependency(p));
+        state.addImports(imports);
 
         // TODO
         // Should we add collection of globals to di via path.scope.globals?
+
+        // If we have injectables and we should mock modules, let's find them all
+        // and add relevat jest.mock() calls, before jest babel plugin looks for them
+        if (parsedOpts.mockModules && state.injectIdentifier) {
+          collectReferencePaths(t, state.injectIdentifier, path.scope).forEach(
+            (p) => processInjectable(t, p.parentPath, state, parsedOpts)
+          );
+        }
 
         stateCache.set(file, state);
       },
