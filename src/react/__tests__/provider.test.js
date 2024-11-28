@@ -78,12 +78,12 @@ describe('DiProvider', () => {
         </DiProvider>
       );
       const { getDependencies } = children.mock.calls[0][0];
-      // when di([...], MyComponent)
+      // when di(MyComponent, ...)
       expect(getDependencies([Text, Button], MyComponent)).toEqual([
         TextDi,
         Button,
       ]);
-      // when di([...], null)
+      // when di(null, ...)
       expect(getDependencies([Text, Button], null)).toEqual([Text, Button]);
     });
 
@@ -111,7 +111,7 @@ describe('DiProvider', () => {
       );
 
       render(
-        <DiProvider use={[TextDi, TextDi2]}>
+        <DiProvider use={[TextDi]}>
           <WrappedConsumer />
         </DiProvider>
       );
@@ -219,7 +219,7 @@ describe('DiProvider', () => {
     const cases = [1, 'string', null, Symbol('test'), function () {}];
     test.each(cases)('should hanlde dependency value %p', (value) => {
       const spy = jest.fn();
-      const Child = () => spy(di([value]));
+      const Child = () => spy(di(null, value));
       render(
         <DiProvider use={[injectable(value, 'replaced')]}>
           <Child />

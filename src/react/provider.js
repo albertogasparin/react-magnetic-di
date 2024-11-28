@@ -45,27 +45,29 @@ export class DiProvider extends Component {
     // supports global di if needed
     globalDi._fromProvider(use, { global });
     // support single or multiple targets
-    const targets = target && (Array.isArray(target) ? target : [target]);
+    const targets =
+      target && new WeakSet(Array.isArray(target) ? target : [target]);
 
     this.value = {
       getDependencies(realDeps, targetChild) {
         // First we collect dependencies from parent provider(s) (if any)
         const dependencies = getDependencies(realDeps, targetChild);
         // If no target or target is in the array of targets, map use
-        if (!targets || targets.includes(targetChild)) {
-          return dependencies.map((dep) => {
+        if (!targets || targets.has(targetChild)) {
+          for (let i = 0; i < dependencies.length; i++) {
             // dep can be either the original or a replacement
             // if another provider at the top has already swapped it
             // so we check if here we need to inject a different one
             // or return the original / parent replacement
+            const dep = dependencies[i];
             const real = diRegistry.has(dep) ? diRegistry.get(dep).from : dep;
             const replacedInj = findInjectable(
               replacementMap,
               real,
               targetChild
             );
-            return replacedInj ? replacedInj.value : dep;
-          });
+            if (replacedInj) dependencies[i] = replacedInj.value;
+          }
         }
         return dependencies;
       },

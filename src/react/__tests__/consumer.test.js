@@ -6,7 +6,7 @@ describe('di', () => {
   const dependency = () => {};
 
   it('should return dependencies', () => {
-    const result = di([dependency]);
+    const result = di(null, dependency);
     expect(result).toEqual([dependency]);
   });
 });

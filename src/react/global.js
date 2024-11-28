@@ -9,11 +9,18 @@ const replacementMap = new Map();
 
 export const globalDi = {
   getDependencies(realDeps, targetChild) {
-    if (!replacementMap.size) return realDeps;
-    return realDeps.map((dep) => {
-      const replacedInj = findInjectable(replacementMap, dep, targetChild);
-      return replacedInj ? replacedInj.value : dep;
-    });
+    if (replacementMap.size) {
+      for (let i = 0; i < realDeps.length; i++) {
+        const replacedInj = findInjectable(
+          replacementMap,
+          realDeps[i],
+          targetChild
+        );
+        if (replacedInj) realDeps[i] = replacedInj.value;
+      }
+    }
+
+    return realDeps;
   },
 
   use(injs) {

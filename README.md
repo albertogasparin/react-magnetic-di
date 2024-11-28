@@ -286,7 +286,7 @@ In order to enforce better practices, this package exports some ESLint rules:
 | `no-restricted-injectable` | prohibits certain values from being injected: `paths: [{ name: string, importNames?: string[], message?: string }]` |
 | `sort-dependencies`        | require injectable dependencies to be sorted                                                                        |
 
-The rules are exported from `react-magnetic-di/eslint-plugin`. Unfortunately ESLint does not allow plugins that are not npm packages, so rules needs to be imported via other means for now.
+The rules are exported from `react-magnetic-di/eslint-plugin`.
 
 ## Current limitations
 
@@ -306,7 +306,7 @@ A way to check if some dependency has been tagged for injection is to use the `d
 import { debug } from 'react-magnetic-di';
 // ...
 console.log(debug(myApiFetcher));
-// It will print ['fetchApi']
+// It will print 'fetchApi'
 ```
 
 One possible reason for it to happen is that the context has been lost. Typical occurrences are async or deeply nested functions (especially in React).
