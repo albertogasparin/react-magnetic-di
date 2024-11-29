@@ -53,8 +53,8 @@ function processReference(t, path, locationValue, state) {
     t.variableDeclarator(
       t.arrayPattern(elements),
       t.callExpression(t.identifier(state.diIdentifier.name), [
-        t.arrayExpression(args),
         self && !shadowsOwnName ? t.identifier(self.name) : t.nullLiteral(),
+        ...args,
       ])
     ),
   ]);
@@ -73,10 +73,10 @@ function processReference(t, path, locationValue, state) {
 
   bodyPath.scope.registerDeclaration(declarationPath);
 
-  const argsPaths = declarationPath.get(
-    'declarations.0.init.arguments.0.elements'
-  );
-  argsPaths.forEach((argPath) => {
+  const argsPaths = declarationPath.get('declarations.0.init.arguments');
+  argsPaths.forEach((argPath, idx) => {
+    // the first argument is the self reference
+    if (idx === 0) return;
     // For each argument we get the dependency variable name
     // then we rename it locally so we get a new unique identifier.
     // Then we manually revert just the argument identifier name back,

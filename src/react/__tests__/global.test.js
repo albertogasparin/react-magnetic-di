@@ -77,7 +77,7 @@ describe('globalDi', () => {
 
     test.each(cases)('should hanlde dependency value %p', (value) => {
       globalDi.use([injectable(value, 'replaced')]);
-      const result = di([value]);
+      const result = di(null, value);
       expect(result).toEqual(['replaced']);
     });
   });

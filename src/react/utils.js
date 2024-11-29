@@ -45,18 +45,21 @@ export function getDisplayName(Comp, wrapper = '') {
 
 export function debug(fn) {
   const source = fn.toString();
-  const [, args] = source.match(/const \[[^\]]+\] = .*di.*\(\[([^\]]+)/) || [];
+  const [, args] =
+    source.match(/const \[[^\]]+\] = .*di.*\(\w+[,\s]+([^)]+)/) || [];
   return args;
 }
 
 export function findInjectable(replacementMap, dep, targetChild) {
-  const injectables = replacementMap.get(dep) || new Set();
+  const injectables = replacementMap.get(dep);
+  if (!injectables) return null;
+
   // loop all injectables for the dep, with targeted ones preferred
   let anyCandidate = null;
   let targetCandidate = null;
   for (const inj of injectables) {
     if (!inj.targets) anyCandidate = inj;
-    if (inj.targets?.includes(targetChild)) targetCandidate = inj;
+    if (inj.targets?.has(targetChild)) targetCandidate = inj;
   }
   const candidate = targetCandidate || anyCandidate;
   stats.track(candidate);

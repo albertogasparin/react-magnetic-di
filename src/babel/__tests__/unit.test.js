@@ -38,7 +38,7 @@ describe('babel plugin', () => {
       import Modal from 'modal';
       class MyComponent extends Component {
         render() {
-          const [_Modal] = _di([Modal], MyComponent);
+          const [_Modal] = _di(MyComponent, Modal);
           return __jsx(_Modal, null);
         }
       }"
@@ -57,7 +57,7 @@ describe('babel plugin', () => {
       import React from 'react';
       import Modal from 'modal';
       const MyComponent = () => {
-        const [_Modal] = _di([Modal], MyComponent);
+        const [_Modal] = _di(MyComponent, Modal);
         return __jsx(_Modal, null);
       };"
     `);
@@ -77,7 +77,7 @@ describe('babel plugin', () => {
       import React from 'react';
       import Modal from 'modal';
       function MyComponent() {
-        const [_Modal] = _di([Modal], MyComponent);
+        const [_Modal] = _di(MyComponent, Modal);
         return __jsx(_Modal, null);
       }"
     `);
@@ -97,7 +97,7 @@ describe('babel plugin', () => {
       import React from 'react';
       import Modal from 'modal';
       const MyComponent = function () {
-        const [_Modal] = _di([Modal], MyComponent);
+        const [_Modal] = _di(MyComponent, Modal);
         return __jsx(_Modal, null);
       };"
     `);
@@ -116,7 +116,7 @@ describe('babel plugin', () => {
               "import { di as _di } from "react-magnetic-di";
               import LinkifyIt from 'linkify-it';
               const linkify = state => {
-                const [_LinkifyIt] = _di([LinkifyIt], null);
+                const [_LinkifyIt] = _di(null, LinkifyIt);
                 // cannot refer to the function location ^ as there is a local variable shadowing it
                 const linkify = new _LinkifyIt();
               };"
@@ -136,9 +136,9 @@ describe('babel plugin', () => {
         "import { di as _di } from "react-magnetic-di";
         import LinkifyIt from 'linkify-it';
         const linkify = state => {
-          const [_LinkifyIt] = _di([LinkifyIt], linkify);
+          const [_LinkifyIt] = _di(linkify, LinkifyIt);
           useEffect(() => {
-            const [_LinkifyIt2] = _di([_LinkifyIt], null);
+            const [_LinkifyIt2] = _di(null, _LinkifyIt);
             const linkify = new _LinkifyIt2();
           });
         };"
@@ -158,7 +158,7 @@ describe('babel plugin', () => {
         "import { di as _di } from "react-magnetic-di";
         import LinkifyIt from 'linkify-it';
         const linkify = state => {
-          const [_LinkifyIt] = _di([LinkifyIt], linkify);
+          const [_LinkifyIt] = _di(linkify, LinkifyIt);
           if (ff('xx')) {
             const linkify = new _LinkifyIt();
           }
@@ -182,7 +182,7 @@ describe('babel plugin', () => {
         import LinkifyIt from 'linkify-it';
         import LinkifyThat from 'linkify-it';
         const linkify = state => {
-          const [_LinkifyIt, _LinkifyThat] = _di([LinkifyIt, LinkifyThat], null);
+          const [_LinkifyIt, _LinkifyThat] = _di(null, LinkifyIt, LinkifyThat);
           const linkify = new _LinkifyIt();
           if (ff('xx')) {
             const linkify = new _LinkifyThat();
@@ -212,7 +212,7 @@ describe('babel plugin', () => {
       export const MyComponent = function () {
         const something = '';
         // comment
-        const [_Modal, _myGlobal] = di([Modal, myGlobal], MyComponent);
+        const [_Modal, _myGlobal] = di(MyComponent, Modal, myGlobal);
         return __jsx(_Modal, null);
       };"
     `);
@@ -232,7 +232,7 @@ describe('babel plugin', () => {
       import React, { forwardRef } from 'react';
       import Modal from 'modal';
       const MyComponent = /*#__PURE__*/forwardRef(() => {
-        const [_Modal] = _di([Modal], null);
+        const [_Modal] = _di(null, Modal);
         return __jsx(_Modal, null);
       });"
     `);
@@ -255,7 +255,7 @@ describe('babel plugin', () => {
       export const useModalStatus = () => true;
       export class MyStatus {}
       const MyComponent = () => {
-        const [_MyStatus, _useModalStatus] = _di([MyStatus, useModalStatus], MyComponent);
+        const [_MyStatus, _useModalStatus] = _di(MyComponent, MyStatus, useModalStatus);
         return _useModalStatus() || new _MyStatus();
       };"
     `);
@@ -276,7 +276,7 @@ describe('babel plugin', () => {
       import React from 'react';
       export default function useModalStatus() {}
       const MyComponent = () => {
-        const [_useModalStatus] = _di([useModalStatus], MyComponent);
+        const [_useModalStatus] = _di(MyComponent, useModalStatus);
         return _useModalStatus();
       };"
     `);
@@ -302,7 +302,7 @@ describe('babel plugin', () => {
       function useModalStatus() {}
       function useParentStatus() {}
       const MyComponent = () => {
-        const [_useModalStatus, _useParentStatus] = _di([useModalStatus, useParentStatus], MyComponent);
+        const [_useModalStatus, _useParentStatus] = _di(MyComponent, useModalStatus, useParentStatus);
         return _useParentStatus() || _useModalStatus();
       };
       export { useModalStatus };
@@ -334,13 +334,13 @@ describe('babel plugin', () => {
       import Modal from 'modal';
       export const useModalStatus = () => true;
       function MyComponent() {
-        const [_Modal, _useModalStatus] = _di([Modal, useModalStatus], MyComponent);
+        const [_Modal, _useModalStatus] = _di(MyComponent, Modal, useModalStatus);
         const isOpen = _useModalStatus();
         return isOpen && __jsx(_Modal, null);
       }
       class MyComponent2 extends Component {
         render() {
-          const [_Modal] = _di([Modal], MyComponent2);
+          const [_Modal] = _di(MyComponent2, Modal);
           return __jsx(_Modal, null);
         }
       }"
@@ -379,29 +379,29 @@ describe('babel plugin', () => {
       import { useEffect } from 'react';
       import { loadModal } from 'modal';
       function MyComponent() {
-        const [_loadModal, _useEffect] = _di([loadModal, useEffect], MyComponent);
+        const [_loadModal, _useEffect] = _di(MyComponent, loadModal, useEffect);
         _useEffect(() => {
-          const [_loadModal2] = _di([_loadModal], null);
+          const [_loadModal2] = _di(null, _loadModal);
           _loadModal2();
         });
       }
       const withLoad = () => {
-        const [_loadModal] = _di([loadModal], withLoad);
+        const [_loadModal] = _di(withLoad, loadModal);
         return () => {
-          const [_loadModal2] = _di([_loadModal], null);
+          const [_loadModal2] = _di(null, _loadModal);
           _loadModal2();
         };
       };
       const withAfter = () => {
-        const [_loadModal] = _di([loadModal], withAfter);
+        const [_loadModal] = _di(withAfter, loadModal);
         requestAnimationFrame(() => {
-          const [_loadModal2] = _di([_loadModal], null);
+          const [_loadModal2] = _di(null, _loadModal);
           requestAnimationFrame(() => {
-            const [_loadModal3] = _di([_loadModal2], null);
+            const [_loadModal3] = _di(null, _loadModal2);
             requestAnimationFrame(() => {
-              const [_loadModal4] = _di([_loadModal3], null);
+              const [_loadModal4] = _di(null, _loadModal3);
               requestAnimationFrame(() => {
-                const [_loadModal5] = _di([_loadModal4], null);
+                const [_loadModal5] = _di(null, _loadModal4);
                 _loadModal5();
               });
             });
@@ -435,7 +435,7 @@ describe('babel plugin', () => {
         return useModal();
       }
       export function useMyModalForced() {
-        const [_config, _useModal] = di([config, useModal], useMyModalForced);
+        const [_config, _useModal] = di(useMyModalForced, config, useModal);
         useEffect(() => {
           if (_config) return;
         });
@@ -553,7 +553,7 @@ describe('babel plugin', () => {
       import Modal from 'modal';
 
       function MyComponent() {
-        const [_Modal] = _di([Modal], MyComponent);
+        const [_Modal] = _di(MyComponent, Modal);
         return <_Modal />;
       }
     `;
@@ -562,7 +562,7 @@ describe('babel plugin', () => {
       import React from 'react';
       import Modal from 'modal';
       function MyComponent() {
-        const [_Modal] = _di([Modal], MyComponent);
+        const [_Modal] = _di(MyComponent, Modal);
         return __jsx(_Modal, null);
       }"
     `);
@@ -599,35 +599,35 @@ describe('babel plugin', () => {
       import React, { memo, forwardRef } from 'react';
       import { Modal } from 'modal';
       function MyComponentFn() {
-        const [_Modal] = _di([Modal], MyComponentFn);
+        const [_Modal] = _di(MyComponentFn, Modal);
         return __jsx(_Modal, null);
       }
       const MyComponentWr = /*#__PURE__*/memo(function MyComponent() {
-        const [_Modal] = _di([Modal], MyComponent);
+        const [_Modal] = _di(MyComponent, Modal);
         return __jsx(_Modal, null);
       });
       const MyComponentA = () => {
-        const [_Modal] = _di([Modal], MyComponentA);
+        const [_Modal] = _di(MyComponentA, Modal);
         return __jsx(_Modal, null);
       };
       const MyComponentAw = /*#__PURE__*/memo(() => {
-        const [_Modal] = _di([Modal], null);
+        const [_Modal] = _di(null, Modal);
         return __jsx(_Modal, null);
       });
       const MyComponentTr = true ? () => {
-        const [_Modal] = _di([Modal], null);
+        const [_Modal] = _di(null, Modal);
         return __jsx(_Modal, null);
       } : /*#__PURE__*/memo( /*#__PURE__*/forwardRef(() => {
-        const [_Modal] = _di([Modal], null);
+        const [_Modal] = _di(null, Modal);
         return __jsx(_Modal, null);
       }));
       class Foo {
         renderModal = () => {
-          const [_Modal] = _di([Modal], Foo);
+          const [_Modal] = _di(Foo, Modal);
           return __jsx(_Modal, null);
         };
         render() {
-          const [_Modal] = _di([Modal], Foo);
+          const [_Modal] = _di(Foo, Modal);
           return __jsx(_Modal, null);
         }
       }"
@@ -651,7 +651,7 @@ describe('babel plugin', () => {
       export const useModalStatus = () => true;
       const parentStatus = () => true;
       export const useStatus = () => {
-        const [_useModalStatus] = _di([useModalStatus], useStatus);
+        const [_useModalStatus] = _di(useStatus, useModalStatus);
         return _useModalStatus() || parentStatus();
       };"
     `);
@@ -736,21 +736,21 @@ describe('babel plugin', () => {
         [FOO.A]: 1,
         get [FOO.B]() {},
         get [FOO.C]() {
-          const [_FOO] = _di([FOO], null);
+          const [_FOO] = _di(null, FOO);
           return {
             get [_FOO.C]() {}
           };
         },
         get [BAR]() {
-          const [_FOO] = _di([FOO], null);
+          const [_FOO] = _di(null, FOO);
           return _FOO.C;
         },
         set [BAR](v) {
-          const [_BAR] = _di([BAR], null);
+          const [_BAR] = _di(null, BAR);
           return _BAR(v);
         },
         set [moo()](v) {
-          const [_moo] = _di([moo], null);
+          const [_moo] = _di(null, moo);
           return _moo(v);
         }
       };"
@@ -827,7 +827,7 @@ describe('babel plugin', () => {
       import { di } from 'react-magnetic-di';
       import Modal, { useModal, config } from 'modal';
       function MyComponent() {
-        const [_Modal, _config, _myGlobal, _useModal] = di([Modal, config, myGlobal, useModal], MyComponent);
+        const [_Modal, _config, _myGlobal, _useModal] = di(MyComponent, Modal, config, myGlobal, useModal);
         _useModal(_config, _myGlobal);
         return __jsx(_Modal, null);
       }"
@@ -854,9 +854,9 @@ describe('babel plugin', () => {
       var _reactMagneticDi = require("react-magnetic-di");
       var _modal = require("modal");
       function useMyModal() {
-        const [_useModal] = (0, _reactMagneticDi.di)([_modal.useModal], useMyModal);
+        const [_useModal] = (0, _reactMagneticDi.di)(useMyModal, _modal.useModal);
         return () => {
-          const [_useModal2] = (0, _reactMagneticDi.di)([_useModal], null);
+          const [_useModal2] = (0, _reactMagneticDi.di)(null, _useModal);
           return _useModal2();
         };
       }"
@@ -882,7 +882,7 @@ describe('babel plugin', () => {
         let {
           hook = useModal
         } = _ref;
-        const [_useModal] = _di([useModal], useMyModal);
+        const [_useModal] = _di(useMyModal, useModal);
         return hook();
       }"
     `);
@@ -915,10 +915,10 @@ describe('babel plugin', () => {
       import Modal, { config } from 'modal';
       function createClass() {
         var _class;
-        const [_Modal, _config] = _di([Modal, config], createClass);
+        const [_Modal, _config] = _di(createClass, Modal, config);
         return _class = class MyModal extends _Modal {
           getConfig() {
-            const [_config2] = _di([_config], MyModal);
+            const [_config2] = _di(MyModal, _config);
             return _config2;
           }
         }, _class.displayName = 'MyModal', _class;
@@ -950,9 +950,9 @@ describe('babel plugin', () => {
       "import { di } from 'react-magnetic-di';
       import { useModal } from 'modal';
       export const withModal = Comp => {
-        const [_useModal] = di([useModal], withModal);
+        const [_useModal] = di(withModal, useModal);
         return () => {
-          const [_Comp, _useModal2] = di([Comp, _useModal], null);
+          const [_Comp, _useModal2] = di(null, Comp, _useModal);
           _useModal2();
           return __jsx(_Comp, null);
         };

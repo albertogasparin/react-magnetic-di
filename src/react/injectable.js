@@ -29,7 +29,7 @@ export function injectable(
   diRegistry.set(impl, {
     value: implementation,
     from,
-    targets: target && (Array.isArray(target) ? target : [target]),
+    targets: target && new WeakSet(Array.isArray(target) ? target : [target]),
     track,
     global,
     cause: track
