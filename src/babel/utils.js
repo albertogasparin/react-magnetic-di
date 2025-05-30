@@ -96,7 +96,9 @@ function collectDepsReferencePaths(t, bodyPaths) {
       const ref = path.get('declaration').isIdentifier()
         ? path.get('declaration')
         : path.get('declaration.id');
-      addRef(ref);
+      if (ref.isIdentifier()) {
+        addRef(ref);
+      }
     }
   });
   return { references, imports };

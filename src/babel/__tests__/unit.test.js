@@ -617,7 +617,7 @@ describe('babel plugin', () => {
       const MyComponentTr = true ? () => {
         const [_Modal] = _di(null, Modal);
         return __jsx(_Modal, null);
-      } : /*#__PURE__*/memo( /*#__PURE__*/forwardRef(() => {
+      } : /*#__PURE__*/memo(/*#__PURE__*/forwardRef(() => {
         const [_Modal] = _di(null, Modal);
         return __jsx(_Modal, null);
       }));
@@ -914,14 +914,14 @@ describe('babel plugin', () => {
       "import { di as _di } from "react-magnetic-di";
       import Modal, { config } from 'modal';
       function createClass() {
-        var _class;
+        var _MyModal;
         const [_Modal, _config] = _di(createClass, Modal, config);
-        return _class = class MyModal extends _Modal {
+        return _MyModal = class MyModal extends _Modal {
           getConfig() {
             const [_config2] = _di(MyModal, _config);
             return _config2;
           }
-        }, _class.displayName = 'MyModal', _class;
+        }, _MyModal.displayName = 'MyModal', _MyModal;
         return MyModal;
       }"
     `);
