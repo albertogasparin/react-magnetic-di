@@ -7,20 +7,18 @@ const createState = () => ({
 export const stats = {
   state: createState(),
 
-  set(injObj) {
+  set(inj) {
     // allow injectable override without flagging as unused
     for (let unusedInj of this.state.unused.keys())
-      if (unusedInj.from === injObj.from) this.state.unused.delete(unusedInj);
+      if (unusedInj.from === inj.from) this.state.unused.delete(unusedInj);
 
     this.state.unused.set(
-      injObj,
+      inj,
       new Error(
-        `Unused "di" injectable: ${injObj.value?.displayName || injObj.value}.`,
-        { cause: injObj.cause }
+        `Unused "di" injectable: ${inj.value?.displayName || inj.value}.`,
+        { cause: inj.cause }
       )
     );
-    // reset to avoid potential memory leaks via stack traces
-    injObj.cause = null;
   },
 
   track(inj) {
@@ -28,6 +26,8 @@ export const stats = {
     this.state.unused.delete(inj);
     this.state.used.add(inj);
     this.state.provided.add(inj.from);
+    // reset to avoid potential memory leaks via stack traces
+    inj.cause = null;
   },
 
   reset() {
