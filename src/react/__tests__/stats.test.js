@@ -63,6 +63,20 @@ describe('stats', () => {
       );
       expect(stats.unused()).toHaveLength(0);
     });
+
+    it('should provide an error with the cause information', () => {
+      const deps = [TextDi, WrapperDi, processApiDataDi];
+      render(
+        <DiProvider use={deps}>
+          <Label />
+        </DiProvider>
+      );
+      expect(stats.unused()).toHaveLength(1);
+      expect(stats.unused()[0].error().cause).toBeInstanceOf(Error);
+      expect(stats.unused()[0].error().cause.message).toContain(
+        'Injectable created but not used'
+      );
+    });
   });
 
   describe('with runWithDi', () => {
