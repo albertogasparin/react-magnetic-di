@@ -61,10 +61,10 @@ export function runWithDi(thunk, deps) {
     if (
       result &&
       typeof result === 'object' &&
-      typeof result.then === 'function' &&
-      typeof result.finally === 'function'
+      typeof result.then === 'function'
     ) {
-      result.finally(globalDi.clear);
+      // dont use finally as it "multiplies" rejected promises
+      result.then(globalDi.clear, globalDi.clear);
     } else {
       globalDi.clear();
     }
