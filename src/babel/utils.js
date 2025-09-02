@@ -1,5 +1,20 @@
 const { PACKAGE_NAME } = require('./constants');
 
+const perf = {
+  times: new Map(),
+  time(name) {
+    const v = this.times.get(name) || { count: 0 };
+    v.last = process.hrtime();
+    v.count += 1;
+    this.times.set(name, v);
+  },
+  timeEnd(name) {
+    const v = this.times.get(name);
+    const delta = process.hrtime(v.last);
+    console.log(name, delta[0] * 1e3 + delta[1] / 1e6, 'ms', v.count);
+  },
+};
+
 const getComponentDeclaration = (t, scope) => {
   // function declarations
   if (scope.parentBlock.declaration) return scope.parentBlock.declaration.id;
@@ -158,4 +173,5 @@ module.exports = {
   isMatchingAny,
   hasDisableComment,
   parseOptions,
+  perf,
 };
