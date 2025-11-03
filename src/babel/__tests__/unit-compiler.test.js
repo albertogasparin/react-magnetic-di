@@ -4,7 +4,13 @@ import plugin from '../index';
 
 const babel = (
   code,
-  { options, assumptions, prePlugins = [], postPlugins = [], presets = [] } = {}
+  {
+    options,
+    assumptions,
+    prePlugins = [['babel-plugin-react-compiler', { target: '18' }]],
+    postPlugins = [],
+    presets = [],
+  } = {}
 ) =>
   transform(code, {
     filename: 'noop.js',
@@ -54,11 +60,20 @@ describe('babel plugin', () => {
     `;
     expect(babel(input)).toMatchInlineSnapshot(`
       "import { di as _di } from "react-magnetic-di";
+      import { c as _c } from "react-compiler-runtime";
       import React from 'react';
       import Modal from 'modal';
       const MyComponent = () => {
         const [_Modal] = _di(MyComponent, Modal);
-        return __jsx(_Modal, null);
+        const $ = _c(1);
+        let t0;
+        if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
+          t0 = __jsx(_Modal, null);
+          $[0] = t0;
+        } else {
+          t0 = $[0];
+        }
+        return t0;
       };"
     `);
   });
@@ -74,11 +89,20 @@ describe('babel plugin', () => {
     `;
     expect(babel(input)).toMatchInlineSnapshot(`
       "import { di as _di } from "react-magnetic-di";
+      import { c as _c } from "react-compiler-runtime";
       import React from 'react';
       import Modal from 'modal';
       function MyComponent() {
         const [_Modal] = _di(MyComponent, Modal);
-        return __jsx(_Modal, null);
+        const $ = _c(1);
+        let t0;
+        if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
+          t0 = __jsx(_Modal, null);
+          $[0] = t0;
+        } else {
+          t0 = $[0];
+        }
+        return t0;
       }"
     `);
   });
@@ -94,11 +118,20 @@ describe('babel plugin', () => {
     `;
     expect(babel(input)).toMatchInlineSnapshot(`
       "import { di as _di } from "react-magnetic-di";
+      import { c as _c } from "react-compiler-runtime";
       import React from 'react';
       import Modal from 'modal';
       const MyComponent = function () {
         const [_Modal] = _di(MyComponent, Modal);
-        return __jsx(_Modal, null);
+        const $ = _c(1);
+        let t0;
+        if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
+          t0 = __jsx(_Modal, null);
+          $[0] = t0;
+        } else {
+          t0 = $[0];
+        }
+        return t0;
       };"
     `);
   });
@@ -206,14 +239,21 @@ describe('babel plugin', () => {
       }
     `;
     expect(babel(input)).toMatchInlineSnapshot(`
-      "import React from 'react';
+      "import { c as _c } from "react-compiler-runtime";
+      import React from 'react';
       import { di } from 'react-magnetic-di';
       import Modal from 'modal';
       export const MyComponent = function () {
-        const something = '';
-        // comment
+        const $ = _c(1);
         const [_Modal, _myGlobal] = di(MyComponent, Modal, myGlobal);
-        return __jsx(_Modal, null);
+        let t0;
+        if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
+          t0 = __jsx(_Modal, null);
+          $[0] = t0;
+        } else {
+          t0 = $[0];
+        }
+        return t0;
       };"
     `);
   });
@@ -229,11 +269,20 @@ describe('babel plugin', () => {
     `;
     expect(babel(input)).toMatchInlineSnapshot(`
       "import { di as _di } from "react-magnetic-di";
+      import { c as _c } from "react-compiler-runtime";
       import React, { forwardRef } from 'react';
       import Modal from 'modal';
       const MyComponent = /*#__PURE__*/forwardRef(() => {
         const [_Modal] = _di(null, Modal);
-        return __jsx(_Modal, null);
+        const $ = _c(1);
+        let t0;
+        if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
+          t0 = __jsx(_Modal, null);
+          $[0] = t0;
+        } else {
+          t0 = $[0];
+        }
+        return t0;
       });"
     `);
   });
@@ -330,13 +379,23 @@ describe('babel plugin', () => {
     `;
     expect(babel(input)).toMatchInlineSnapshot(`
       "import { di as _di } from "react-magnetic-di";
+      import { c as _c } from "react-compiler-runtime";
       import React, { Component } from 'react';
       import Modal from 'modal';
       export const useModalStatus = () => true;
       function MyComponent() {
         const [_Modal, _useModalStatus] = _di(MyComponent, Modal, useModalStatus);
+        const $ = _c(2);
         const isOpen = _useModalStatus();
-        return isOpen && __jsx(_Modal, null);
+        let t0;
+        if ($[0] !== isOpen) {
+          t0 = isOpen && __jsx(_Modal, null);
+          $[0] = isOpen;
+          $[1] = t0;
+        } else {
+          t0 = $[1];
+        }
+        return t0;
       }
       class MyComponent2 extends Component {
         render() {
@@ -380,10 +439,11 @@ describe('babel plugin', () => {
       import { loadModal } from 'modal';
       function MyComponent() {
         const [_loadModal, _useEffect] = _di(MyComponent, loadModal, useEffect);
-        _useEffect(() => {
-          const [_loadModal2] = _di(null, _loadModal);
-          _loadModal2();
-        });
+        _useEffect(_temp);
+      }
+      function _temp() {
+        const [_loadModal2] = _di(_temp, loadModal);
+        _loadModal2();
       }
       const withLoad = () => {
         const [_loadModal3] = _di(withLoad, loadModal);
@@ -436,10 +496,13 @@ describe('babel plugin', () => {
       }
       export function useMyModalForced() {
         const [_config, _useModal] = di(useMyModalForced, config, useModal);
-        useEffect(() => {
-          if (_config) return;
-        });
+        useEffect(_temp);
         return _useModal();
+      }
+      function _temp() {
+        if (config) {
+          return;
+        }
       }"
     `);
   });
@@ -474,11 +537,20 @@ describe('babel plugin', () => {
     `;
     const options = { enabledEnvs: ['development'] };
     expect(babel(input, { options })).toMatchInlineSnapshot(`
-      "import React, { Component } from 'react';
+      "import { c as _c } from "react-compiler-runtime";
+      import React, { Component } from 'react';
       import { di } from 'react-magnetic-di';
       import Modal from 'modal';
       function MyComponent() {
-        return __jsx(Modal, null);
+        const $ = _c(1);
+        let t0;
+        if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
+          t0 = __jsx(Modal, null);
+          $[0] = t0;
+        } else {
+          t0 = $[0];
+        }
+        return t0;
       }"
     `);
   });
@@ -558,12 +630,21 @@ describe('babel plugin', () => {
       }
     `;
     expect(babel(input)).toMatchInlineSnapshot(`
-      "import { di as _di } from "react-magnetic-di";
+      "import { c as _c } from "react-compiler-runtime";
+      import { di as _di } from "react-magnetic-di";
       import React from 'react';
       import Modal from 'modal';
       function MyComponent() {
-        const [_Modal] = _di(MyComponent, Modal);
-        return __jsx(_Modal, null);
+        const $ = _c(1);
+        _di(MyComponent, Modal);
+        let t0;
+        if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
+          t0 = __jsx(_Modal, null);
+          $[0] = t0;
+        } else {
+          t0 = $[0];
+        }
+        return t0;
       }"
     `);
   });
@@ -596,30 +677,71 @@ describe('babel plugin', () => {
     `;
     expect(babel(input)).toMatchInlineSnapshot(`
       "import { di as _di } from "react-magnetic-di";
+      import { c as _c } from "react-compiler-runtime";
       import React, { memo, forwardRef } from 'react';
       import { Modal } from 'modal';
       function MyComponentFn() {
         const [_Modal] = _di(MyComponentFn, Modal);
-        return __jsx(_Modal, null);
+        const $ = _c(1);
+        let t0;
+        if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
+          t0 = __jsx(_Modal, null);
+          $[0] = t0;
+        } else {
+          t0 = $[0];
+        }
+        return t0;
       }
       const MyComponentWr = /*#__PURE__*/memo(function MyComponent() {
         const [_Modal2] = _di(MyComponent, Modal);
-        return __jsx(_Modal2, null);
+        const $ = _c(1);
+        let t0;
+        if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
+          t0 = __jsx(_Modal2, null);
+          $[0] = t0;
+        } else {
+          t0 = $[0];
+        }
+        return t0;
       });
       const MyComponentA = () => {
         const [_Modal3] = _di(MyComponentA, Modal);
-        return __jsx(_Modal3, null);
+        const $ = _c(1);
+        let t0;
+        if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
+          t0 = __jsx(_Modal3, null);
+          $[0] = t0;
+        } else {
+          t0 = $[0];
+        }
+        return t0;
       };
       const MyComponentAw = /*#__PURE__*/memo(() => {
         const [_Modal4] = _di(null, Modal);
-        return __jsx(_Modal4, null);
+        const $ = _c(1);
+        let t0;
+        if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
+          t0 = __jsx(_Modal4, null);
+          $[0] = t0;
+        } else {
+          t0 = $[0];
+        }
+        return t0;
       });
       const MyComponentTr = true ? () => {
         const [_Modal5] = _di(null, Modal);
         return __jsx(_Modal5, null);
       } : /*#__PURE__*/memo(/*#__PURE__*/forwardRef(() => {
         const [_Modal6] = _di(null, Modal);
-        return __jsx(_Modal6, null);
+        const $ = _c(1);
+        let t0;
+        if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
+          t0 = __jsx(_Modal6, null);
+          $[0] = t0;
+        } else {
+          t0 = $[0];
+        }
+        return t0;
       }));
       class Foo {
         renderModal = () => {
@@ -794,17 +916,19 @@ describe('babel plugin', () => {
       }
     `;
     expect(babel(input)).toMatchInlineSnapshot(`
-      "import { useState } from 'react';
+      "import { di as _di } from "react-magnetic-di";
+      import { useState } from 'react';
       const useModalStatus = () => {
-        // di-ignore
-        return useState();
+        const [_useState] = _di(useModalStatus, useState);
+        return _useState();
       };
-      const useModalStatus2 = () =>
-      // di-ignore
-      useState();
+      const useModalStatus2 = () => {
+        const [_useState2] = _di(useModalStatus2, useState);
+        return _useState2();
+      };
       function useM3() {
-        /* di-ignore */
-        useState();
+        const [_useState3] = _di(useM3, useState);
+        _useState3();
       }"
     `);
   });
@@ -823,13 +947,22 @@ describe('babel plugin', () => {
       }
     `;
     expect(babel(input)).toMatchInlineSnapshot(`
-      "import React from 'react';
+      "import { c as _c } from "react-compiler-runtime";
+      import React from 'react';
       import { di } from 'react-magnetic-di';
       import Modal, { useModal, config } from 'modal';
       function MyComponent() {
+        const $ = _c(1);
         const [_Modal, _config, _myGlobal, _useModal] = di(MyComponent, Modal, config, myGlobal, useModal);
         _useModal(_config, _myGlobal);
-        return __jsx(_Modal, null);
+        let t0;
+        if ($[0] === Symbol.for("react.memo_cache_sentinel")) {
+          t0 = __jsx(_Modal, null);
+          $[0] = t0;
+        } else {
+          t0 = $[0];
+        }
+        return t0;
       }"
     `);
   });
