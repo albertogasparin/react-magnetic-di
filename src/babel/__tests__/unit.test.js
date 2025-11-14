@@ -340,8 +340,8 @@ describe('babel plugin', () => {
       }
       class MyComponent2 extends Component {
         render() {
-          const [_Modal] = _di(MyComponent2, Modal);
-          return __jsx(_Modal, null);
+          const [_Modal2] = _di(MyComponent2, Modal);
+          return __jsx(_Modal2, null);
         }
       }"
     `);
@@ -386,23 +386,23 @@ describe('babel plugin', () => {
         });
       }
       const withLoad = () => {
-        const [_loadModal] = _di(withLoad, loadModal);
+        const [_loadModal3] = _di(withLoad, loadModal);
         return () => {
-          const [_loadModal2] = _di(null, _loadModal);
-          _loadModal2();
+          const [_loadModal4] = _di(null, _loadModal3);
+          _loadModal4();
         };
       };
       const withAfter = () => {
-        const [_loadModal] = _di(withAfter, loadModal);
+        const [_loadModal5] = _di(withAfter, loadModal);
         requestAnimationFrame(() => {
-          const [_loadModal2] = _di(null, _loadModal);
+          const [_loadModal6] = _di(null, _loadModal5);
           requestAnimationFrame(() => {
-            const [_loadModal3] = _di(null, _loadModal2);
+            const [_loadModal7] = _di(null, _loadModal6);
             requestAnimationFrame(() => {
-              const [_loadModal4] = _di(null, _loadModal3);
+              const [_loadModal8] = _di(null, _loadModal7);
               requestAnimationFrame(() => {
-                const [_loadModal5] = _di(null, _loadModal4);
-                _loadModal5();
+                const [_loadModal9] = _di(null, _loadModal8);
+                _loadModal9();
               });
             });
           });
@@ -603,32 +603,32 @@ describe('babel plugin', () => {
         return __jsx(_Modal, null);
       }
       const MyComponentWr = /*#__PURE__*/memo(function MyComponent() {
-        const [_Modal] = _di(MyComponent, Modal);
-        return __jsx(_Modal, null);
+        const [_Modal2] = _di(MyComponent, Modal);
+        return __jsx(_Modal2, null);
       });
       const MyComponentA = () => {
-        const [_Modal] = _di(MyComponentA, Modal);
-        return __jsx(_Modal, null);
+        const [_Modal3] = _di(MyComponentA, Modal);
+        return __jsx(_Modal3, null);
       };
       const MyComponentAw = /*#__PURE__*/memo(() => {
-        const [_Modal] = _di(null, Modal);
-        return __jsx(_Modal, null);
+        const [_Modal4] = _di(null, Modal);
+        return __jsx(_Modal4, null);
       });
       const MyComponentTr = true ? () => {
-        const [_Modal] = _di(null, Modal);
-        return __jsx(_Modal, null);
+        const [_Modal5] = _di(null, Modal);
+        return __jsx(_Modal5, null);
       } : /*#__PURE__*/memo(/*#__PURE__*/forwardRef(() => {
-        const [_Modal] = _di(null, Modal);
-        return __jsx(_Modal, null);
+        const [_Modal6] = _di(null, Modal);
+        return __jsx(_Modal6, null);
       }));
       class Foo {
         renderModal = () => {
-          const [_Modal] = _di(Foo, Modal);
-          return __jsx(_Modal, null);
+          const [_Modal7] = _di(Foo, Modal);
+          return __jsx(_Modal7, null);
         };
         render() {
-          const [_Modal] = _di(Foo, Modal);
-          return __jsx(_Modal, null);
+          const [_Modal8] = _di(Foo, Modal);
+          return __jsx(_Modal8, null);
         }
       }"
     `);
@@ -742,8 +742,8 @@ describe('babel plugin', () => {
           };
         },
         get [BAR]() {
-          const [_FOO] = _di(null, FOO);
-          return _FOO.C;
+          const [_FOO2] = _di(null, FOO);
+          return _FOO2.C;
         },
         set [BAR](v) {
           const [_BAR] = _di(null, BAR);
@@ -834,7 +834,7 @@ describe('babel plugin', () => {
     `);
   });
 
-  it('shold work with other plugin manipulating imports', () => {
+  it('should work with other plugin manipulating imports', () => {
     const input = `
       import { useModal } from 'modal';
 
@@ -863,7 +863,7 @@ describe('babel plugin', () => {
     `);
   });
 
-  it('shold work with other plugin manipulating default arguments', () => {
+  it('should work with other plugin manipulating default arguments', () => {
     const input = `
       import { useModal } from 'modal';
 
@@ -888,7 +888,7 @@ describe('babel plugin', () => {
     `);
   });
 
-  it('shold work with other plugin manipulating classes', () => {
+  it('should work with other plugin manipulating classes', () => {
     const input = `
     import Modal, { config } from 'modal';
 
@@ -927,7 +927,201 @@ describe('babel plugin', () => {
     `);
   });
 
-  it('shold work with typescript preset', () => {
+  it('should work with React Compiler and hooks', () => {
+    const input = `
+      import React, { useState, useEffect, useMemo, useCallback } from 'react';
+      import { useModal } from 'modal';
+      import Button from 'button';
+      import Modal from 'modal';
+
+      function MyComponent({ items }) {
+        const [isOpen, setIsOpen] = useState(false);
+        const modal = useModal();
+        
+        const memoizedItems = useMemo(() => {
+          return items.filter(item => item.active);
+        }, [items]);
+        
+        const handleClick = useCallback(() => {
+          setIsOpen(!isOpen);
+          modal.open();
+        }, [isOpen, modal]);
+        
+        useEffect(() => {
+          if (isOpen) {
+            modal.focus();
+          }
+        }, [isOpen, modal]);
+        
+        return (
+          <div>
+            <Button onClick={handleClick}>Open</Button>
+            {isOpen && <Modal items={memoizedItems} />}
+          </div>
+        );
+      }
+    `;
+
+    const options = {
+      prePlugins: [['babel-plugin-react-compiler', { target: '18' }]],
+    };
+
+    expect(babel(input, options)).toMatchInlineSnapshot(`
+      "import { di as _di } from "react-magnetic-di";
+      import { c as _c } from "react-compiler-runtime";
+      import React, { useState, useEffect, useMemo, useCallback } from 'react';
+      import { useModal } from 'modal';
+      import Button from 'button';
+      import Modal from 'modal';
+      function MyComponent(t0) {
+        const [_Button, _Modal, _useCallback, _useEffect, _useMemo, _useModal, _useState] = _di(MyComponent, Button, Modal, useCallback, useEffect, useMemo, useModal, useState);
+        const $ = _c(17);
+        const {
+          items
+        } = t0;
+        const [isOpen, setIsOpen] = _useState(false);
+        const modal = _useModal();
+        let t1;
+        if ($[0] !== items) {
+          t1 = items.filter(_temp);
+          $[0] = items;
+          $[1] = t1;
+        } else {
+          t1 = $[1];
+        }
+        const memoizedItems = t1;
+        let t2;
+        if ($[2] !== isOpen || $[3] !== modal) {
+          t2 = () => {
+            setIsOpen(!isOpen);
+            modal.open();
+          };
+          $[2] = isOpen;
+          $[3] = modal;
+          $[4] = t2;
+        } else {
+          t2 = $[4];
+        }
+        const handleClick = t2;
+        let t3;
+        let t4;
+        if ($[5] !== isOpen || $[6] !== modal) {
+          t3 = () => {
+            if (isOpen) {
+              modal.focus();
+            }
+          };
+          t4 = [isOpen, modal];
+          $[5] = isOpen;
+          $[6] = modal;
+          $[7] = t3;
+          $[8] = t4;
+        } else {
+          t3 = $[7];
+          t4 = $[8];
+        }
+        _useEffect(t3, t4);
+        let t5;
+        if ($[9] !== handleClick) {
+          t5 = __jsx(_Button, {
+            onClick: handleClick
+          }, "Open");
+          $[9] = handleClick;
+          $[10] = t5;
+        } else {
+          t5 = $[10];
+        }
+        let t6;
+        if ($[11] !== isOpen || $[12] !== memoizedItems) {
+          t6 = isOpen && __jsx(_Modal, {
+            items: memoizedItems
+          });
+          $[11] = isOpen;
+          $[12] = memoizedItems;
+          $[13] = t6;
+        } else {
+          t6 = $[13];
+        }
+        let t7;
+        if ($[14] !== t5 || $[15] !== t6) {
+          t7 = __jsx("div", null, t5, t6);
+          $[14] = t5;
+          $[15] = t6;
+          $[16] = t7;
+        } else {
+          t7 = $[16];
+        }
+        return t7;
+      }
+      function _temp(item) {
+        return item.active;
+      }"
+    `);
+  });
+
+  it('should handle duplicate variable names in nested scopes with React Compiler', () => {
+    const input = `
+      import React, { forwardRef } from 'react';
+      import Container from 'container';
+
+      const someHOC = (props) => {
+        return (WrappedComponent) => {
+          return forwardRef((props, ref) => {
+            return (
+              <Container {...props}>
+                <WrappedComponent {...props} ref={ref} />
+              </Container>
+            );
+          });
+        };
+      };
+    `;
+
+    const options = {
+      prePlugins: [['babel-plugin-react-compiler', { target: '18' }]],
+    };
+
+    expect(babel(input, options)).toMatchInlineSnapshot(`
+      "function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
+      import { di as _di } from "react-magnetic-di";
+      import { c as _c } from "react-compiler-runtime";
+      import React, { forwardRef } from 'react';
+      import Container from 'container';
+      const someHOC = props => {
+        const [_Container, _forwardRef] = _di(someHOC, Container, forwardRef);
+        return WrappedComponent => {
+          const [_Container2, _Container3, _forwardRef2] = _di(null, Container, _Container, _forwardRef);
+          return _forwardRef2((props, ref) => {
+            const [_Container4, _Container5] = _di(null, Container, _Container3);
+            const $ = _c(6);
+            let t0;
+            if ($[0] !== props || $[1] !== ref) {
+              t0 = __jsx(WrappedComponent, _extends({}, props, {
+                ref: ref
+              }));
+              $[0] = props;
+              $[1] = ref;
+              $[2] = t0;
+            } else {
+              t0 = $[2];
+            }
+            let t1;
+            if ($[3] !== props || $[4] !== t0) {
+              t1 = __jsx(_Container5, props, t0);
+              $[3] = props;
+              $[4] = t0;
+              $[5] = t1;
+            } else {
+              t1 = $[5];
+            }
+            return t1;
+          });
+        };
+      };"
+    `);
+  });
+
+  it('should work with typescript preset', () => {
     const input = `
     import { di } from 'react-magnetic-di';
     import { useModal } from 'modal';

@@ -21,7 +21,6 @@ const {
 class State {
   locations = new WeakMap();
   imports = null;
-  aliases = new Map();
   diIdentifier = null;
   injectIdentifier = null;
   programPath = null;
@@ -77,10 +76,7 @@ class State {
   }
 
   getAlias(name, scope) {
-    if (!this.aliases.has(name)) {
-      this.aliases.set(name, scope.generateUid(name));
-    }
-    return this.aliases.get(name);
+    return scope.generateUid(name);
   }
 
   addDi(diRef) {
