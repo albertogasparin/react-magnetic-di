@@ -211,7 +211,7 @@ describe('DiProvider', () => {
     const cSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     expect(() => {
       render(<DiProvider use={[jest.fn()]}>foo</DiProvider>);
-    }).toThrowError();
+    }).toThrow();
     cSpy.mockRestore();
   });
 

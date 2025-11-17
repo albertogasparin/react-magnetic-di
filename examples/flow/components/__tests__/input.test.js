@@ -25,7 +25,7 @@ describe('Input', () => {
       <div>
         <input
           placeholder="Type..."
-          style="border: 1px solid #b00;"
+          style="border: 1px solid rgb(187, 0, 0);"
         />
       </div>
     `);
