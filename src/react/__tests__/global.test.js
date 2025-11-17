@@ -53,7 +53,7 @@ describe('globalDi', () => {
   it('should error when a non injectable is used', () => {
     expect(() => {
       globalDi.use([jest.fn()]);
-    }).toThrowError();
+    }).toThrow();
   });
 
   describe('_fromProvider', () => {
