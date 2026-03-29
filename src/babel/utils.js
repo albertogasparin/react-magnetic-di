@@ -148,6 +148,10 @@ const hasDisableComment = (path) => {
   ].some((c) => c.value.includes('di-ignore'));
 };
 
+const hasDisableDi = (diRef) => {
+  return diRef?.parentPath.node?.arguments?.[0]?.value === false;
+};
+
 module.exports = {
   assert,
   createNamedImport,
@@ -157,5 +161,6 @@ module.exports = {
   isEnabledEnv,
   isMatchingAny,
   hasDisableComment,
+  hasDisableDi,
   parseOptions,
 };

@@ -29,8 +29,11 @@ module.exports = {
         (node.body || []).forEach((statement, i) => {
           if (!isDiStatement(statement, diIdentifier) || i === 0) return;
 
-          const prev = node.body[i - 1];
-          if (!isDiStatement(prev, diIdentifier)) {
+          // collect all nodes before the current one that are not directives
+          const prevNodes = node.body.filter(
+            (s, index) => index < i && !s.directive
+          );
+          if (prevNodes.length && !isDiStatement(prevNodes[0], diIdentifier)) {
             context.report({
               node: statement,
               messageId: 'wrongOrder',

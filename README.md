@@ -185,13 +185,26 @@ export async function myApiFetcher() {
 
 Other times, there might be places in code where auto injection is problematic and might cause infinite loops. It might be the case if you are creating an injectable that then imports the replacement source itself.
 
-For those scenarios, you can add a comment at the top of the function scope to tell the Babel plugin to skip that scope:
+For those scenarios, you can either add a comment at the top of the function scope to tell the Babel plugin to skip that scope, or an explicit `di(false)` statement:
 
 ```js
 import { fetchApi } from './fetch';
 
 export async function myApiFetcher() {
   // di-ignore
+  const { data } = await fetchApi();
+  return data;
+}
+```
+
+or the equivalent (as Babel will remove the statement at compile time anyway):
+
+```js
+import { di } from 'react-magnetic-di';
+import { fetchApi } from './fetch';
+
+export async function myApiFetcher() {
+  di(false);
   const { data } = await fetchApi();
   return data;
 }
