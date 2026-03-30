@@ -15,6 +15,7 @@ const {
   isMatchingAny,
   isEnabledEnv,
   hasDisableComment,
+  hasDisableDi,
   parseOptions,
 } = require('./utils');
 
@@ -59,7 +60,11 @@ class State {
   getValueOrInit(fnPath) {
     // we need both node and path as either might get replaced
     if (!this.locations.has(fnPath) && !this.locations.has(fnPath.node)) {
-      this.setValueForPath(fnPath, { diRef: null, dependencyRefs: new Set() });
+      this.setValueForPath(fnPath, {
+        diRef: null,
+        dependencyRefs: new Set(),
+        isDisabled: false,
+      });
     }
     return this.getValueForPath(fnPath);
   }
@@ -84,6 +89,7 @@ class State {
     assert.isValidLocation(parentFnPath, diRef);
     const value = this.getValueOrInit(parentFnPath);
     value.diRef = diRef;
+    value.isDisabled = hasDisableDi(diRef);
   }
 
   addDependency(depRef) {
@@ -150,7 +156,7 @@ module.exports = function (babel) {
         state.findPkgIndentifiers(t, path.node.body, path.scope);
 
         // Find all di() calls and store the arguments (to allow di custom vars)
-        // and then remove the di call as it's quicker than trying to manipilate
+        // and then remove the di call as it's quicker than trying to manipulate
         const diRefPaths = collectReferencePaths(
           t,
           state.diIdentifier,
@@ -161,6 +167,8 @@ module.exports = function (babel) {
             p.getFunctionParent() === arr[i + 1]?.getFunctionParent();
           if (isEnabled && !hasMulti) state.addDi(p);
           else p.parentPath.remove();
+          // if disabled remove the node after adding it to the state anyway
+          if (hasDisableDi(p)) p.parentPath.remove();
         });
 
         const alreadyProcessed = diRefPaths.some((p) =>
@@ -197,7 +205,8 @@ module.exports = function (babel) {
           locationValue?.diRef;
 
         // process only if function is a candidate to host di
-        if (!state || !locationValue || !shouldDi) return;
+        if (!state || !locationValue || locationValue?.isDisabled || !shouldDi)
+          return;
 
         // convert arrow function returns as di needs a block
         if (!t.isBlockStatement(path.node.body)) {

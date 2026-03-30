@@ -809,6 +809,43 @@ describe('babel plugin', () => {
     `);
   });
 
+  it('should not di if di(false) is found', () => {
+    const input = `
+      import { di } from 'react-magnetic-di';
+      import { useState } from 'react';
+      
+      const useModalStatus = () => {
+        "use memo"
+        di(false);
+        return useState();
+      };
+
+      function useM3 () {
+        di(false);
+        const callback = () => {
+          useState()
+        }
+        return null;
+      }
+    `;
+    expect(babel(input)).toMatchInlineSnapshot(`
+      "import { di } from 'react-magnetic-di';
+      import { useState } from 'react';
+      const useModalStatus = () => {
+        "use memo";
+      
+        return useState();
+      };
+      function useM3() {
+        const callback = () => {
+          const [_useState] = di(callback, useState);
+          _useState();
+        };
+        return null;
+      }"
+    `);
+  });
+
   it('should merge with provided dependencies', () => {
     const input = `
       import React from 'react';
@@ -1118,6 +1155,62 @@ describe('babel plugin', () => {
           });
         };
       };"
+    `);
+  });
+
+  it('should work with React Compiler "use memo"', () => {
+    const input = `
+      import React, { useMemo } from 'react';
+      import { useModal } from 'modal';
+
+      function MyComponent({ items }) {
+        "use memo"
+        const modal = useModal();
+        const handleClick = () => {
+          modal.open(items);
+        }
+        return <button onClick={handleClick}>Open</button>;
+      }
+    `;
+    const options = {
+      prePlugins: [
+        [
+          'babel-plugin-react-compiler',
+          { target: '18', compilationMode: 'annotation' },
+        ],
+      ],
+    };
+
+    expect(babel(input, options)).toMatchInlineSnapshot(`
+      "import { di as _di } from "react-magnetic-di";
+      import { c as _c } from "react-compiler-runtime";
+      import React, { useMemo } from 'react';
+      import { useModal } from 'modal';
+      function MyComponent(t0) {
+        "use memo";
+
+        const [_useModal] = _di(MyComponent, useModal);
+        const $ = _c(3);
+        const {
+          items
+        } = t0;
+        const modal = _useModal();
+        let t1;
+        if ($[0] !== items || $[1] !== modal) {
+          const handleClick = () => {
+            modal.open(items);
+          };
+          t1 = __jsx("button", {
+            onClick: handleClick
+          }, "Open");
+          $[0] = items;
+          $[1] = modal;
+          $[2] = t1;
+        } else {
+          t1 = $[2];
+        }
+        return t1;
+      }"
     `);
   });
 

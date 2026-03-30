@@ -1,6 +1,6 @@
 const { assert, getComponentDeclaration } = require('./utils');
 
-function processReference(t, path, locationValue, state) {
+function processDiDeclaration(t, path, locationValue, state) {
   const self = getComponentDeclaration(t, path.scope);
   const bodyPath = path.get('body');
 
@@ -110,4 +110,4 @@ function processReference(t, path, locationValue, state) {
   state.prependDiImport(t);
 }
 
-module.exports = processReference;
+module.exports = processDiDeclaration;
