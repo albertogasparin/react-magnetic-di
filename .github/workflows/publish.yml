@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
 
 # OIDC permissions to allow publishing to npm registry
 permissions:

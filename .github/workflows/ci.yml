@@ -12,19 +12,23 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node: [20, 24]
-
     steps:
       - uses: actions/checkout@v4
-      - name: Use Node.js ${{ matrix.node }}
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node }}
-      - run: npm install
-      - run: npm run lint
-      - run: npm run types
-      - run: npm run test
-      - run: npm run build
+          node-version: 24
+
+      - name: Install packages
+        run: npm install
+
+      - name: Run lint
+        run: npm run lint
+
+      - name: Run types
+        run: npm run types
+
+      - name: Run tests
+        run: npm run test
+
+      - name: Try build
+        run: npm run build
