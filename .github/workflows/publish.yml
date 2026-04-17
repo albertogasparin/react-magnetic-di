@@ -5,14 +5,19 @@ on:
     tags:
       - 'v*'
 
+# OIDC permissions to allow publishing to npm registry
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   publish-npm:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           registry-url: https://registry.npmjs.org/
 
       - name: Install packages
@@ -26,5 +31,3 @@ jobs:
 
       - name: Publish packages to npm registry
         run: npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.REACT_DI_NPM_TOKEN}}
