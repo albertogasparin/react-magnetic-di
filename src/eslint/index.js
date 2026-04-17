@@ -1,3 +1,4 @@
+const { version } = require('../../package.json');
 const order = require('./rules/order');
 const noDuplicate = require('./rules/no-duplicate');
 const noExtraneous = require('./rules/no-extraneous');
@@ -5,6 +6,10 @@ const noRestrictedInjectable = require('./rules/no-restricted-injectable');
 const sortDependencies = require('./rules/sort-dependencies');
 
 module.exports = {
+  meta: {
+    name: 'eslint-plugin-magnetic-di',
+    version,
+  },
   rules: {
     order: order,
     'no-duplicate': noDuplicate,

@@ -38,7 +38,6 @@ const getDiStatements = (node, diIdentifier) =>
   );
 
 const getParentDiBlock = (node, diIdentifier) => {
-  // eslint-disable-next-line no-cond-assign
   while ((node = node.parent)) {
     if (node.type === 'BlockStatement') {
       if (getDiStatements(node, diIdentifier).length) return node;

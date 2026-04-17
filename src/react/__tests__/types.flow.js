@@ -1,5 +1,4 @@
 // @flow strict-local
-/* eslint-disable no-unused-vars, react/display-name */
 
 import React, { Component, type AbstractComponent } from 'react';
 import { injectable, runWithDi, stats } from '../..';

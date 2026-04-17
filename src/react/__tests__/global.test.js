@@ -1,4 +1,3 @@
-/* eslint-env jest */
 import { globalDi, runWithDi } from '../global';
 import { di } from '../consumer';
 import { injectable } from '../injectable';
