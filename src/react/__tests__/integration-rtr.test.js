@@ -1,4 +1,3 @@
-/* eslint-env jest */
 import React, { Fragment } from 'react';
 import { act, create } from 'react-test-renderer';
 import { DiProvider, withDi, injectable } from '../../index';

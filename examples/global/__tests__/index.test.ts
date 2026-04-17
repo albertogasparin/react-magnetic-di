@@ -1,5 +1,3 @@
-/* eslint-env jest */
-
 import { injectable, runWithDi } from 'react-magnetic-di';
 import { fetchApi, processApiData, apiHandler, transformer } from '..';
 

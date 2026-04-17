@@ -1,7 +1,6 @@
 /**
  * @jest-environment jsdom
  */
-/* eslint-env jest */
 
 import React, { Component, forwardRef } from 'react';
 import { render } from '@testing-library/react';

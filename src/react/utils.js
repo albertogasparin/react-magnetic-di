@@ -4,7 +4,6 @@ import { stats } from './stats';
 let hasWarned = false;
 export function warnOnce(message) {
   if (!hasWarned) {
-    // eslint-disable-next-line no-console
     console.warn('Warning:', message);
     hasWarned = true;
   }

@@ -1,7 +1,6 @@
 /**
  * @jest-environment jsdom
  */
-/* eslint-env jest */
 
 import React, { type ReactElement, useState } from 'react';
 import { render } from '@testing-library/react';

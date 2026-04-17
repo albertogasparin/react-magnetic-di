@@ -3,16 +3,16 @@
     "target": "esnext",
     "module": "es2015",
     "esModuleInterop": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "strict": true,
     "preserveConstEnums": true,
     "jsx": "preserve",
     "noEmit": true,
-    "typeRoots": ["./node_modules/@types", "types"],
-    "baseUrl": ".",
+    "typeRoots": ["./node_modules/@types", "./types"],
+    "types": ["jest"],
     "skipLibCheck": true,
     "paths": {
-      "react-magnetic-di": ["types"]
+      "react-magnetic-di": ["./types"]
     }
   },
   "include": ["examples/**/*"]

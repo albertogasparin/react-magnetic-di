@@ -1,5 +1,4 @@
 /** @jest-environment jsdom */
-/* eslint-env jest */
 
 import { Label, apiHandler } from './common';
 import { debug } from '../utils';
